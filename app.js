@@ -2,6 +2,7 @@
   'use strict';
   const G = window.MathGame, KEY = 'enhjorningsdalen-v1';
   let state = G.fresh(), view = 'play', storageAvailable = true, toastTimer;
+  const shopOpenGroups = new Set(['mane']);
   const $ = selector => document.querySelector(selector);
   const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   try { const raw = localStorage.getItem(KEY); if (raw) state = G.restore(JSON.parse(raw)); } catch { storageAvailable = false; }
@@ -15,7 +16,7 @@
   }
   function scene() {
     const eq = state.equipped, lvl = G.level(state.earned).index, world = eq.world || 'meadow', night = ['night','auroraSky','moonGarden'].includes(world), sunset = world === 'sunset', aurora = world === 'auroraSky', moonGarden = world === 'moonGarden';
-    const mane = ({ mint: ['#83bbaa','#c5e9ca','#5c968d'], ocean: ['#80b9da','#b5e7e7','#6991c2'], rose: ['#d985a8','#f2c2d1','#a8557d'], peach: ['#ebaa83','#f8d3a4','#c87970'], auroraMane: ['#53a99d','#c3a3db','#536caa'] })[eq.mane] || ['#b29acb','#e4c2dc','#8d7cae'];
+    const mane = ({ mint: ['#83bbaa','#c5e9ca','#5c968d'], ocean: ['#80b9da','#b5e7e7','#6991c2'], rose: ['#d985a8','#f2c2d1','#a8557d'], peach: ['#ebaa83','#f8d3a4','#c87970'], auroraMane: ['#53a99d','#c3a3db','#536caa'], lavenderMane: ['#aa8ac6','#e7c4e7','#745a9c'], sunGoldMane: ['#e8ad47','#ffe5a2','#bb763b'], forestMane: ['#529676','#acd69b','#356c59'] })[eq.mane] || ['#b29acb','#e4c2dc','#8d7cae'];
     const sceneName = aurora ? 'Nordlys over dalen' : moonGarden ? 'Månehagen' : night ? 'Under stjernene' : sunset ? 'En gyllen kveld' : 'Hjemme i blomsterengen';
     const hoofColors = eq.feet === 'heartHooves' ? ['#e998b6','#c8769a'] : eq.feet === 'moonHooves' ? ['#d5d8eb','#a5a9c4'] : ['#e9c261','#cfaa51'];
     const wingFill = eq.back === 'rainbowWings' ? ['#f2c2d1','#d6c4f2','#afdace'] : ['#f1e5fa','#b59ac8','#b59ac8'];
@@ -134,13 +135,17 @@
       const nextItem = G.ITEMS.find(i=>!state.owned.includes(i.id));
       $('#main').innerHTML = warning + `<div class="intro"><div><h1>Et lite regnestykke, litt mer magi.</h1><p>Løs oppgaver og samle stjerner til ${escape(state.name)}.</p></div><label class="topic-select">Vi øver på <select id="topic">${Object.entries(G.TOPICS).map(([key,label])=>`<option value="${key}" ${key===state.topic?'selected':''}>${label}</option>`).join('')}</select></label></div><div class="play-grid">${state.round.done===8 && !state.current ? summaryCard() : questionCard()}${unicornPanel()}</div>${nextItem?`<div class="reward-strip"><div class="reward-icon" aria-hidden="true">${nextItem.icon}</div><div><h3>${nextItem.name} til ${escape(state.name)}?</h3><p>${state.balance>=nextItem.price?'Du har nok stjerner! Finn den i butikken.':`Bare ${nextItem.price-state.balance} stjerner til, så kan den bli din.`}</p></div><button class="text-button" data-view="closet">Se butikken</button></div>`:''}`;
     } else {
-      const slotLabels = { head: 'Pynt', mane: 'Manefarge', feet: 'Hover', neck: 'Hals', back: 'Vinger', world: 'Eventyrsted' };
-      const slotOrder = { head: 0, mane: 1, feet: 2, neck: 3, back: 4, world: 5 };
-      const shopItems = [...G.ITEMS].sort((a,b)=>slotOrder[a.slot]-slotOrder[b.slot] || a.price-b.price);
-      $('#main').innerHTML = warning + `<div class="intro"><div><h1>Et eventyr helt på din måte.</h1><p>Velg noe fint til ${escape(state.name)}. Alt du kjøper, får du beholde.</p></div></div><div class="closet-grid">${unicornPanel(true)}<section class="shop-section" aria-labelledby="shop-title"><div class="shop-heading"><h2 id="shop-title">Enhjørningsbutikken</h2><span>${G.ITEMS.length} skatter å samle på</span></div><div class="items-grid">${shopItems.map(item=>{
+      const slotLabels = { head: 'Pynt', mane: 'Manefarger', feet: 'Hover', neck: 'Rundt halsen', back: 'Vinger', world: 'Eventyrsteder' };
+      const slotOrder = ['mane','head','feet','neck','back','world'];
+      const itemCard = item => {
         const owned = state.owned.includes(item.id), equipped = state.equipped[item.slot]===item.id, afford = state.balance>=item.price;
-        return `<article class="item ${equipped?'equipped':''}"><span class="item-category">${slotLabels[item.slot]}</span><span class="item-icon" aria-hidden="true">${item.icon}</span><h3>${item.name}</h3><p>${item.description}</p><button data-item="${item.id}" ${!owned&&!afford?'disabled':''} aria-label="${equipped?'Ta av':owned?'Ta på':afford?'Kjøp':'Du mangler stjerner til'} ${item.name}${owned?'':`, ${item.price} stjerner`}">${equipped?'✓ På · ta av':owned?'Ta på':afford?`Kjøp · ${item.price} ★`:`${item.price} ★ · mangler ${item.price-state.balance}`}</button></article>`;
-      }).join('')}</div><p class="stats-note">Stjernene du bruker i butikken, teller fortsatt mot neste nivå.</p></section></div>`;
+        return `<article class="item ${equipped?'equipped':''}"><span class="item-icon" aria-hidden="true">${item.icon}</span><h3>${item.name}</h3><p>${item.description}</p><button data-item="${item.id}" ${!owned&&!afford?'disabled':''} aria-label="${equipped?'Ta av':owned?'Ta på':afford?'Kjøp':'Du mangler stjerner til'} ${item.name}${owned?'':`, ${item.price} stjerner`}">${equipped?'✓ På · ta av':owned?'Ta på':afford?`Kjøp · ${item.price} ★`:`${item.price} ★ · mangler ${item.price-state.balance}`}</button></article>`;
+      };
+      const groups = slotOrder.map(slot => {
+        const items = G.ITEMS.filter(item=>item.slot===slot).sort((a,b)=>a.price-b.price), ownedCount = items.filter(item=>state.owned.includes(item.id)).length;
+        return `<details class="shop-group" data-shop-group="${slot}" ${shopOpenGroups.has(slot)?'open':''}><summary><span class="shop-group-name">${slotLabels[slot]}</span><span class="shop-group-count">${items.length} valg</span><span class="shop-group-owned">${ownedCount} kjøpt</span><span class="shop-group-chevron" aria-hidden="true">⌄</span></summary><div class="items-grid">${items.map(itemCard).join('')}</div></details>`;
+      }).join('');
+      $('#main').innerHTML = warning + `<div class="intro"><div><h1>Et eventyr helt på din måte.</h1><p>Velg noe fint til ${escape(state.name)}. Alt du kjøper, får du beholde.</p></div></div><div class="closet-grid">${unicornPanel(true)}<section class="shop-section" aria-labelledby="shop-title"><div class="shop-heading"><h2 id="shop-title">Enhjørningsbutikken</h2><span>${G.ITEMS.length} skatter i seks grupper</span></div>${groups}<p class="stats-note">Stjernene du bruker i butikken, teller fortsatt mot neste nivå.</p></section></div>`;
     }
     bind();
   }
@@ -159,6 +164,7 @@
   }
   function bind() {
     document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+    document.querySelectorAll('[data-shop-group]').forEach(group=>group.addEventListener('toggle',()=>{if(group.open)shopOpenGroups.add(group.dataset.shopGroup);else shopOpenGroups.delete(group.dataset.shopGroup);}));
     document.querySelectorAll('[data-answer]').forEach(b=>b.addEventListener('click',()=>respond(Number(b.dataset.answer))));
     $('#next-question')?.addEventListener('click',nextQuestion);
     $('#new-round')?.addEventListener('click',()=>{state.round={done:0,correct:0,earned:0};state.current=null;save();render();$('#question-title')?.focus({preventScroll:true});});
