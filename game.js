@@ -189,7 +189,7 @@
       q.hint = `Tell ${width} ruter i hver rad. Hvor mange rader er det?`; q.explanation = `${width} ruter i hver av ${height} rader gir ${q.answer} ruter.`;
       q.meta.features = ['area-by-unit-squares', `rectangle-${width}x${height}`];
     } else if (skill === 'coordinate') {
-      const limit = n === 1 ? 4 : n === 2 ? 5 : 6, x = rand(1, limit), y = rand(1, limit), axis = n === 1 ? 'x' : n === 2 ? 'y' : (rand(0, 1) ? 'x' : 'y');
+      const limit = n === 1 ? 4 : n === 2 ? 5 : 6, x = rand(1, limit), y = (x + rand(1, limit - 1) - 1) % limit + 1, axis = n === 1 ? 'x' : n === 2 ? 'y' : (rand(0, 1) ? 'x' : 'y');
       q.answer = axis === 'x' ? x : y; q.kind = 'coordinate'; q.model = { x, y, axis, limit }; q.title = 'Finn punktet på rutenettet';
       q.prompt = `Enhjørningen står på punktet. Hvilket tall viser ${axis === 'x' ? 'vannrett retning' : 'loddrett retning'}?`; q.hint = 'Tallene under rutenettet viser x (bortover). Tallene til venstre viser y (oppover).';
       q.explanation = `Punktet er (${x}, ${y}). ${axis === 'x' ? 'Vannrett' : 'Loddrett'} viser ${q.answer}.`;
@@ -269,8 +269,12 @@
     const skill = shuffle(skillsFor(Object.hasOwn(TOPICS, topic) ? topic : 'mixed'))[0];
     return generate(skill, manualLevel(skill, difficulty));
   }
+  // Samme tekst kan ha ulik tegning (koordinater, diagrammer), så modellen er med i sammenligningen.
+  const signature = q => q.prompt + (q.model ? JSON.stringify(q.model) : q.bars ? JSON.stringify(q.bars) : '');
   function nextQuestion(state) {
-    const available = skillsFor(state.topic);
+    // Blandede runder unngår samme tema to ganger på rad når det finnes andre.
+    const all = skillsFor(state.topic), fresh = all.filter(s => state.topic !== 'mixed' || !state.current || SKILLS[s].topic !== state.current.type);
+    const available = fresh.length ? fresh : all;
     // Blandede runder fordeler øvingen: velg blant ferdighetene med færrest besvarte oppgaver.
     const minSeen = Math.min(...available.map(s => state.mastery[s].seen));
     const skill = shuffle(available.filter(s => state.mastery[s].seen <= minSeen + 1))[0];
@@ -282,7 +286,8 @@
       else if (roll > .9 && p.level < SKILLS[skill].max && p.recent.length >= 5 && p.recent.slice(-5).filter(r => r.correct && !r.hint).length >= 4) { target++; role = 'challenge'; }
     }
     let q;
-    for (let i = 0; i < 12; i++) { q = generate(skill, target); if (q.prompt !== state.current?.prompt && !p.history.slice(-3).some(h => h.prompt === q.prompt)) break; }
+    const previous = state.current ? signature(state.current) : null;
+    for (let i = 0; i < 12; i++) { q = generate(skill, target); const sig = signature(q); if (sig !== previous && !p.history.slice(-3).some(h => h.prompt === sig)) break; }
     q.meta.adaptive = adaptive; q.meta.role = role;
     if (adaptive && p.support) { q.showSupport = true; q.extraSupport = true; q.hintOpen = true; }
     return q;
@@ -291,7 +296,7 @@
   function recordAttempt(state, q, correct) {
     if (!q.meta || !Object.hasOwn(SKILLS, q.meta.skill)) return; // Oppgaver fra versjon 1 beholdes, men er ikke kalibrerte.
     const p = state.mastery[q.meta.skill], result = { correct, hint: Boolean(q.hintUsed || q.extraSupport) };
-    p.seen++; p.history.push({ ...result, level: q.meta.level, role: q.meta.role, prompt: q.prompt }); p.history = p.history.slice(-30);
+    p.seen++; p.history.push({ ...result, level: q.meta.level, role: q.meta.role, prompt: signature(q) }); p.history = p.history.slice(-30);
     // Repetisjon, manuell øving og prøveoppgaver styrer ikke det etablerte nivået.
     if (!q.meta.adaptive || q.meta.role !== 'current' || q.meta.level !== p.level) {
       if (q.meta.adaptive && !correct) p.support = true;

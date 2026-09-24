@@ -77,3 +77,12 @@
 }
 /* Rulling etter svar og neste oppgave holder litt avstand til skjermkantene. */
 #next-question{scroll-margin-bottom:16px}.round-header{scroll-margin-top:12px}
+
+/* Prøving i butikken: kortet som prøves, og linjen under enhjørningen med kjøpsknapp. */
+.item.trying{border-color:#e0b95a;background:#fff9e8;box-shadow:0 0 0 2px #f3dfa6}
+.item.trying button{background:var(--green);color:#fff}.item.trying button:disabled{background:#f1f1eb;color:#868c80}
+.preview-bar{margin:14px auto 4px;max-width:320px;background:#fff7da;border:1px solid #ecdfac;border-radius:14px;padding:12px 14px}
+.preview-bar p{margin:0 0 10px;font-size:14px}.preview-actions{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
+.preview-actions .primary-button:disabled{background:#d9dccf;color:#6f7669}
+.unicorn-scene{scroll-margin-top:10px}
+.preview-bar p span{margin-right:5px}

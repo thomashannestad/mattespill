@@ -295,6 +295,24 @@ test('diagrammer får nye former på trinn 3 til 5, og fargekort følger søylen
   assert.deepEqual(G.restore(JSON.parse(JSON.stringify(s))), s);
 });
 
+test('koordinatpunkter ligger aldri på diagonalen, og samme punkt kommer ikke to ganger på rad', () => {
+  for (let level = 1; level <= G.SKILLS.coordinate.max; level++) for (let i = 0; i < 500; i++) { const m = G.generate('coordinate', level).model; assert.notEqual(m.x, m.y); }
+  const s = G.fresh(); s.topic = 'coordinate'; let previous = null;
+  for (let i = 0; i < 300; i++) {
+    if (s.round.done === 8) s.round = { done: 0, correct: 0, earned: 0 };
+    s.current = G.nextQuestion(s); const key = JSON.stringify(s.current.model);
+    assert.notEqual(key, previous); previous = key; G.answer(s, s.current.answer);
+  }
+});
+
+test('blandede runder gir ikke samme tema to ganger på rad', () => {
+  const s = G.fresh(); let previous = null;
+  for (let i = 0; i < 300; i++) {
+    if (s.round.done === 8) s.round = { done: 0, correct: 0, earned: 0 };
+    s.current = G.nextQuestion(s); assert.notEqual(s.current.type, previous); previous = s.current.type; G.answer(s, s.current.answer);
+  }
+});
+
 test('oppgavemetadata skiller tierovergang fra større tall uten overgang', () => {
   for (let i = 0; i < 500; i++) {
     for (const skill of ['plus','minus']) for (const level of [4,5]) {
