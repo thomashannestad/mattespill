@@ -64,3 +64,16 @@
 .coordinate-grid i.start{color:#b9a3cc;font-size:15px}
 @media(max-width:700px){.answer.text{font-size:19px}}
 .answer.text .mark{top:6px;right:8px;transform:none;font-size:15px}
+
+/* Telefon: mindre plass i toppen, så oppgaven og neste-knappen får plass på skjermen. */
+@media(max-width:700px){
+  .topbar{height:60px}
+  .navigation{padding-bottom:10px;margin-bottom:14px}
+  .nav-button{padding:8px 12px;font-size:14px}.nav-button span{font-size:18px;margin-right:5px}
+  .intro{gap:10px;margin-bottom:12px}.intro h1{font-size:19px;margin:0;letter-spacing:-.4px}.intro p{display:none}
+  .question-content{padding-top:14px}.equation{margin:14px 0}.equation.missing-number{margin:12px 0}
+  .answers{gap:10px}.answer{min-height:66px}.answer-instruction{margin-bottom:10px}
+  .feedback{margin-top:14px;padding:14px}
+}
+/* Rulling etter svar og neste oppgave holder litt avstand til skjermkantene. */
+#next-question{scroll-margin-bottom:16px}.round-header{scroll-margin-top:12px}

@@ -7,6 +7,8 @@
   const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   try { const raw = localStorage.getItem(KEY); if (raw) state = G.restore(JSON.parse(raw)); } catch { storageAvailable = false; }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); storageAvailable = true; } catch { storageAvailable = false; } $('#save-note').textContent = storageAvailable ? 'Lagres på denne enheten' : 'Kan ikke lagre fremgangen'; }
+  // Ruller bare så mye som trengs for at elementet blir synlig, og ikke i det hele tatt hvis det allerede er det.
+  const reveal = element => element?.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   function notify(message) { clearTimeout(toastTimer); $('#toast').textContent = message; $('#toast').hidden = false; toastTimer = setTimeout(() => { $('#toast').hidden = true; }, 3500); }
   function celebrate() {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -175,7 +177,7 @@
   function switchView(nextView) { view = nextView; render(); }
   function respond(value) {
     const previous = G.level(state.earned).index, result = G.answer(state,value); if (!result) return;
-    save(); render(); $('#next-question')?.focus({preventScroll:true});
+    save(); render(); reveal($('#next-question')); $('#next-question')?.focus({preventScroll:true});
     if (result.correct) { $('#unicorn-art')?.classList.add('unicorn-happy'); celebrate(); }
     if (G.level(state.earned).index>previous) notify(`${state.name} nådde nivå ${G.level(state.earned).index+1}! Magien vokser ✦`);
   }
@@ -183,14 +185,14 @@
     if (!state.current || state.current.selected === undefined) return;
     state.current = state.round.done < 8 ? G.nextQuestion(state) : null;
     save(); render(); if (state.round.done===8) celebrate();
-    $('#question-title')?.focus({preventScroll:true});
+    reveal($('.round-header') || $('.summary')); $('#question-title')?.focus({preventScroll:true});
   }
   function bind() {
     document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
     document.querySelectorAll('[data-shop-group]').forEach(group=>group.addEventListener('toggle',()=>{if(group.open)shopOpenGroups.add(group.dataset.shopGroup);else shopOpenGroups.delete(group.dataset.shopGroup);}));
     document.querySelectorAll('[data-option]').forEach(b=>b.addEventListener('click',()=>respond(state.current.options[Number(b.dataset.option)].value)));
     $('#next-question')?.addEventListener('click',nextQuestion);
-    $('#new-round')?.addEventListener('click',()=>{state.round={done:0,correct:0,earned:0};state.current=null;save();render();$('#question-title')?.focus({preventScroll:true});});
+    $('#new-round')?.addEventListener('click',()=>{state.round={done:0,correct:0,earned:0};state.current=null;save();render();reveal($('.round-header'));$('#question-title')?.focus({preventScroll:true});});
     $('#topic')?.addEventListener('change',e=>{state.topic=e.target.value;if(state.current && state.current.selected===undefined) state.current=G.nextQuestion(state);save();render();});
     $('#hint-button')?.addEventListener('click',()=>{state.current.hintOpen=!state.current.hintOpen;if(state.current.hintOpen)G.useHint(state);save();render();$('#hint-button')?.focus({preventScroll:true});});
     $('#name-form')?.addEventListener('submit',e=>{e.preventDefault();const name=$('#unicorn-name').value.trim().slice(0,24);if(!name){$('#unicorn-name').setCustomValidity('Skriv et navn til enhjørningen.');$('#unicorn-name').reportValidity();return;}state.name=name;save();render();notify(`Enhjørningen din heter nå ${name}.`);});
