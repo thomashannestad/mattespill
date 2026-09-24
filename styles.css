@@ -49,3 +49,9 @@
 .flower-pile i{font-style:normal;font-size:16px;line-height:1.2;color:#9c78b0}
 .flower-group.empty{min-width:92px;min-height:44px;border-style:dashed;border-color:#b9c4b0;background:#fffdfa}
 @media(max-width:700px){.question-text{font-size:19px}.flower-pile{grid-template-columns:repeat(10,18px)}.flower-pile i{font-size:14px}}
+
+/* Svarkort med tegn (<, = og >): tre kort på én rad, og tegnet vises stort. */
+.answers.count-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.answer.symbol{font-size:46px;font-weight:600}
+.compare-model .compare-sign{font-size:30px;color:var(--purple);font-weight:700}
+@media(max-width:700px){.answer.symbol{font-size:40px}}

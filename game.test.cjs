@@ -4,14 +4,15 @@ const G = require('./game.js');
 
 // Sjekker at fasit, modell og svarkort henger sammen for hver oppgavetype.
 function checkQuestion(q) {
-  assert.equal(q.options.length, 4);
-  assert.equal(new Set(q.options).size, 4);
-  assert.ok(q.options.includes(q.answer));
-  assert.ok(q.options.every(n => Number.isInteger(n) && n >= 0));
+  assert.ok(q.options.length >= 3 && q.options.length <= 4);
+  assert.equal(new Set(q.options.map(o => o.value)).size, q.options.length);
+  assert.ok(q.options.some(o => o.value === q.answer));
+  assert.ok(q.options.every(o => typeof o.label === 'string' && o.label.length > 0));
+  if (q.kind !== 'compare') { assert.equal(q.options.length, 4); assert.ok(q.options.every(o => Number.isInteger(o.value) && o.value >= 0 && o.label === String(o.value))); }
   if (q.kind === 'tenFrame') {
     assert.equal(q.model.a + q.answer, q.model.target);
     assert.equal(q.model.target % 10, 0);
-    assert.ok(q.options.every(n => n <= 10));
+    assert.ok(q.options.every(o => o.value <= 10));
     if (q.type === 'ten') assert.equal(q.model.target, 10);
     else assert.equal(q.model.target, Math.ceil(q.model.a / 10) * 10);
   } else if (q.type === 'plus' || q.type === 'minus') {
@@ -48,13 +49,14 @@ function checkQuestion(q) {
   } else if (q.kind === 'compare') {
     const { left, right } = q.model;
     for (const side of [left, right]) {
-      assert.equal(side.value, side.op === '+' ? side.a + side.b : side.op === '−' ? side.a - side.b : side.a * side.b);
+      assert.equal(side.value, side.op === '+' ? side.a + side.b : side.op === '−' ? side.a - side.b : side.op === '×' ? side.a * side.b : side.a);
       assert.ok(side.value >= 0, `negativ differanse: ${side.a} ${side.op} ${side.b}`);
       if (side.op === '×') assert.ok(side.a <= 10 && side.b <= 10, `for stort gangestykke: ${side.a} × ${side.b}`);
     }
-    assert.notEqual(left.value, right.value);
-    assert.equal(q.answer, Math.max(left.value, right.value));
-    assert.ok(q.options.includes(Math.min(left.value, right.value)), 'den minste verdien skal også være et svarkort');
+    assert.equal(q.answer, left.value < right.value ? '<' : left.value > right.value ? '>' : '=');
+    assert.deepEqual(q.options.map(o => o.value), ['<', '=', '>']);
+    assert.ok(q.options.every(o => typeof o.spoken === 'string'));
+    assert.ok(q.prompt.includes('□'));
   } else if (q.kind === 'area') {
     assert.equal(q.answer, q.model.width * q.model.height);
   } else if (q.kind === 'coordinate') {
@@ -82,7 +84,7 @@ test('riktig gir 3 totalt, feil gir 1; samme oppgave kan ikke belønnes to gange
   assert.equal(state.balance, 3); assert.equal(state.earned, 3);
   assert.equal(G.answer(state, state.current.answer), null); assert.equal(state.balance, 3);
   state.current = G.question('minus');
-  assert.deepEqual(G.answer(state, state.current.options.find(v => v !== state.current.answer)), { correct: false, points: 1 });
+  assert.deepEqual(G.answer(state, state.current.options.find(o => o.value !== state.current.answer).value), { correct: false, points: 1 });
   assert.equal(state.balance, 4); assert.equal(state.round.done, 2); assert.equal(state.round.correct, 1);
 });
 
@@ -131,7 +133,7 @@ function attempt(state, skill, correct = true, hint = false, overrides = {}) {
   state.current = G.generate(skill, state.mastery[skill].level);
   Object.assign(state.current.meta, { adaptive: true }, overrides);
   if (hint) G.useHint(state);
-  return G.answer(state, correct ? state.current.answer : state.current.options.find(n => n !== state.current.answer));
+  return G.answer(state, correct ? state.current.answer : state.current.options.find(o => o.value !== state.current.answer).value);
 }
 
 test('åtte observasjoner og minst sju riktige uten hint øker bare den aktuelle ferdigheten', () => {
@@ -199,12 +201,45 @@ test('et lagret trinn over ferdighetens maks klippes i stedet for å nullstilles
 test('versjon 1 migreres uten tap av stjerner, utstyr, navn eller aktiv runde', () => {
   const old = {version:1,balance:21,earned:30,answered:12,correct:9,name:'Stella',owned:['bow'],equipped:{head:'bow'},difficulty:'hard',topic:'plus',round:{done:2,correct:1,earned:4},current:{type:'plus',title:'Hvor mange?',prompt:'8 + 5',answer:13,options:[12,13,14,15],explanation:'8 + 5 = 13.',hint:'Tell videre.',selected:13}};
   const s = G.restore(old);
-  for (const key of ['balance','earned','answered','correct','name','owned','equipped','topic','round','current']) assert.deepEqual(s[key], old[key]);
+  for (const key of ['balance','earned','answered','correct','name','owned','equipped','topic','round']) assert.deepEqual(s[key], old[key]);
+  assert.deepEqual(s.current, { ...old.current, options: old.current.options.map(v => G.option(v)) });
   assert.equal(s.version, 2); assert.equal(s.difficulty, 'auto');
   assert.equal(G.answer(s,13), null); assert.equal(s.balance,21);
   const awaiting = G.restore({...old,current:{...old.current,selected:undefined}});
   assert.equal(G.answer(awaiting,13).points,3);
   assert.equal(awaiting.mastery.plus.seen,0);
+});
+
+test('sammenligning bruker alle tre tegnene, og like sider forekommer på hvert trinn', () => {
+  for (let level = 1; level <= G.SKILLS.compare.max; level++) {
+    const count = { '<': 0, '=': 0, '>': 0 }, ops = new Set();
+    for (let i = 0; i < 600; i++) { const q = G.generate('compare', level); count[q.answer]++; ops.add(q.model.left.op); ops.add(q.model.right.op); }
+    for (const symbol of ['<', '=', '>']) assert.ok(count[symbol] >= 60, `trinn ${level}: ${symbol} forekommer for sjelden (${count[symbol]})`);
+    if (level === 1) assert.deepEqual([...ops], [null]); else assert.ok(!ops.has(null));
+    assert.equal(ops.has('×'), level === G.SKILLS.compare.max);
+  }
+});
+
+test('svar med tegn gir poeng, avviser tall, og overlever gjenåpning med opplest tekst', () => {
+  const s = G.fresh(); s.current = G.generate('compare', 2);
+  assert.equal(G.answer(s, 5), null); assert.equal(G.answer(s, 'x'), null);
+  const restored = G.restore(JSON.parse(JSON.stringify(s)));
+  assert.deepEqual(restored, s);
+  assert.equal(restored.current.options.find(o => o.value === '<').spoken, 'mindre enn');
+  assert.deepEqual(G.answer(restored, restored.current.answer), { correct: true, points: 3 });
+  assert.equal(restored.current.selected, restored.current.answer);
+  const again = G.restore(JSON.parse(JSON.stringify(restored)));
+  assert.equal(again.current.selected, restored.current.answer); assert.equal(G.answer(again, again.current.answer), null);
+});
+
+test('lagring der svarkortene bare var tall, oppgraderes til kort med tekst', () => {
+  const s = G.fresh(); s.current = G.generate('minus', 2);
+  const raw = JSON.parse(JSON.stringify(s)); raw.current.options = s.current.options.map(o => o.value);
+  const restored = G.restore(raw);
+  assert.deepEqual(restored.current.options, s.current.options);
+  assert.deepEqual(G.answer(restored, restored.current.answer), { correct: true, points: 3 });
+  const junk = JSON.parse(JSON.stringify(s)); junk.current.options = [{ value: 1, label: 'x' }, { value: 1, label: 'y' }, { value: 2 }, 'z'];
+  assert.equal(G.restore(junk).current, null);
 });
 
 test('oppgavemetadata skiller tierovergang fra større tall uten overgang', () => {

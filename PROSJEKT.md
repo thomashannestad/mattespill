@@ -2,7 +2,7 @@
 
 ## Hva vi lager
 
-Enhjørningsdalen er et lite mattespill på norsk for et barn rundt åtte år, først og fremst til øving på matematikkstoff som møter eleven på 3. trinn. Barnet løser korte oppgaver ved å velge ett av fire svar. Riktig svar gir tre stjerner, og et forsøk gir én stjerne. Stjernene kan brukes i en butikk til å pynte og utvikle en enhjørning.
+Enhjørningsdalen er et lite mattespill på norsk for et barn rundt åtte år, først og fremst til øving på matematikkstoff som møter eleven på 3. trinn. Barnet løser korte oppgaver ved å velge ett av svarkortene. Kortene viser tall, eller tegn der oppgaven handler om å sammenligne. Riktig svar gir tre stjerner, og et forsøk gir én stjerne. Stjernene kan brukes i en butikk til å pynte og utvikle en enhjørning.
 
 Spillet skal gjøre mengdetrening lystbetont og oversiktlig. Det er ingen tidtaking, konto eller straff for feil svar. Oppgavene viser hint og forklaring, og barnet kan prøve igjen i nye runder.
 
@@ -28,7 +28,7 @@ Hver oppgave har en ferdighet og et skjult vanskelighetstrinn. Spillet kan velge
 | Dobling og halvering | Doble et tall eller dele et partall i to like deler |
 | Åpne regnestykker | Finne det ukjente tallet i addisjon eller subtraksjon |
 | Multiplikasjon og deling | Regne med like store grupper eller dele en mengde likt |
-| Sammenligning | Regne ut to uttrykk og velge det største |
+| Sammenligning | Sette riktig tegn (<, = eller >) mellom to tall eller to uttrykk |
 | Areal | Telle enhetsruter i et rektangel |
 | Koordinater | Lese av vannrett eller loddrett plassering av et punkt i et rutenett |
 | Diagrammer | Lese av en søyle eller summere søylene i et lite blomsterdiagram |

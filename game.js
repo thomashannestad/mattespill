@@ -34,10 +34,12 @@
   const LEVELS = [{ at: 0, name: 'Liten drømmer' }, { at: 24, name: 'Engvenn' }, { at: 60, name: 'Stjernevenn' }, { at: 120, name: 'Magisk følgesvenn' }, { at: 210, name: 'Eventyrmester' }];
   const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
   const shuffle = values => { const a = [...values]; for (let i = a.length - 1; i > 0; i--) { const j = rand(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-  function choices(answer, step = 1, max = Infinity, include = []) {
-    const values = new Set([answer, ...include]);
+  // Et svarkort har en verdi (tall eller tegn), en tekst som vises, og eventuelt en tekst for opplesning.
+  const option = (value, label = String(value), spoken) => spoken ? { value, label, spoken } : { value, label };
+  function choices(answer, step = 1, max = Infinity) {
+    const values = new Set([answer]);
     for (const delta of shuffle([-3, -2, -1, 1, 2, 3])) { if (answer + delta * step >= 0 && answer + delta * step <= max) values.add(answer + delta * step); if (values.size === 4) break; }
-    return shuffle([...values]);
+    return shuffle([...values]).map(value => option(value));
   }
   function generate(skill, difficulty) {
     const n = Math.max(1, Math.min(SKILLS[skill].max, difficulty));
@@ -123,23 +125,38 @@
       else { q.answer = each; q.title = 'Del likt'; q.prompt = `Del ${total} bær likt mellom ${groups} kurver. Hvor mange får hver kurv?`; q.hint = `Del bærene i ${groups} like store grupper.`; q.explanation = `${total} delt i ${groups} like grupper gir ${each} i hver kurv.`; }
       q.meta.features = [skill === 'multiply' ? 'equal-groups' : 'equal-sharing', `groups-${groups}`];
     } else if (skill === 'compare') {
-      const ops = n < 3 ? ['+', '−'] : ['+', '−', '×'];
-      const evaluate = ({ a, b, op }) => op === '+' ? a + b : op === '−' ? a - b : a * b;
-      // Subtraksjon gir aldri negativt svar, og gangestykker holder seg innenfor gangetabellen til 10.
+      // Kompetansemål 8: likhets- og ulikhetstegn som relasjonelle symboler. Svaret er et tegn, ikke et tall.
+      const ops = n === 1 ? [] : n < 4 ? ['+', '−'] : ['+', '−', '×'];
+      const limit = n <= 2 ? 20 : 50;
+      const side = (a, b, op) => ({ a, b, op, value: op === '+' ? a + b : op === '−' ? a - b : op === '×' ? a * b : a });
       const make = () => {
+        if (!ops.length) return side(rand(0, limit), null, null);
         const op = ops[rand(0, ops.length - 1)];
-        let a = op === '×' ? rand(2, n === 3 ? 5 : 10) : rand(2, n === 1 ? 9 : n === 2 ? 20 : 50);
-        let b = op === '×' ? rand(2, n === 3 ? 5 : 10) : rand(1, n === 1 ? 9 : n === 2 ? 20 : 10);
+        if (op === '×') return side(rand(2, 10), rand(2, 10), op);
+        let a = rand(2, n === 2 ? 12 : limit), b = rand(1, n === 2 ? 8 : 10);
         if (op === '−' && b > a) [a, b] = [b, a];
-        const side = { a, b, op }; side.value = evaluate(side); return side;
+        return side(a, b, op);
       };
-      const left = make(); let right = make();
-      for (let attempt = 0; attempt < 20 && left.value === right.value; attempt++) right = make();
-      if (left.value === right.value) { right.a += 1; right.value = evaluate(right); }
-      q.answer = Math.max(left.value, right.value); q.kind = 'compare'; q.model = { left, right }; q.title = 'Sammenlign regnestykkene'; q.prompt = 'Regn ut begge. Hvilket svar er størst?';
-      q.hint = 'Regn ut ett uttrykk om gangen, og sammenlign svarene.';
-      q.explanation = `${left.a} ${left.op} ${left.b} = ${left.value}, og ${right.a} ${right.op} ${right.b} = ${right.value}. ${q.answer} er størst.`;
-      q.meta.features = [ops.includes('×') ? 'multiplication' : 'addition-subtraction', 'compare-values'];
+      // Lager en høyreside med samme verdi som venstresiden, så = blir et ekte alternativ.
+      const matching = value => {
+        if (!ops.length) return side(value, null, null);
+        const factors = ops.includes('×') ? [2, 3, 4, 5, 6, 7, 8, 9, 10].filter(d => value % d === 0 && value / d >= 2 && value / d <= 10) : [];
+        if (factors.length && rand(0, 1)) { const d = factors[rand(0, factors.length - 1)]; return side(value / d, d, '×'); }
+        if (value >= 2 && rand(0, 1)) { const b = rand(1, Math.min(value - 1, 10)); return side(value - b, b, '+'); }
+        const b = rand(1, 10); return side(value + b, b, '−');
+      };
+      const equal = rand(0, 3) === 0;
+      const left = make(); let right = equal ? matching(left.value) : make();
+      for (let attempt = 0; attempt < 20 && !equal && left.value === right.value; attempt++) right = make();
+      if (!equal && left.value === right.value) right = side(right.a + 1, right.b, right.op);
+      const symbol = left.value < right.value ? '<' : left.value > right.value ? '>' : '=';
+      const expr = x => x.op ? `${x.a} ${x.op} ${x.b}` : `${x.a}`;
+      q.answer = symbol; q.kind = 'compare'; q.model = { left, right }; q.title = 'Hvilket tegn passer?'; q.prompt = `${expr(left)} □ ${expr(right)}`;
+      q.options = [['<', 'mindre enn'], ['=', 'er lik'], ['>', 'større enn']].map(([value, spoken]) => option(value, value, spoken));
+      q.hint = `${ops.length ? 'Regn ut begge sider først. ' : ''}Tegnet gaper alltid mot det største tallet. Er sidene like, passer =.`;
+      const values = ops.length ? `${expr(left)} = ${left.value} og ${expr(right)} = ${right.value}. ` : '';
+      q.explanation = values + (symbol === '=' ? 'Begge sider er like store, så tegnet er =.' : `${left.value} er ${symbol === '<' ? 'mindre enn' : 'større enn'} ${right.value}, så tegnet er ${symbol}.`);
+      q.meta.features = [symbol === '=' ? 'equal-sides' : 'unequal-sides', ops.includes('×') ? 'multiplication' : ops.length ? 'addition-subtraction' : 'numbers'];
     } else if (skill === 'area') {
       const width = rand(2, n === 1 ? 3 : n === 2 ? 4 : n === 3 ? 5 : 6), height = rand(2, n === 1 ? 3 : n === 2 ? 4 : n === 3 ? 5 : 6);
       q.answer = width * height; q.kind = 'area'; q.model = { width, height }; q.title = 'Tell rutene'; q.prompt = 'Hvor mange ruter dekker teppet?';
@@ -167,7 +184,7 @@
       }
       q.meta.features = [n === 3 ? 'sum-bars' : 'read-bar'];
     }
-    q.options = choices(q.answer, q.kind === 'place' && n > 1 ? 10 : 1, q.kind === 'tenFrame' ? 10 : Infinity, q.kind === 'compare' ? [Math.min(q.model.left.value, q.model.right.value)] : []);
+    if (!q.options) q.options = choices(q.answer, q.kind === 'place' && n > 1 ? 10 : 1, q.kind === 'tenFrame' ? 10 : Infinity);
     return q;
   }
   function skillsFor(topic) { return Object.keys(SKILLS).filter(s => topic === 'mixed' || SKILLS[s].topic === topic); }
@@ -215,8 +232,13 @@
   function fresh() { return { version: 2, balance: 0, earned: 0, answered: 0, correct: 0, name: 'Luna', owned: [], equipped: {}, difficulty: 'auto', topic: 'mixed', mastery: profiles(), round: { done: 0, correct: 0, earned: 0 }, current: null }; }
   function level(earned) { let index = 0; LEVELS.forEach((l, i) => { if (earned >= l.at) index = i; }); return { ...LEVELS[index], index, next: LEVELS[index + 1] || null }; }
   const integer = (value, min, max) => Number.isInteger(value) && value >= min && value <= max;
+  const shortText = (value, max) => typeof value === 'string' && value.length >= 1 && value.length <= max;
+  const validValue = value => integer(value, 0, 1100) || shortText(value, 24);
+  const validOption = o => o && typeof o === 'object' && validValue(o.value) && shortText(o.label, 24) && (o.spoken === undefined || shortText(o.spoken, 40));
   function validQuestion(q) {
-    if (!q || q.type === 'mixed' || !Object.hasOwn(TOPICS, q.type) || !['title', 'prompt', 'explanation', 'hint'].every(k => typeof q[k] === 'string') || !integer(q.answer, 0, 1000) || !Array.isArray(q.options) || q.options.length !== 4 || new Set(q.options).size !== 4 || !q.options.includes(q.answer) || !q.options.every(n => integer(n, 0, 1100)) || (q.selected !== undefined && !q.options.includes(q.selected))) return false;
+    if (!q || q.type === 'mixed' || !Object.hasOwn(TOPICS, q.type) || !['title', 'prompt', 'explanation', 'hint'].every(k => typeof q[k] === 'string') || !validValue(q.answer)) return false;
+    if (!Array.isArray(q.options) || q.options.length < 2 || q.options.length > 4 || !q.options.every(validOption) || new Set(q.options.map(o => o.value)).size !== q.options.length || !q.options.some(o => o.value === q.answer) || (q.selected !== undefined && !q.options.some(o => o.value === q.selected))) return false;
+    if (q.kind === 'compare' && (!q.model || !['<', '=', '>'].includes(q.answer) || ![q.model.left, q.model.right].every(x => x && integer(x.value, 0, 1000)))) return false;
     if (q.type === 'chart' && (!Array.isArray(q.bars) || q.bars.length !== 4 || !q.bars.every(b => typeof b.label === 'string' && integer(b.value, 1, 10)))) return false;
     if (q.type === 'ten' || q.type === 'nextTen' || q.kind === 'tenFrame') {
       if (!q.model || !integer(q.model.a, 0, 999) || !integer(q.model.target, 10, 1000) || q.model.target % 10 !== 0 || q.answer !== q.model.target - q.model.a || !integer(q.answer, 0, 10)) return false;
@@ -243,8 +265,10 @@
         recent: Array.isArray(p.recent) ? p.recent.filter(validResult).slice(-8).map(r => ({correct:r.correct,hint:r.hint})) : [],
         history: Array.isArray(p.history) ? p.history.filter(r => validResult(r) && integer(r.level, 1, SKILLS[skill].max) && ['current','review','challenge'].includes(r.role) && typeof r.prompt === 'string').slice(-30).map(r => ({correct:r.correct,hint:r.hint,level:r.level,role:r.role,prompt:r.prompt})) : [] };
     }
-    if (validQuestion(raw.current)) {
-      state.current = { ...raw.current };
+    // Lagringer fra før tegn-svar hadde bare tall som svarkort.
+    const current = raw.current && Array.isArray(raw.current.options) && raw.current.options.every(Number.isInteger) ? { ...raw.current, options: raw.current.options.map(value => option(value)) } : raw.current;
+    if (validQuestion(current)) {
+      state.current = { ...current, options: current.options.map(o => option(o.value, o.label, o.spoken)) };
       const m = state.current.meta;
       if (raw.version === 1 || !m || !Object.hasOwn(SKILLS, m.skill) || SKILLS[m.skill].topic !== state.current.type || !integer(m.level, 1, SKILLS[m.skill].max) || !['current','review','challenge'].includes(m.role)) delete state.current.meta;
     }
@@ -252,7 +276,7 @@
   }
   function answer(state, value) {
     const q = state.current;
-    if (!q || q.selected !== undefined || !q.options.includes(value) || state.round.done >= 8) return null;
+    if (!q || q.selected !== undefined || !q.options.some(o => o.value === value) || state.round.done >= 8) return null;
     const correct = value === q.answer, points = correct ? 3 : 1;
     q.selected = value; state.balance += points; state.earned += points; state.answered++; state.correct += Number(correct);
     state.round.done++; state.round.correct += Number(correct); state.round.earned += points;
@@ -265,6 +289,6 @@
     if (state.equipped[item.slot] === id) delete state.equipped[item.slot]; else state.equipped[item.slot] = id;
     return true;
   }
-  const api = { TOPICS, SKILLS, ITEMS, LEVELS, question, generate, nextQuestion, useHint, fresh, restore, level, answer, buyOrEquip };
+  const api = { TOPICS, SKILLS, ITEMS, LEVELS, option, question, generate, nextQuestion, useHint, fresh, restore, level, answer, buyOrEquip };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.MathGame = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

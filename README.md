@@ -1,6 +1,6 @@
 # Enhjørningsdalen
 
-Et lite mattespill på norsk, med fire svarkort og en enhjørning som vokser og kan få nytt utstyr.
+Et lite mattespill på norsk, med svarkort og en enhjørning som vokser og kan få nytt utstyr.
 
 Se [PROSJEKT.md](PROSJEKT.md) for prosjektmål, faglig grunnlag, oppgaveoversikt, tilpasningsregler og videre arbeid.
 
@@ -40,7 +40,7 @@ Ikonlenkene følger [Apples veiledning for hjemskjermikoner](https://developer.a
 
 ## Slik spiller dere
 
-- Velg et av de fire svarene. Riktig svar gir **3 stjerner totalt**, et annet svar gir **1 stjerne** for innsatsen. Bare første svar på oppgaven gir poeng.
+- Velg ett av svarkortene. De fleste oppgaver har fire tall, mens sammenligning har tegnene <, = og >. Riktig svar gir **3 stjerner totalt**, et annet svar gir **1 stjerne** for innsatsen. Bare første svar på oppgaven gir poeng.
 - Et hint er alltid gratis. Ved feil vises riktig svar med en kort forklaring. Det er ingen tidtaking.
 - Hver runde har åtte oppgaver. Spill en ny runde eller besøk butikken når runden er ferdig.
 - Under **Min enhjørning** kan dere velge navn, kjøpe utstyr og ta utstyret av og på. Butikken er delt i sammenleggbare grupper for pynt, manefarger, hover, halstilbehør, vinger og eventyrsteder. Ett utstyr per kategori kan brukes om gangen. Det dere har kjøpt, beholdes.
@@ -65,7 +65,7 @@ Standard er nå **Tilpass til meg · automatisk**. Tema velges over oppgaven. Fa
 | Åpne regnestykker | Manglende tall sist i en addisjon | Ukjent tall først eller sist, også i subtraksjon |
 | Multiplikasjon | Like grupper med 2–5 i hver | Flere grupper og større tall |
 | Deling | Dele bær likt mellom kurver | Flere grupper og større tall; divisjon henger sammen med multiplikasjon |
-| Sammenligne | Regn ut to små uttrykk og velg det største svaret; begge svarene er blant kortene | Større tall, deretter gangestykker innenfor gangetabellen til 10 |
+| Sammenligne | Sett riktig tegn (<, = eller >) mellom to tall opp til 20 | Uttrykk med pluss og minus, tall til 50, til slutt gangestykker innenfor gangetabellen. Omtrent hver fjerde oppgave har like sider |
 | Areal | Rektangel dekket av enhetsruter | Større rutenett; telle rader og kolonner |
 | Koordinater | Finne et punkt og lese vannrett retning | Lese vannrett og loddrett retning på større rutenett |
 | Diagrammer | Lese av søyler med 1–5 blomster | Søyler til 10, deretter summere fire søyler |
@@ -94,7 +94,7 @@ Spillet lagrer automatisk stjerner, navn, utstyr, innstillinger, mestring per fe
 
 Bruk samme nettleser og samme adresse hver gang. Direkte åpning av filen og serveradressen har separate lagringer. Fremgangen synkroniseres ikke mellom enheter og kan forsvinne hvis nettleserdata slettes, i privat modus, eller hvis filen flyttes. Hvis lagring blokkeres, vises en melding i spillet.
 
-Lagringsformatet er versjon 2, med samme lagringsnøkkel som før. Versjon 1 oppgraderes automatisk: stjerner, utstyr, navn, samlet fremgang og aktiv oppgave/runde bevares. Automatisk tilpasning slås på, og de nye mestringsprofilene starter forsiktig. En gammel oppgave gir vanlig belønning, men påvirker ikke den nye faglige profilen. Allerede besvarte oppgaver kan ikke gi poeng på nytt.
+Lagringsformatet er versjon 2, med samme lagringsnøkkel som før. Svarkort lagres som objekter med verdi og tekst, slik at svaret kan være et tall eller et tegn. Lagringer der kortene bare var tall, oppgraderes automatisk. Versjon 1 oppgraderes automatisk: stjerner, utstyr, navn, samlet fremgang og aktiv oppgave/runde bevares. Automatisk tilpasning slås på, og de nye mestringsprofilene starter forsiktig. En gammel oppgave gir vanlig belønning, men påvirker ikke den nye faglige profilen. Allerede besvarte oppgaver kan ikke gi poeng på nytt.
 
 ## Videreutvikling og tester
 

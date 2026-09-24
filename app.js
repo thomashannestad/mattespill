@@ -99,29 +99,30 @@
     const { x, y, limit } = q.model;
     return `<div class="coordinate-model" role="img" aria-label="Rutenett med enhjørningen på et punkt"><div class="coordinate-plane"><div class="coordinate-y-numbers" style="height:${limit*32}px">${Array.from({length:limit},(_,i)=>`<span>${limit-i}</span>`).join('')}</div><div class="coordinate-grid" style="--grid-size:${limit}">${Array.from({length:limit*limit},(_,i)=>`<i class="${i % limit === x-1 && Math.floor(i/limit) === limit-y ? 'marked':''}" aria-hidden="true">${i % limit === x-1 && Math.floor(i/limit) === limit-y ? '🦄':''}</i>`).join('')}</div></div><div class="coordinate-numbers" style="width:${limit*32}px">${Array.from({length:limit},(_,i)=>`<span>${i+1}</span>`).join('')}</div><span class="axis-caption">x · bortover &nbsp;&nbsp; y · oppover</span></div>`;
   }
-  function compareVisual(q, solved = false) {
-    const expr = item => `${item.a} ${item.op} ${item.b}`;
-    return `<div class="compare-model"><span>${escape(expr(q.model.left))}${solved?` = ${q.model.left.value}`:''}</span><b aria-hidden="true">og</b><span>${escape(expr(q.model.right))}${solved?` = ${q.model.right.value}`:''}</span></div>`;
+  function compareVisual(q) {
+    const expr = x => x.op ? `${x.a} ${x.op} ${x.b}` : `${x.a}`, { left, right } = q.model;
+    const spoken = q.options.find(o => o.value === q.answer)?.spoken || q.answer, relation = q.answer === '=' ? 'er lik' : `er ${spoken}`;
+    return `<div class="compare-model" role="img" aria-label="${escape(expr(left))} ${escape(relation)} ${escape(expr(right))}"><span>${escape(expr(left))}${left.op?` = ${left.value}`:''}</span><b class="compare-sign" aria-hidden="true">${escape(q.answer)}</b><span>${escape(expr(right))}${right.op?` = ${right.value}`:''}</span></div>`;
   }
   function learningVisual(q, solved = false) {
     if (q.kind === 'tenFrame') return tenFrame(q,solved);
     if (q.kind === 'groups') return groupsVisual(q,solved);
     if (q.kind === 'area') return areaVisual(q);
     if (q.kind === 'coordinate') return coordinateVisual(q);
-    if (q.kind === 'compare') return compareVisual(q,solved);
+    if (q.kind === 'compare') return compareVisual(q);
     return stepsVisual(q,solved);
   }
   function questionCard() {
     const q = state.current, answered = q.selected !== undefined, correct = q.selected === q.answer;
-    const showModel = !answered && ((q.showSupport || q.hintOpen) && (q.kind === 'tenFrame' || q.steps) || ['groups','area','coordinate','compare'].includes(q.kind));
+    const showModel = !answered && ((q.showSupport || q.hintOpen) && (q.kind === 'tenFrame' || q.steps) || ['groups','area','coordinate'].includes(q.kind));
     return `<section class="question-card ${q.type === 'chart' ? 'chart-card' : ''} ${q.kind==='tenFrame'?'ten-card':''}" aria-label="Matteoppgave">
       <div class="round-header"><span>Oppgave ${Math.min(state.round.done+(answered?0:1),8)} av 8</span><strong>${G.TOPICS[q.type]}</strong></div>
       <div class="round-dots" aria-hidden="true">${Array.from({length:8},(_,i)=>`<span class="${i<state.round.done?'done':i===state.round.done?'current':''}"></span>`).join('')}</div>
       <div class="question-content"><h2 id="question-title" tabindex="-1">${escape(q.title)}</h2>
-      ${q.kind==='chart'?chart(q)+`<p class="chart-question">${escape(q.prompt)}</p>`:q.kind==='compare'?`<p class="chart-question">${escape(q.prompt)}</p>${compareVisual(q)}`:['groups','doubleHalf','area','coordinate'].includes(q.kind)?`<p class="question-text">${escape(q.prompt)}</p>`:`<p class="equation ${q.kind==='place'?'place':q.kind==='tenFrame'||q.kind==='equation'?'missing-number':q.kind==='sequence'?'sequence':''}">${escape(q.prompt)}${q.type==='plus'||q.type==='minus'?' = ?':''}</p>`}
-      ${showModel&&q.kind!=='compare'?learningVisual(q):''}</div>
+      ${q.kind==='chart'?chart(q)+`<p class="chart-question">${escape(q.prompt)}</p>`:['groups','doubleHalf','area','coordinate'].includes(q.kind)?`<p class="question-text">${escape(q.prompt)}</p>`:`<p class="equation ${q.kind==='place'?'place':['tenFrame','equation','compare'].includes(q.kind)?'missing-number':q.kind==='sequence'?'sequence':''}">${escape(q.prompt)}${q.type==='plus'||q.type==='minus'?' = ?':''}</p>`}
+      ${showModel?learningVisual(q):''}</div>
       <p class="answer-instruction">${answered?'Riktig svar er markert med ✓':'Trykk på svaret du tror er riktig'}</p>
-      <div class="answers">${q.options.map((value,i)=>`<button class="answer ${answered?value===q.answer?'correct':value===q.selected?'incorrect':'muted':''}" data-answer="${value}" ${answered?'disabled':''} aria-label="${value}${answered&&value===q.answer?', riktig svar':''}"><span class="answer-key" aria-hidden="true">${i+1}</span>${value}${answered&&value===q.answer?'<span class="mark" aria-hidden="true">✓</span>':''}</button>`).join('')}</div>
+      <div class="answers ${q.options.length===3?'count-3':''}">${q.options.map((o,i)=>`<button class="answer ${answered?o.value===q.answer?'correct':o.value===q.selected?'incorrect':'muted':''} ${typeof o.value==='string'?'symbol':''}" data-option="${i}" ${answered?'disabled':''} aria-label="${escape(o.spoken||o.label)}${answered&&o.value===q.answer?', riktig svar':''}"><span class="answer-key" aria-hidden="true">${i+1}</span>${escape(o.label)}${answered&&o.value===q.answer?'<span class="mark" aria-hidden="true">✓</span>':''}</button>`).join('')}</div>
       ${answered?`<div class="feedback ${correct?'':'try'}" role="status"><div class="feedback-top"><b>${correct?'Det stemmer!':'Takk for at du prøvde!'}</b><span class="point-award">+${correct?3:1} ★</span></div><p>${escape(q.explanation)}</p>${learningVisual(q,true)}<button class="primary-button" id="next-question">${state.round.done===8?'Se hvordan det gikk':'Neste oppgave'} <span aria-hidden="true">→</span></button></div>`:`<div class="help-row"><button class="text-button" id="hint-button" aria-expanded="${q.hintOpen?'true':'false'}" aria-controls="hint">${q.hintOpen?'Skjul hint':'Jeg vil ha et hint'}</button><span>Ingen hast. Du har god tid.</span></div><p class="hint" id="hint" ${q.hintOpen?'':'hidden'}>${escape(q.hint)}</p>`}
     </section>`;
   }
@@ -168,7 +169,7 @@
   function bind() {
     document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
     document.querySelectorAll('[data-shop-group]').forEach(group=>group.addEventListener('toggle',()=>{if(group.open)shopOpenGroups.add(group.dataset.shopGroup);else shopOpenGroups.delete(group.dataset.shopGroup);}));
-    document.querySelectorAll('[data-answer]').forEach(b=>b.addEventListener('click',()=>respond(Number(b.dataset.answer))));
+    document.querySelectorAll('[data-option]').forEach(b=>b.addEventListener('click',()=>respond(state.current.options[Number(b.dataset.option)].value)));
     $('#next-question')?.addEventListener('click',nextQuestion);
     $('#new-round')?.addEventListener('click',()=>{state.round={done:0,correct:0,earned:0};state.current=null;save();render();$('#question-title')?.focus({preventScroll:true});});
     $('#topic')?.addEventListener('change',e=>{state.topic=e.target.value;if(state.current && state.current.selected===undefined) state.current=G.nextQuestion(state);save();render();});
@@ -184,6 +185,7 @@
   $('#reset-button').addEventListener('click',()=>{$('#reset-confirm').hidden=false;$('#reset-no').focus();});
   $('#reset-no').addEventListener('click',()=>{$('#reset-confirm').hidden=true;$('#reset-button').focus();});
   $('#reset-yes').addEventListener('click',()=>{state=G.fresh();view='play';save();$('#settings-dialog').close();render();notify('Et nytt eventyr venter på deg og Luna.');});
-  document.addEventListener('keydown',e=>{if(e.repeat||e.altKey||e.ctrlKey||e.metaKey||view!=='play'||$('#settings-dialog').open||['INPUT','SELECT','TEXTAREA','BUTTON'].includes(e.target.tagName)) return;if(/^[1-4]$/.test(e.key)&&state.current?.selected===undefined){e.preventDefault();respond(state.current.options[Number(e.key)-1]);}});
+  // Tastene 1–4 velger kort etter plassering; tegnene <, = og > velger kortet med samme tegn.
+  document.addEventListener('keydown',e=>{if(e.repeat||e.altKey||e.ctrlKey||e.metaKey||view!=='play'||$('#settings-dialog').open||['INPUT','SELECT','TEXTAREA','BUTTON'].includes(e.target.tagName)||!state.current||state.current.selected!==undefined) return;const chosen=/^[1-4]$/.test(e.key)?state.current.options[Number(e.key)-1]:state.current.options.find(o=>o.value===e.key);if(chosen){e.preventDefault();respond(chosen.value);}});
   save(); render();
 })();
