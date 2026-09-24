@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ecf4ed">
+  <meta name="description" content="Løs små matteoppgaver og skap din egen magiske enhjørning.">
+  <title>Enhjørningsdalen – et lite matteeventyr</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23e5eeda'/%3E%3Cpath d='m20 5 4 11 11 4-11 4-4 11-4-11L5 20l11-4Z' fill='%23755997'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css?v=2">
+  <script src="game.js?v=2" defer></script>
+  <script src="app.js?v=2" defer></script>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="Enhjørningsdalen, hjem"><span class="brand-mark" aria-hidden="true">✦</span><span>Enhjørningsdalen<small>Et lite matteeventyr</small></span></a>
+      <div class="header-actions"><div class="wallet" aria-label="Stjerner du kan bruke"><span aria-hidden="true">★</span><b id="balance">0</b><span>stjerner</span></div><button class="icon-button" id="settings-button" aria-label="Innstillinger">⚙</button></div>
+    </header>
+    <nav class="navigation" aria-label="Spillmeny"><button class="nav-button active" id="play-tab" aria-current="page"><span aria-hidden="true">✎</span> Spill og lær</button><button class="nav-button" id="unicorn-tab"><span aria-hidden="true">✧</span> Min enhjørning</button><span class="save-note" id="save-note">Lagres på denne enheten</span></nav>
+    <main id="main"></main>
+    <footer>Små oppgaver. Store eventyr. <span aria-hidden="true">✦</span> I ditt eget tempo.</footer>
+  </div>
+  <div id="toast" role="status" class="toast" hidden></div>
+  <div id="confetti" class="confetti" aria-hidden="true"></div>
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form method="dialog"><button class="dialog-close icon-button" aria-label="Lukk innstillinger">×</button></form>
+    <h2 id="settings-title">Et passe stort eventyr</h2>
+    <p>Velg oppgaver som passer. Endringer gjelder fra neste oppgave.</p>
+    <label for="difficulty">Hvordan velges oppgavene?</label><select id="difficulty"><option value="auto">Tilpass til meg · automatisk</option><option value="easy">Fast nivå · en rolig start</option><option value="normal">Fast nivå · passe utfordring</option><option value="hard">Fast nivå · litt vanskeligere</option></select>
+    <p class="settings-help" id="adaptation-help">Automatisk tilpasning følger hvert tema for seg. Oppgavene blir gradvis vanskeligere når du mestrer dem, og enklere når du trenger det. Du har alltid god tid. Hint er gratis.</p>
+    <p class="settings-help">Talloppgaver og diagrammer er inspirert av ukens lekse. Ingen tidtaking, og ingen stjerner blir trukket for feil.</p>
+    <div class="rule-box"><b>Slik får du stjerner</b><p>Riktig svar: 3 stjerner totalt.<br>Et annet svar: 1 stjerne for innsatsen.</p><p>Alle stjernene du tjener teller mot neste nivå, også når du bruker dem i butikken.</p></div>
+    <p class="settings-help">Fremgangen lagres bare i denne nettleseren. Den deles ikke mellom enheter og kan forsvinne hvis nettleserdata slettes.</p>
+    <button id="reset-button" class="text-button danger">Start helt på nytt …</button>
+    <div id="reset-confirm" hidden><p>Vil du slette alle stjerner, alt utstyr og all fremgang?</p><button id="reset-yes" class="danger-button">Ja, slett fremgangen</button><button id="reset-no" class="text-button">Behold eventyret</button></div>
+  </dialog>
+</body>
+</html>
