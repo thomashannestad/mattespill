@@ -101,8 +101,8 @@
     const { limit } = q.model, moving = q.kind === 'gridMove';
     const here = moving ? (solved ? q.model.end : q.model.start) : q.model, from = moving && solved ? q.model.start : null;
     const cell = i => { const x = i % limit + 1, y = limit - Math.floor(i / limit); return x === here.x && y === here.y ? '<i class="marked" aria-hidden="true">🦄</i>' : from && x === from.x && y === from.y ? '<i class="start" aria-hidden="true">✿</i>' : '<i aria-hidden="true"></i>'; };
-    const description = moving ? `Rutenett. Enhjørningen står på (${here.x}, ${here.y})${from ? `, og startet på (${from.x}, ${from.y})` : ''}` : 'Rutenett med enhjørningen på et punkt';
-    return `<div class="coordinate-model" role="img" aria-label="${description}"><div class="coordinate-plane"><div class="coordinate-y-numbers" style="height:${limit*32}px">${Array.from({length:limit},(_,i)=>`<span>${limit-i}</span>`).join('')}</div><div class="coordinate-grid" style="--grid-size:${limit}">${Array.from({length:limit*limit},(_,i)=>cell(i)).join('')}</div></div><div class="coordinate-numbers" style="width:${limit*32}px">${Array.from({length:limit},(_,i)=>`<span>${i+1}</span>`).join('')}</div><span class="axis-caption">x · bortover &nbsp;&nbsp; y · oppover</span></div>`;
+    const description = `Rutenett. Enhjørningen står på (${here.x}, ${here.y})${from ? `, og startet på (${from.x}, ${from.y})` : ''}`;
+    return `<div class="coordinate-model" role="img" aria-label="${description}"><div class="coordinate-plane"><div class="coordinate-y-numbers" style="height:${limit*32}px">${Array.from({length:limit},(_,i)=>`<span>${limit-i}</span>`).join('')}</div><div class="coordinate-grid" style="--grid-size:${limit}">${Array.from({length:limit*limit},(_,i)=>cell(i)).join('')}</div><div class="coordinate-numbers" style="width:${limit*32+2}px">${Array.from({length:limit},(_,i)=>`<span>${i+1}</span>`).join('')}</div></div><span class="axis-caption">x · bortover &nbsp;&nbsp; y · oppover</span></div>`;
   }
   function balanceVisual(q, solved = false) {
     const { form, left, right, unknown } = q.model, sum = side => side.reduce((total, w) => total + w, 0);

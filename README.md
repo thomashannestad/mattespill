@@ -105,5 +105,7 @@ Lagringsformatet er versjon 2, med samme lagringsnøkkel som før. Svarkort lagr
 Kjør testene med Node.js. GitHub Actions kjører dem også automatisk ved hver push:
 
 ```sh
-node --test game.test.cjs
+node --test *.test.cjs
 ```
+
+Kvalitetskontrollen i `question-quality.test.cjs` løser 64 000 oppgaver fra oppgaveteksten med en fast tilfeldig sekvens. Den dekker alle 16 ferdigheter på alle 64 vanskelighetstrinn, kontrollerer forklaringer og svaralternativer, og undersøker HTML/SVG-visningen av figurene. Testene bruker isolert lagring og endrer ikke spillerens fremgang. Dette er automatiske kontroller; de erstatter ikke utprøving med barnet eller på en fysisk enhet.

@@ -173,7 +173,8 @@
       const equal = rand(0, 3) === 0;
       const left = make(); let right = equal ? matching(left.value) : make();
       for (let attempt = 0; attempt < 20 && !equal && left.value === right.value; attempt++) right = make();
-      if (!equal && left.value === right.value) right = side(right.a + 1, right.b, right.op);
+      // Ved gjentatte like trekk lager vi en annen verdi uten å øke en faktor over 10.
+      if (!equal && left.value === right.value) right = matching(left.value === 0 ? 1 : left.value - 1);
       const symbol = left.value < right.value ? '<' : left.value > right.value ? '>' : '=';
       const expr = x => x.op ? `${x.a} ${x.op} ${x.b}` : `${x.a}`;
       q.answer = symbol; q.kind = 'compare'; q.model = { left, right }; q.title = 'Hvilket tegn passer?'; q.prompt = `${expr(left)} □ ${expr(right)}`;
@@ -190,7 +191,7 @@
     } else if (skill === 'coordinate') {
       const limit = n === 1 ? 4 : n === 2 ? 5 : 6, x = rand(1, limit), y = rand(1, limit), axis = n === 1 ? 'x' : n === 2 ? 'y' : (rand(0, 1) ? 'x' : 'y');
       q.answer = axis === 'x' ? x : y; q.kind = 'coordinate'; q.model = { x, y, axis, limit }; q.title = 'Finn punktet på rutenettet';
-      q.prompt = `Enhjørningen står på punktet. Hvilket tall viser ${axis === 'x' ? 'vannrett retning' : 'loddrett retning'}?`; q.hint = 'Les av fra null langs kanten: først bortover (x), så oppover (y).';
+      q.prompt = `Enhjørningen står på punktet. Hvilket tall viser ${axis === 'x' ? 'vannrett retning' : 'loddrett retning'}?`; q.hint = 'Tallene under rutenettet viser x (bortover). Tallene til venstre viser y (oppover).';
       q.explanation = `Punktet er (${x}, ${y}). ${axis === 'x' ? 'Vannrett' : 'Loddrett'} viser ${q.answer}.`;
       q.meta.features = [`read-${axis}-coordinate`, 'grid-point'];
     } else if (skill === 'gridMove') {
