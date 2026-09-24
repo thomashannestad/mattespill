@@ -41,3 +41,11 @@
 @keyframes flower-in{from{transform:scale(.55);opacity:0}to{transform:scale(1);opacity:1}}
 @media(max-width:700px){.equation:not(.place):not(.sequence):not(.missing-number){font-size:clamp(1.75rem,8vw,3.2rem)}.calculation-steps{gap:7px}.calculation-steps b{font-size:19px;min-width:39px}.ten-model{max-width:260px}}
 @media(prefers-reduced-motion:reduce){.ten-cell.added{animation:none}}
+
+/* Setningsoppgaver (deling, multiplikasjon, dobling, areal, koordinater) bruker tekststil, ikke regnestykke-skrift. */
+.question-text{font-size:21px;font-weight:600;line-height:1.45;margin:18px auto 12px;max-width:26em}
+/* Deling: haugen med bær i rader på ti, og tomme kurver, før svaret. */
+.flower-pile{display:grid;grid-template-columns:repeat(10,20px);gap:3px;width:max-content;max-width:100%;margin:0 auto 10px;padding:8px;border:1px solid #d8dfd1;background:#f5f7ed;border-radius:12px}
+.flower-pile i{font-style:normal;font-size:16px;line-height:1.2;color:#9c78b0}
+.flower-group.empty{min-width:92px;min-height:44px;border-style:dashed;border-color:#b9c4b0;background:#fffdfa}
+@media(max-width:700px){.question-text{font-size:19px}.flower-pile{grid-template-columns:repeat(10,18px)}.flower-pile i{font-size:14px}}

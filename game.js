@@ -34,8 +34,8 @@
   const LEVELS = [{ at: 0, name: 'Liten drømmer' }, { at: 24, name: 'Engvenn' }, { at: 60, name: 'Stjernevenn' }, { at: 120, name: 'Magisk følgesvenn' }, { at: 210, name: 'Eventyrmester' }];
   const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
   const shuffle = values => { const a = [...values]; for (let i = a.length - 1; i > 0; i--) { const j = rand(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-  function choices(answer, step = 1, max = Infinity) {
-    const values = new Set([answer]);
+  function choices(answer, step = 1, max = Infinity, include = []) {
+    const values = new Set([answer, ...include]);
     for (const delta of shuffle([-3, -2, -1, 1, 2, 3])) { if (answer + delta * step >= 0 && answer + delta * step <= max) values.add(answer + delta * step); if (values.size === 4) break; }
     return shuffle([...values]);
   }
@@ -124,13 +124,19 @@
       q.meta.features = [skill === 'multiply' ? 'equal-groups' : 'equal-sharing', `groups-${groups}`];
     } else if (skill === 'compare') {
       const ops = n < 3 ? ['+', '−'] : ['+', '−', '×'];
-      let left, right;
-      for (let attempt = 0; attempt < 20; attempt++) {
-        const make = () => { const op = ops[rand(0, ops.length - 1)], a = rand(2, n === 1 ? 9 : n === 2 ? 20 : 50), b = rand(1, n === 1 ? 9 : n === 2 ? 20 : 10); return { a, b, op, value: op === '+' ? a + b : op === '−' ? Math.abs(a - b) : a * b }; };
-        left = make(); right = make(); if (left.value !== right.value) break;
-      }
-      if (left.value === right.value) { right.b += 1; right.value = right.op === '+' ? right.a + right.b : right.op === '−' ? Math.abs(right.a - right.b) : right.a * right.b; }
-      q.answer = Math.max(left.value, right.value); q.kind = 'compare'; q.model = { left, right }; q.title = 'Sammenlign regnestykkene'; q.prompt = 'Regn ut begge. Velg uttrykket som blir størst.';
+      const evaluate = ({ a, b, op }) => op === '+' ? a + b : op === '−' ? a - b : a * b;
+      // Subtraksjon gir aldri negativt svar, og gangestykker holder seg innenfor gangetabellen til 10.
+      const make = () => {
+        const op = ops[rand(0, ops.length - 1)];
+        let a = op === '×' ? rand(2, n === 3 ? 5 : 10) : rand(2, n === 1 ? 9 : n === 2 ? 20 : 50);
+        let b = op === '×' ? rand(2, n === 3 ? 5 : 10) : rand(1, n === 1 ? 9 : n === 2 ? 20 : 10);
+        if (op === '−' && b > a) [a, b] = [b, a];
+        const side = { a, b, op }; side.value = evaluate(side); return side;
+      };
+      const left = make(); let right = make();
+      for (let attempt = 0; attempt < 20 && left.value === right.value; attempt++) right = make();
+      if (left.value === right.value) { right.a += 1; right.value = evaluate(right); }
+      q.answer = Math.max(left.value, right.value); q.kind = 'compare'; q.model = { left, right }; q.title = 'Sammenlign regnestykkene'; q.prompt = 'Regn ut begge. Hvilket svar er størst?';
       q.hint = 'Regn ut ett uttrykk om gangen, og sammenlign svarene.';
       q.explanation = `${left.a} ${left.op} ${left.b} = ${left.value}, og ${right.a} ${right.op} ${right.b} = ${right.value}. ${q.answer} er størst.`;
       q.meta.features = [ops.includes('×') ? 'multiplication' : 'addition-subtraction', 'compare-values'];
@@ -161,7 +167,7 @@
       }
       q.meta.features = [n === 3 ? 'sum-bars' : 'read-bar'];
     }
-    q.options = choices(q.answer, q.kind === 'place' && n > 1 ? 10 : 1, q.kind === 'tenFrame' ? 10 : Infinity);
+    q.options = choices(q.answer, q.kind === 'place' && n > 1 ? 10 : 1, q.kind === 'tenFrame' ? 10 : Infinity, q.kind === 'compare' ? [Math.min(q.model.left.value, q.model.right.value)] : []);
     return q;
   }
   function skillsFor(topic) { return Object.keys(SKILLS).filter(s => topic === 'mixed' || SKILLS[s].topic === topic); }

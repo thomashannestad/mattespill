@@ -2,6 +2,8 @@
 
 Et lite mattespill på norsk, med fire svarkort og en enhjørning som vokser og kan få nytt utstyr.
 
+Se [PROSJEKT.md](PROSJEKT.md) for prosjektmål, faglig grunnlag, oppgaveoversikt, tilpasningsregler og videre arbeid.
+
 ## Start spillet
 
 Dobbeltklikk på `index.html` for å åpne spillet i Chrome, Safari, Firefox eller Edge. Ingen installasjon, innlogging eller internettilkobling er nødvendig. Behold `index.html`, `styles.css`, `game.js` og `app.js` i samme mappe.
@@ -41,12 +43,12 @@ Standard er nå **Tilpass til meg · automatisk**. Tema velges over oppgaven. Fa
 | Åpne regnestykker | Manglende tall sist i en addisjon | Ukjent tall først eller sist, også i subtraksjon |
 | Multiplikasjon | Like grupper med 2–5 i hver | Flere grupper og større tall |
 | Deling | Dele bær likt mellom kurver | Flere grupper og større tall; divisjon henger sammen med multiplikasjon |
-| Sammenligne | Regn ut to små uttrykk | Større tall og multiplikasjon før barnet velger størst verdi |
+| Sammenligne | Regn ut to små uttrykk og velg det største svaret; begge svarene er blant kortene | Større tall, deretter gangestykker innenfor gangetabellen til 10 |
 | Areal | Rektangel dekket av enhetsruter | Større rutenett; telle rader og kolonner |
 | Koordinater | Finne et punkt og lese vannrett retning | Lese vannrett og loddrett retning på større rutenett |
 | Diagrammer | Lese av søyler med 1–5 blomster | Søyler til 10, deretter summere fire søyler |
 
-Tierbrettet har to rekker med fem ruter. Når svaret er valgt, fylles de manglende rutene med grønne blomster. Pluss- og minusoppgaver viser mellomregning med hopp. Multiplikasjon viser like grupper, areal viser ruter i et rektangel, og koordinater bruker et enkelt rutenett. Hint kan vise mellomregningsmodellen før svaret, med sluttallet skjult. I blandede runder fordeles øvingen mellom ferdighetene, så diagrammer er én av flere oppgavetyper.
+Tierbrettet har to rekker med fem ruter. Når svaret er valgt, fylles de manglende rutene med grønne blomster. Pluss- og minusoppgaver viser mellomregning med hopp. Multiplikasjon viser like grupper. Deling viser bærene i én haug og tomme kurver før svaret, og fordelingen etter svaret. Areal viser ruter i et rektangel, og koordinater bruker et enkelt rutenett. Hint kan vise mellomregningsmodellen før svaret, med sluttallet skjult. I blandede runder fordeles øvingen mellom ferdighetene, så diagrammer er én av flere oppgavetyper.
 
 ## Automatisk tilpasning
 

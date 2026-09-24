@@ -84,9 +84,12 @@
     if (!q.steps) return '';
     return `<div class="calculation-steps" aria-label="Regn ett steg om gangen">${q.steps.map((step,i)=>`${i?`<span class="step-jump"><span>${step.jump<0?'−':'+'}${Math.abs(step.jump)}</span><span aria-hidden="true">→</span></span>`:''}<b>${!solved&&i===q.steps.length-1?'?':step.value}</b>`).join('')}</div>`;
   }
-  function groupsVisual(q) {
-    const { groups, each, operation } = q.model;
-    return `<div class="groups-model" role="img" aria-label="${groups} like grupper med ${each} blomster i hver"><span class="groups-caption">${operation === 'multiply' ? 'Like store grupper' : 'Del bærene likt'}</span><div class="groups-row">${Array.from({length:groups},(_,i)=>`<span class="flower-group" aria-label="Gruppe ${i+1}">${Array.from({length:each},()=>'<i aria-hidden="true">✿</i>').join('')}</span>`).join('')}</div></div>`;
+  function groupsVisual(q, solved = false) {
+    const { groups, each, total, operation } = q.model;
+    const flowers = count => Array.from({length:count},()=>'<i aria-hidden="true">✿</i>').join('');
+    // Før svaret viser deling bare haugen og tomme kurver, ellers står fasiten i modellen.
+    if (operation === 'divide' && !solved) return `<div class="groups-model" role="img" aria-label="${total} bær i én haug og ${groups} tomme kurver"><span class="groups-caption">${total} bær skal deles likt i ${groups} kurver</span><div class="flower-pile">${flowers(total)}</div><div class="groups-row">${Array.from({length:groups},()=>'<span class="flower-group empty" aria-hidden="true"></span>').join('')}</div></div>`;
+    return `<div class="groups-model" role="img" aria-label="${groups} like grupper med ${each} ${operation === 'divide' ? 'bær' : 'blomster'} i hver"><span class="groups-caption">${operation === 'multiply' ? 'Like store grupper' : 'Bærene delt likt'}</span><div class="groups-row">${Array.from({length:groups},(_,i)=>`<span class="flower-group" aria-label="Gruppe ${i+1}">${flowers(each)}</span>`).join('')}</div></div>`;
   }
   function areaVisual(q) {
     const { width, height } = q.model;
@@ -102,7 +105,7 @@
   }
   function learningVisual(q, solved = false) {
     if (q.kind === 'tenFrame') return tenFrame(q,solved);
-    if (q.kind === 'groups') return groupsVisual(q);
+    if (q.kind === 'groups') return groupsVisual(q,solved);
     if (q.kind === 'area') return areaVisual(q);
     if (q.kind === 'coordinate') return coordinateVisual(q);
     if (q.kind === 'compare') return compareVisual(q,solved);
@@ -115,7 +118,7 @@
       <div class="round-header"><span>Oppgave ${Math.min(state.round.done+(answered?0:1),8)} av 8</span><strong>${G.TOPICS[q.type]}</strong></div>
       <div class="round-dots" aria-hidden="true">${Array.from({length:8},(_,i)=>`<span class="${i<state.round.done?'done':i===state.round.done?'current':''}"></span>`).join('')}</div>
       <div class="question-content"><h2 id="question-title" tabindex="-1">${escape(q.title)}</h2>
-      ${q.kind==='chart'?chart(q)+`<p class="chart-question">${escape(q.prompt)}</p>`:q.kind==='compare'?`<p class="chart-question">${escape(q.prompt)}</p>${compareVisual(q)}`:`<p class="equation ${q.kind==='place'?'place':q.kind==='tenFrame'||q.kind==='equation'?'missing-number':q.prompt.includes(',')?'sequence':''}">${escape(q.prompt)}${q.type==='plus'||q.type==='minus'?' = ?':''}</p>`}
+      ${q.kind==='chart'?chart(q)+`<p class="chart-question">${escape(q.prompt)}</p>`:q.kind==='compare'?`<p class="chart-question">${escape(q.prompt)}</p>${compareVisual(q)}`:['groups','doubleHalf','area','coordinate'].includes(q.kind)?`<p class="question-text">${escape(q.prompt)}</p>`:`<p class="equation ${q.kind==='place'?'place':q.kind==='tenFrame'||q.kind==='equation'?'missing-number':q.kind==='sequence'?'sequence':''}">${escape(q.prompt)}${q.type==='plus'||q.type==='minus'?' = ?':''}</p>`}
       ${showModel&&q.kind!=='compare'?learningVisual(q):''}</div>
       <p class="answer-instruction">${answered?'Riktig svar er markert med ✓':'Trykk på svaret du tror er riktig'}</p>
       <div class="answers">${q.options.map((value,i)=>`<button class="answer ${answered?value===q.answer?'correct':value===q.selected?'incorrect':'muted':''}" data-answer="${value}" ${answered?'disabled':''} aria-label="${value}${answered&&value===q.answer?', riktig svar':''}"><span class="answer-key" aria-hidden="true">${i+1}</span>${value}${answered&&value===q.answer?'<span class="mark" aria-hidden="true">✓</span>':''}</button>`).join('')}</div>
