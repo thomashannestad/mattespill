@@ -19,7 +19,7 @@ python3 -m http.server 8765 --bind 127.0.0.1
 - Velg et av de fire svarene. Riktig svar gir **3 stjerner totalt**, et annet svar gir **1 stjerne** for innsatsen. Bare første svar på oppgaven gir poeng.
 - Et hint er alltid gratis. Ved feil vises riktig svar med en kort forklaring. Det er ingen tidtaking.
 - Hver runde har åtte oppgaver. Spill en ny runde eller besøk butikken når runden er ferdig.
-- Under **Min enhjørning** kan dere velge navn, kjøpe utstyr og ta utstyret av og på. Ett utstyr per kategori kan brukes om gangen. Det dere har kjøpt, beholdes.
+- Under **Min enhjørning** kan dere velge navn, kjøpe utstyr og ta utstyret av og på. Butikken har pynt, manefarger, hover, halstilbehør, vinger og eventyrsteder. Ett utstyr per kategori kan brukes om gangen. Det dere har kjøpt, beholdes.
 - Enhjørningens nivå følger alle stjernene som er tjent. Kjøp reduserer ikke nivået. Nye nivåer nås ved 24, 60, 120 og 210 opptjente stjerner; enhjørningen vokser litt og får flere magiske detaljer.
 - Tannhjulet åpner innstillinger for vanskelighetsgrad og mulighet til å starte på nytt. Sletting krever en ekstra bekreftelse.
 

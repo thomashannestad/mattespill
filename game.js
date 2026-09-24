@@ -14,7 +14,19 @@
     { id: 'ocean', slot: 'mane', name: 'Havdrøm', description: 'En blå og turkis man', price: 36, icon: '🌊' },
     { id: 'flowers', slot: 'head', name: 'Blomsterkrans', description: 'Blomster fra eventyrengen', price: 42, icon: '🌸' },
     { id: 'wings', slot: 'back', name: 'Drømmevinger', description: 'Vinger til din magiske venn', price: 60, icon: '🪽' },
-    { id: 'night', slot: 'world', name: 'Stjernenatt', description: 'En hel himmel av stjerner', price: 75, icon: '🌙' }
+    { id: 'night', slot: 'world', name: 'Stjernenatt', description: 'En hel himmel av stjerner', price: 75, icon: '🌙' },
+    { id: 'pearl', slot: 'head', name: 'Perlespenne', description: 'En liten perle som glitrer i manen', price: 16, icon: '🫧' },
+    { id: 'starclip', slot: 'head', name: 'Stjernedryss', description: 'En stjerne til enhjørningens lugg', price: 34, icon: '🌟' },
+    { id: 'rose', slot: 'mane', name: 'Rosedrøm', description: 'En myk man i rosa og plomme', price: 22, icon: '🌷' },
+    { id: 'peach', slot: 'mane', name: 'Ferskenmagi', description: 'En varm man med ferskenfarger', price: 32, icon: '🍑' },
+    { id: 'auroraMane', slot: 'mane', name: 'Nordlysman', description: 'Turkis og lilla farger danser i manen', price: 54, icon: '💫' },
+    { id: 'heartHooves', slot: 'feet', name: 'Hjertehover', description: 'Rosa hover med ekstra glans', price: 29, icon: '💗' },
+    { id: 'moonHooves', slot: 'feet', name: 'Måneskinnssko', description: 'Sølvskinn for nattlige eventyr', price: 48, icon: '🌙' },
+    { id: 'scarf', slot: 'neck', name: 'Silkeskjerf', description: 'Et lilla skjerf til kjølige eventyr', price: 18, icon: '🧣' },
+    { id: 'bell', slot: 'neck', name: 'Stjernebjelle', description: 'En liten bjelle som glitrer', price: 38, icon: '🔔' },
+    { id: 'rainbowWings', slot: 'back', name: 'Regnbuevinger', description: 'Fargerike vinger til store svev', price: 92, icon: '🪽' },
+    { id: 'auroraSky', slot: 'world', name: 'Nordlysdalen', description: 'Grønne lys danser over enga', price: 58, icon: '🌌' },
+    { id: 'moonGarden', slot: 'world', name: 'Månehagen', description: 'En stille hage badet i månelys', price: 98, icon: '🌕' }
   ];
   const LEVELS = [{ at: 0, name: 'Liten drømmer' }, { at: 24, name: 'Engvenn' }, { at: 60, name: 'Stjernevenn' }, { at: 120, name: 'Magisk følgesvenn' }, { at: 210, name: 'Eventyrmester' }];
   const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;

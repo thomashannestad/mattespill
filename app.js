@@ -14,12 +14,17 @@
     setTimeout(() => { $('#confetti').innerHTML = ''; }, 2000);
   }
   function scene() {
-    const eq = state.equipped, lvl = G.level(state.earned).index, night = eq.world === 'night', sunset = eq.world === 'sunset';
-    const mane = eq.mane === 'mint' ? ['#83bbaa','#c5e9ca','#5c968d'] : eq.mane === 'ocean' ? ['#80b9da','#b5e7e7','#6991c2'] : ['#b29acb','#e4c2dc','#8d7cae'];
-    return `<div class="unicorn-scene"><span class="scene-label">${night ? 'Under stjernene' : sunset ? 'En gyllen kveld' : 'Hjemme i blomsterengen'}</span>
-    <svg viewBox="0 0 500 430" role="img" aria-label="${escape(state.name)}, enhjørningen din${eq.head ? ', med '+escape(G.ITEMS.find(i=>i.id===eq.head).name) : ''}${eq.back ? ', med vinger' : ''}">
-      <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="${night ? '#303e69' : sunset ? '#f2c6b1' : '#dfede7'}"/><stop offset="1" stop-color="${night ? '#8c91b0' : sunset ? '#f8e5c6' : '#f2f4dd'}"/></linearGradient><linearGradient id="coat" x2=".5" y2="1"><stop stop-color="#fffef8"/><stop offset="1" stop-color="#eee8f1"/></linearGradient><linearGradient id="hair" x2=".8" y2="1"><stop stop-color="${mane[1]}"/><stop offset="1" stop-color="${mane[0]}"/></linearGradient><linearGradient id="horn" x2="1" y2="1"><stop stop-color="#ffe5a2"/><stop offset="1" stop-color="#d0a04d"/></linearGradient></defs>
+    const eq = state.equipped, lvl = G.level(state.earned).index, world = eq.world || 'meadow', night = ['night','auroraSky','moonGarden'].includes(world), sunset = world === 'sunset', aurora = world === 'auroraSky', moonGarden = world === 'moonGarden';
+    const mane = ({ mint: ['#83bbaa','#c5e9ca','#5c968d'], ocean: ['#80b9da','#b5e7e7','#6991c2'], rose: ['#d985a8','#f2c2d1','#a8557d'], peach: ['#ebaa83','#f8d3a4','#c87970'], auroraMane: ['#53a99d','#c3a3db','#536caa'] })[eq.mane] || ['#b29acb','#e4c2dc','#8d7cae'];
+    const sceneName = aurora ? 'Nordlys over dalen' : moonGarden ? 'Månehagen' : night ? 'Under stjernene' : sunset ? 'En gyllen kveld' : 'Hjemme i blomsterengen';
+    const hoofColors = eq.feet === 'heartHooves' ? ['#e998b6','#c8769a'] : eq.feet === 'moonHooves' ? ['#d5d8eb','#a5a9c4'] : ['#e9c261','#cfaa51'];
+    const wingFill = eq.back === 'rainbowWings' ? ['#f2c2d1','#d6c4f2','#afdace'] : ['#f1e5fa','#b59ac8','#b59ac8'];
+    const itemName = id => G.ITEMS.find(item => item.id === id)?.name;
+    return `<div class="unicorn-scene"><span class="scene-label">${sceneName}</span>
+    <svg viewBox="0 0 500 430" role="img" aria-label="${escape(state.name)}, enhjørningen din${eq.head ? ', med '+escape(itemName(eq.head)) : ''}${eq.mane ? ', med '+escape(itemName(eq.mane)) : ''}${eq.feet ? ', med '+escape(itemName(eq.feet)) : ''}${eq.neck ? ', med '+escape(itemName(eq.neck)) : ''}${eq.back ? ', med '+escape(itemName(eq.back)) : ''}${eq.world ? ', i '+escape(itemName(eq.world)) : ''}">
+      <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="${aurora ? '#283f64' : moonGarden ? '#343552' : night ? '#303e69' : sunset ? '#f2c6b1' : '#dfede7'}"/><stop offset="1" stop-color="${aurora ? '#547b85' : moonGarden ? '#77718f' : night ? '#8c91b0' : sunset ? '#f8e5c6' : '#f2f4dd'}"/></linearGradient><linearGradient id="coat" x2=".5" y2="1"><stop stop-color="#fffef8"/><stop offset="1" stop-color="#eee8f1"/></linearGradient><linearGradient id="hair" x2=".8" y2="1"><stop stop-color="${mane[1]}"/><stop offset="1" stop-color="${mane[0]}"/></linearGradient><linearGradient id="horn" x2="1" y2="1"><stop stop-color="${eq.head === 'pearl' ? '#ffffff' : '#ffe5a2'}"/><stop offset="1" stop-color="${eq.head === 'pearl' ? '#a9c8db' : '#d0a04d'}"/></linearGradient></defs>
       <path fill="url(#sky)" d="M0 0h500v430H0z"/>
+      ${aurora ? '<path d="M0 118Q105 30 206 99T500 70v69Q390 103 277 150T0 173Z" fill="#a4e7bf" opacity=".33"/><path d="M0 146Q121 65 231 126T500 99v49Q370 132 256 175T0 198Z" fill="#c1a6e8" opacity=".32"/>' : ''}
       ${night ? '<g fill="#fff3c9"><circle cx="90" cy="84" r="2"/><circle cx="148" cy="52" r="2"/><circle cx="394" cy="112" r="2.5"/><circle cx="425" cy="55" r="2"/><path d="M372 66a26 26 0 1 1-27-32 22 22 0 0 0 27 32"/></g>' : '<circle cx="391" cy="90" r="36" fill="#fff9dc" opacity=".9"/><g fill="#fffefa" opacity=".67"><path d="M28 123c-6-18 18-31 29-16 4-29 48-25 47 2 22-10 39 8 30 21H28Z"/><path d="M349 165c-4-12 13-21 22-11 2-20 34-20 36 0 16-8 30 7 25 15h-83Z"/></g>'}
       <path d="M0 247Q90 158 194 231T500 225V430H0" fill="${night ? '#879c9b' : '#c8dbc0'}"/>
       <path d="M0 292Q151 216 282 269T500 263V430H0" fill="${night ? '#6f8c81' : '#b7d1ad'}"/>
@@ -34,9 +39,9 @@
         <path d="m190 265-8 58q1 10 20 8l18-60m45-1 10 52q2 10 20 4l-2-65" fill="#e0d9e9"/>
         <path d="M155 228c10-38 64-45 105-29l16-44 44 20-11 58c-2 25-18 47-46 49l-89-5c-26-8-32-29-19-49Z" fill="url(#coat)"/>
         <path d="m166 261 2 65q1 9 20 6l13-53m64-11-6 58q2 10 22 5l16-67" fill="url(#coat)"/>
-        <path d="m168 316 0 11q1 10 20 5l3-15m69-1-1 10q2 11 22 5l4-14" fill="${eq.feet ? '#e9c261' : '#c4add2'}"/>
-        <path d="m183 319-1 5q1 8 20 7l3-11m70-7 2 11q2 7 19 2l-1-11" fill="${eq.feet ? '#cfaa51' : '#b39bbf'}"/>
-        ${eq.back ? '<g fill="#f1e5fa" stroke="#b59ac8"><path d="M228 237c-62-7-81-39-82-86 18 7 37 18 48 35-9-29-5-46 6-58 23 24 44 60 28 109Z"/><path d="M226 235q-44-23-66-65m65 64q-8-51-24-90" fill="none"/><path d="M225 235q-29-35-34-56" fill="none"/></g>' : ''}
+        <path d="m168 316 0 11q1 10 20 5l3-15m69-1-1 10q2 11 22 5l4-14" fill="${eq.feet ? hoofColors[0] : '#c4add2'}"/>
+        <path d="m183 319-1 5q1 8 20 7l3-11m70-7 2 11q2 7 19 2l-1-11" fill="${eq.feet ? hoofColors[1] : '#b39bbf'}"/>
+        ${eq.back ? `<g fill="${wingFill[0]}" stroke="${wingFill[1]}"><path d="M228 237c-62-7-81-39-82-86 18 7 37 18 48 35-9-29-5-46 6-58 23 24 44 60 28 109Z"/><path d="M226 235q-44-23-66-65m65 64q-8-51-24-90" fill="none"/><path d="M225 235q-29-35-34-56" fill="none" stroke="${wingFill[2]}"/></g>` : ''}
         <path d="M274 112c-21-10-36 1-44 21-6 15 3 26-3 38-7 12-25 24-20 43 5 17 26 28 49 16-14-10-11-22-2-35 10-14 17-35 7-48" fill="url(#hair)"/>
         <path d="M251 124c-29 22 15 39-15 64-13 12-14 26 0 35" stroke="${mane[2]}" fill="none" opacity=".55"/>
         <path d="M279 112q-21-27-8-47 23 12 28 40" fill="url(#coat)"/><path d="m279 97-4-20 14 24" fill="#e7bfcf" stroke="none"/>
@@ -49,6 +54,10 @@
         ${eq.head === 'bow' ? '<g fill="#d78cab" stroke="#b56e90"><path d="M258 132q-32-25-26 6 3 20 26 2 24 25 28 3 7-26-26-11Z"/><circle cx="258" cy="138" r="6" fill="#edafc9"/></g>' : ''}
         ${eq.head === 'crown' ? '<path d="m263 96-8-27 20 12 10-23 12 21 18-15-3 30Z" fill="#f3d378" stroke="#c29c45"/><circle cx="285" cy="84" r="4" fill="#bf91c7" stroke="none"/>' : ''}
         ${eq.head === 'flowers' ? `<g stroke="#d7a3bb" fill="#efc1d1">${[263,278,293,308].map((x,i)=>`<circle cx="${x}" cy="${103-i*2}" r="9"/><circle cx="${x}" cy="${103-i*2}" r="3" fill="#ffe6a1" stroke="none"/>`).join('')}</g>` : ''}
+        ${eq.head === 'pearl' ? '<circle cx="286" cy="89" r="8" fill="#fff" stroke="#b6c8d7"/><circle cx="284" cy="87" r="2.5" fill="#fff" stroke="none"/>' : ''}
+        ${eq.head === 'starclip' ? '<path d="m244 164 4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1Z" fill="#f1cd69" stroke="#c69d45"/><circle cx="244" cy="180" r="3" fill="#fff4c6" stroke="none"/>' : ''}
+        ${eq.neck === 'scarf' ? '<path d="M248 190Q272 204 301 189l-3 11q-23 16-49 1Z" fill="#a384bd" stroke="#806499"/><path d="m265 201-1 17 9-5 8 8 1-18" fill="#8f70ae" stroke="#806499"/>' : ''}
+        ${eq.neck === 'bell' ? '<path d="M248 190Q272 204 301 189" fill="none" stroke="#d8a94c" stroke-width="7"/><path d="M267 199q8 0 8 8v5h-16v-5q0-8 8-8Z" fill="#f3d378" stroke="#c29c45"/><circle cx="267" cy="213" r="2" fill="#9d7842" stroke="none"/>' : ''}
         ${lvl >= 2 ? '<path d="m220 247 3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1Z" fill="#e3c676" stroke="none"/>' : ''}
       </g>
       <g fill="${night ? '#ffe6ac' : '#b29ac4'}" opacity=".8"><path d="m118 156 3 9 9 3-9 3-3 9-3-9-9-3 9-3Z"/><path d="m384 225 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z"/>${lvl>=1?'<path d="m181 83 2 6 6 2-6 2-2 6-2-6-6-2 6-2Z"/>':''}${lvl>=3?'<path d="m376 153 4 11 11 4-11 4-4 11-4-11-11-4 11-4Z"/>':''}</g>
@@ -125,9 +134,12 @@
       const nextItem = G.ITEMS.find(i=>!state.owned.includes(i.id));
       $('#main').innerHTML = warning + `<div class="intro"><div><h1>Et lite regnestykke, litt mer magi.</h1><p>Løs oppgaver og samle stjerner til ${escape(state.name)}.</p></div><label class="topic-select">Vi øver på <select id="topic">${Object.entries(G.TOPICS).map(([key,label])=>`<option value="${key}" ${key===state.topic?'selected':''}>${label}</option>`).join('')}</select></label></div><div class="play-grid">${state.round.done===8 && !state.current ? summaryCard() : questionCard()}${unicornPanel()}</div>${nextItem?`<div class="reward-strip"><div class="reward-icon" aria-hidden="true">${nextItem.icon}</div><div><h3>${nextItem.name} til ${escape(state.name)}?</h3><p>${state.balance>=nextItem.price?'Du har nok stjerner! Finn den i butikken.':`Bare ${nextItem.price-state.balance} stjerner til, så kan den bli din.`}</p></div><button class="text-button" data-view="closet">Se butikken</button></div>`:''}`;
     } else {
-      $('#main').innerHTML = warning + `<div class="intro"><div><h1>Et eventyr helt på din måte.</h1><p>Velg noe fint til ${escape(state.name)}. Alt du kjøper, får du beholde.</p></div></div><div class="closet-grid">${unicornPanel(true)}<section class="shop-section" aria-labelledby="shop-title"><div class="shop-heading"><h2 id="shop-title">Enhjørningsbutikken</h2><span>Velg utstyr for å ta det på eller av</span></div><div class="items-grid">${G.ITEMS.map(item=>{
+      const slotLabels = { head: 'Pynt', mane: 'Manefarge', feet: 'Hover', neck: 'Hals', back: 'Vinger', world: 'Eventyrsted' };
+      const slotOrder = { head: 0, mane: 1, feet: 2, neck: 3, back: 4, world: 5 };
+      const shopItems = [...G.ITEMS].sort((a,b)=>slotOrder[a.slot]-slotOrder[b.slot] || a.price-b.price);
+      $('#main').innerHTML = warning + `<div class="intro"><div><h1>Et eventyr helt på din måte.</h1><p>Velg noe fint til ${escape(state.name)}. Alt du kjøper, får du beholde.</p></div></div><div class="closet-grid">${unicornPanel(true)}<section class="shop-section" aria-labelledby="shop-title"><div class="shop-heading"><h2 id="shop-title">Enhjørningsbutikken</h2><span>${G.ITEMS.length} skatter å samle på</span></div><div class="items-grid">${shopItems.map(item=>{
         const owned = state.owned.includes(item.id), equipped = state.equipped[item.slot]===item.id, afford = state.balance>=item.price;
-        return `<article class="item ${equipped?'equipped':''}"><span class="item-icon" aria-hidden="true">${item.icon}</span><h3>${item.name}</h3><p>${item.description}</p><button data-item="${item.id}" ${!owned&&!afford?'disabled':''} aria-label="${equipped?'Ta av':owned?'Ta på':afford?'Kjøp':'Du mangler stjerner til'} ${item.name}${owned?'':`, ${item.price} stjerner`}">${equipped?'✓ På · ta av':owned?'Ta på':afford?`Kjøp · ${item.price} ★`:`${item.price} ★ · mangler ${item.price-state.balance}`}</button></article>`;
+        return `<article class="item ${equipped?'equipped':''}"><span class="item-category">${slotLabels[item.slot]}</span><span class="item-icon" aria-hidden="true">${item.icon}</span><h3>${item.name}</h3><p>${item.description}</p><button data-item="${item.id}" ${!owned&&!afford?'disabled':''} aria-label="${equipped?'Ta av':owned?'Ta på':afford?'Kjøp':'Du mangler stjerner til'} ${item.name}${owned?'':`, ${item.price} stjerner`}">${equipped?'✓ På · ta av':owned?'Ta på':afford?`Kjøp · ${item.price} ★`:`${item.price} ★ · mangler ${item.price-state.balance}`}</button></article>`;
       }).join('')}</div><p class="stats-note">Stjernene du bruker i butikken, teller fortsatt mot neste nivå.</p></section></div>`;
     }
     bind();
