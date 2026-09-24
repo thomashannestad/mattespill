@@ -6,7 +6,7 @@ Se [PROSJEKT.md](PROSJEKT.md) for prosjektmål, faglig grunnlag, oppgaveoversikt
 
 ## Start spillet
 
-Dobbeltklikk på `index.html` for å åpne spillet i Chrome, Safari, Firefox eller Edge. Ingen installasjon, innlogging eller internettilkobling er nødvendig. Behold `index.html`, `styles.css`, `game.js` og `app.js` i samme mappe.
+Dobbeltklikk på `index.html` for å åpne spillet i Chrome, Safari, Firefox eller Edge. Ingen installasjon, innlogging eller internettilkobling er nødvendig. Behold `index.html`, `styles.css`, `game.js`, `app.js`, `sw.js`, `manifest.webmanifest` og mappen `icons/` sammen.
 
 Du kan også starte en lokal server fra denne mappen:
 
@@ -15,6 +15,28 @@ python3 -m http.server 8765 --bind 127.0.0.1
 ```
 
 Åpne deretter <http://127.0.0.1:8765>. Stopp serveren med Ctrl+C.
+
+## Ikoner og hjemskjerm
+
+Nettsiden bruker ekte PNG-filer: `icons/apple-touch-icon.png` (180×180) for iOS, `icons/icon-192.png` og `icons/icon-512.png` i manifestet, og `icons/favicon-32.png` for nettleserfanen. Motivet er spillets lilla stjerne på heldekkende grønn bakgrunn. `icons/icon-source.svg` er kun tegningsgrunnlaget for PNG-eksportene; det brukes ikke som ikon i HTML eller manifestet.
+
+Filbanene, startadressen og manifestets virkeområde er relative, slik at de fungerer under GitHub Pages-adressen `/mattespill/`. Manifestet angir visning som egen app fra hjemskjermen.
+
+### Installer på iPad
+
+1. Åpne nettsiden i Safari.
+2. Trykk på Del-knappen og velg **Legg til på Hjem-skjerm**.
+3. Start spillet fra ikonet etterpå. Da åpner det i fullskjerm uten adresselinje.
+
+Appen på hjemskjermen har egen lagring, adskilt fra Safari. Stjerner tjent i Safari følger ikke med inn i appen, så bruk alltid ikonet etter installering. Safari sletter lokal lagring for nettsider som ikke er besøkt på sju dager, men hjemskjerm-apper er unntatt fra den regelen.
+
+### Uten nett
+
+`sw.js` er en service worker som henter alt fra nettet først og legger en kopi i nettleserens cache. Er nettet borte, brukes kopien, så spillet virker uten nett etter første besøk. Service workeren registreres bare over http og https, ikke når `index.html` åpnes direkte fra disk.
+
+Når `styles.css`, `game.js` eller `app.js` endres, bump `?v=` i `index.html` og `CACHE` og `SHELL` i `sw.js` i samme commit. Da får installerte apper de nye filene ved neste besøk med nett.
+
+Ikonlenkene følger [Apples veiledning for hjemskjermikoner](https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html) og [manifestets ikonformat](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/icons).
 
 ## Slik spiller dere
 

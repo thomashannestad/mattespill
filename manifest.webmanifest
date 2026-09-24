@@ -1,0 +1,26 @@
+{
+  "id": "./",
+  "name": "Enhjørningsdalen",
+  "short_name": "Matteeventyr",
+  "description": "Løs små matteoppgaver og skap din egen magiske enhjørning.",
+  "lang": "nb",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#ecf4ed",
+  "background_color": "#ecf4ed",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

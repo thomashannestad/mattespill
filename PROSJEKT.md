@@ -51,6 +51,7 @@ Stjerner gir synlig framgang for innsats, ikke bare for riktige svar. Barnet kan
 
 - Nettleserbasert, statisk app med vanlig HTML, CSS og JavaScript. Den trenger ingen serverkode eller eksterne pakker for selve spillet.
 - Ingen innlogging, analyseverktøy eller nettverkstjenester inne i spillet.
+- Kan installeres på hjemskjermen på iPad via manifest og ikoner, og virker uten nett etter første besøk via en service worker. Se README for installering og oppdatering.
 - Stjerner, navn, innstillinger, utstyr, mestringsprofiler og aktiv runde lagres i nettleserens `localStorage`.
 - Lagringen er knyttet til nettleseren og nettsidens adresse. Den synkroniseres ikke mellom enheter, og localhost og GitHub Pages får hver sin lagring.
 - GitHub Pages publiserer siden fra repoet. Nye endringer blir synlige på nettsiden etter at de er committet og pushet til publiseringsbranchen.
@@ -69,6 +70,7 @@ Det viktigste neste steget er å prøve spillet med barnet og bruke observasjone
 ## Kodeoversikt
 
 - `index.html`: sideoppsett og tilgjengelighetsdialoger.
+- `sw.js` og `manifest.webmanifest`: installering på hjemskjerm og bruk uten nett.
 - `styles.css`: visuell utforming og responsiv layout.
 - `game.js`: oppgavegenerator, poeng, tilpasning, lagringstilstand og butikkregler.
 - `app.js`: visning, enhjørningsillustrasjon og brukerinteraksjon.
