@@ -57,7 +57,7 @@ Dette er en enkel startmodell som kan justeres etter utprøving med barnet, ikke
 - Hver ferdighet har sin egen profil og begynner på første faglige trinn. Tallrekker og plassverdi følges separat, selv om begge vises under Tallvenner. Hver ny oppgavetype kan derfor bli lettere eller vanskeligere uavhengig av de andre.
 - Oppgaven lagrer ferdighet, trinn, egenskaper (for eksempel tierovergang), rolle i øvingen og om hint er brukt. Svartid brukes ikke.
 - Minst 7 riktige uten hint blant de siste 8 oppgavene på gjeldende trinn øker trinnet med én. To feil på rad, eller tre feil blant de siste fem, senker trinnet med én og gir støtte. Trinnet går aldri utenfor ferdighetens grenser.
-- Historikken som bestemmer nivåbytte tømmes ved bytte, slik at nye observasjoner kreves. Etter to riktige oppgaver med ekstra støtte går barnet tilbake til vanlig støtte for trinnet. Oppgaver med ekstra støtte teller ikke som selvstendig mestring.
+- Historikken som bestemmer nivåbytte tømmes ved bytte, slik at nye observasjoner kreves. Ekstra støtte åpner hintet automatisk og viser modellen der den finnes. Etter to riktige oppgaver med ekstra støtte går barnet tilbake til vanlig støtte for trinnet. Oppgaver med ekstra støtte teller ikke som selvstendig mestring.
 - Omtrent 20 % av oppgavene kan være repetisjon ett trinn under. Omtrent 10 % kan være en utfordring ett trinn over, men bare etter minst fire riktige uten hint blant de siste fem observasjonene. Resten er på gjeldende trinn. Uten nok mestring eller ved ekstra støtte brukes gjeldende trinn i stedet for utfordringer.
 - Repetisjon og utfordringer brukes ikke til å endre det etablerte trinnet. Feil på slike oppgaver utløser støtte i neste oppgave i ferdigheten. Manuell øving endrer heller ikke mestringstrinnet.
 - Blandede runder velger blant ferdighetene med færrest besvarte oppgaver. Nye ferdigheter får dermed plass i øvingen. De siste oppgavene i samme ferdighet unngås når generatoren finner et alternativ.
@@ -78,7 +78,7 @@ Lagringsformatet er versjon 2, med samme lagringsnøkkel som før. Versjon 1 opp
 
 `game.js` inneholder oppgavegenerator, poeng, nivåer og butikkregler. `app.js` inneholder grensesnittet og den interaktive SVG-enhjørningen. `styles.css` styrer utseende og mobiltilpasning.
 
-Kjør testene med Node.js:
+Kjør testene med Node.js. GitHub Actions kjører dem også automatisk ved hver push:
 
 ```sh
 node --test game.test.cjs

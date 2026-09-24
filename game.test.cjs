@@ -20,7 +20,8 @@ function checkQuestion(q) {
     assert.ok(q.answer >= 0);
   } else if (q.kind === 'place') {
     let answer = 0;
-    for (const match of q.prompt.matchAll(/(\d+) (hundrere|tier[e]?|enere)/g)) answer += Number(match[1]) * (match[2] === 'hundrere' ? 100 : match[2].startsWith('tier') ? 10 : 1);
+    for (const match of q.prompt.matchAll(/(\d+) (hundrer[e]?|tier[e]?|ener[e]?)/g)) answer += Number(match[1]) * (match[2].startsWith('hundrer') ? 100 : match[2].startsWith('tier') ? 10 : 1);
+    assert.doesNotMatch(q.prompt, /\b1 (hundrere|tiere|enere)\b/);
     assert.equal(q.answer, answer);
     assert.ok(q.answer < 1000);
   } else if (q.kind === 'chart') {
@@ -189,6 +190,12 @@ test('manuell øving, repetisjon og utfordringer øker ikke det etablerte nivåe
   }
 });
 
+test('et lagret trinn over ferdighetens maks klippes i stedet for å nullstilles', () => {
+  const s = G.fresh(); s.mastery.equation.level = 9; s.mastery.equation.seen = 40;
+  const restored = G.restore(JSON.parse(JSON.stringify(s)));
+  assert.equal(restored.mastery.equation.level, G.SKILLS.equation.max); assert.equal(restored.mastery.equation.seen, 40);
+});
+
 test('versjon 1 migreres uten tap av stjerner, utstyr, navn eller aktiv runde', () => {
   const old = {version:1,balance:21,earned:30,answered:12,correct:9,name:'Stella',owned:['bow'],equipped:{head:'bow'},difficulty:'hard',topic:'plus',round:{done:2,correct:1,earned:4},current:{type:'plus',title:'Hvor mange?',prompt:'8 + 5',answer:13,options:[12,13,14,15],explanation:'8 + 5 = 13.',hint:'Tell videre.',selected:13}};
   const s = G.restore(old);
@@ -226,7 +233,7 @@ test('automatisk støtte etter feil forsvinner rolig og telles som støtte', () 
   attempt(s,'ten',false);attempt(s,'ten',false);
   for(let i=0;i<2;i++) {
     s.current=G.nextQuestion(s);
-    assert.equal(s.current.meta.level,2);assert.equal(s.current.showSupport,true);assert.equal(s.current.extraSupport,true);
+    assert.equal(s.current.meta.level,2);assert.equal(s.current.showSupport,true);assert.equal(s.current.extraSupport,true);assert.equal(s.current.hintOpen,true);
     G.answer(s,s.current.answer);
   }
   assert.equal(s.mastery.ten.support,false);

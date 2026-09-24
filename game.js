@@ -3,7 +3,7 @@
   'use strict';
   const TOPICS = { mixed: 'Litt av alt', ten: 'Tiervenner', nextTen: 'Fylle neste tier', plus: 'Pluss', minus: 'Minus', numbers: 'Tallvenner', doubleHalf: 'Dobling og halvering', equation: 'Åpne regnestykker', multiply: 'Multiplikasjon', divide: 'Deling', compare: 'Sammenligne', area: 'Areal', coordinate: 'Koordinater', chart: 'Diagrammer' };
   // Nivåene er faglige trinn innen én ferdighet, ikke enhjørningens belønningsnivå.
-  const SKILLS = { ten: { topic: 'ten', max: 3 }, nextTen: { topic: 'nextTen', max: 4 }, plus: { topic: 'plus', max: 5 }, minus: { topic: 'minus', max: 5 }, sequence: { topic: 'numbers', max: 4 }, place: { topic: 'numbers', max: 4 }, doubleHalf: { topic: 'doubleHalf', max: 4 }, equation: { topic: 'equation', max: 5 }, multiply: { topic: 'multiply', max: 4 }, divide: { topic: 'divide', max: 4 }, compare: { topic: 'compare', max: 4 }, area: { topic: 'area', max: 4 }, coordinate: { topic: 'coordinate', max: 3 }, chart: { topic: 'chart', max: 3 } };
+  const SKILLS = { ten: { topic: 'ten', max: 3 }, nextTen: { topic: 'nextTen', max: 4 }, plus: { topic: 'plus', max: 5 }, minus: { topic: 'minus', max: 5 }, sequence: { topic: 'numbers', max: 4 }, place: { topic: 'numbers', max: 4 }, doubleHalf: { topic: 'doubleHalf', max: 4 }, equation: { topic: 'equation', max: 4 }, multiply: { topic: 'multiply', max: 4 }, divide: { topic: 'divide', max: 4 }, compare: { topic: 'compare', max: 4 }, area: { topic: 'area', max: 4 }, coordinate: { topic: 'coordinate', max: 3 }, chart: { topic: 'chart', max: 3 } };
   const profiles = () => Object.fromEntries(Object.keys(SKILLS).map(key => [key, { level: 1, recent: [], history: [], seen: 0, support: false }]));
   const ITEMS = [
     { id: 'bow', slot: 'head', name: 'Sløyfefin', description: 'En rosa sløyfe i manen', price: 9, icon: '🎀' },
@@ -93,7 +93,7 @@
     } else if (skill === 'place') {
       const h = n <= 2 ? 0 : rand(1, 9), t = n === 1 ? 1 : n === 4 ? 0 : rand(1, 9), u = rand(1, 9);
       q.answer = h * 100 + t * 10 + u; q.title = 'Hvilket tall er dette?'; q.kind = 'place';
-      q.prompt = `${h ? `${h} hundrere, ` : ''}${t} ${t === 1 ? 'tier' : 'tiere'} og ${u} enere`;
+      q.prompt = `${h ? `${h} ${h === 1 ? 'hundrer' : 'hundrere'}, ` : ''}${t} ${t === 1 ? 'tier' : 'tiere'} og ${u} ${u === 1 ? 'ener' : 'enere'}`;
       q.explanation = `${q.prompt} blir ${q.answer}.`;
       q.hint = 'En hundrer er 100, en tier er 10 og en ener er 1.';
       q.meta.features = [n === 4 ? 'zero-tens' : h ? 'hundreds' : 'tens'];
@@ -191,7 +191,7 @@
     let q;
     for (let i = 0; i < 12; i++) { q = generate(skill, target); if (q.prompt !== state.current?.prompt && !p.history.slice(-3).some(h => h.prompt === q.prompt)) break; }
     q.meta.adaptive = adaptive; q.meta.role = role;
-    if (adaptive && p.support) { q.showSupport = true; q.extraSupport = true; }
+    if (adaptive && p.support) { q.showSupport = true; q.extraSupport = true; q.hintOpen = true; }
     return q;
   }
   function useHint(state) { if (!state.current || state.current.selected !== undefined) return; state.current.hintUsed = true; }
@@ -236,9 +236,10 @@
     for (const item of ITEMS) if (state.owned.includes(item.id) && raw.equipped?.[item.slot] === item.id) state.equipped[item.slot] = item.id;
     if (raw.round && ['done', 'correct', 'earned'].every(k => Number.isInteger(raw.round[k]) && raw.round[k] >= 0) && raw.round.done <= 8 && raw.round.correct <= raw.round.done && raw.round.earned <= raw.round.done * 3) state.round = { done: raw.round.done, correct: raw.round.correct, earned: raw.round.earned };
     if (raw.version === 2) for (const skill of Object.keys(SKILLS)) {
-      const p = raw.mastery?.[skill]; if (!p || !integer(p.level, 1, SKILLS[skill].max)) continue;
+      const p = raw.mastery?.[skill]; if (!p || !integer(p.level, 1, Number.MAX_SAFE_INTEGER)) continue;
+      const level = Math.min(p.level, SKILLS[skill].max);
       const validResult = r => r && typeof r.correct === 'boolean' && typeof r.hint === 'boolean';
-      state.mastery[skill] = { level: p.level, seen: integer(p.seen, 0, Number.MAX_SAFE_INTEGER) ? p.seen : 0, support: p.support === true,
+      state.mastery[skill] = { level, seen: integer(p.seen, 0, Number.MAX_SAFE_INTEGER) ? p.seen : 0, support: p.support === true,
         recent: Array.isArray(p.recent) ? p.recent.filter(validResult).slice(-8).map(r => ({correct:r.correct,hint:r.hint})) : [],
         history: Array.isArray(p.history) ? p.history.filter(r => validResult(r) && integer(r.level, 1, SKILLS[skill].max) && ['current','review','challenge'].includes(r.role) && typeof r.prompt === 'string').slice(-30).map(r => ({correct:r.correct,hint:r.hint,level:r.level,role:r.role,prompt:r.prompt})) : [] };
     }

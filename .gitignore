@@ -1,0 +1,4 @@
+# Lokale filer som ikke skal publiseres via GitHub Pages
+.DS_Store
+.playwright-mcp/
+Grunnlag oppgaver/
