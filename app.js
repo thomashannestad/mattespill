@@ -3,6 +3,7 @@
   const G = window.MathGame, KEY = 'enhjorningsdalen-v1';
   let state = G.fresh(), view = 'play', storageAvailable = true, toastTimer, preview = null;
   const shopOpenGroups = new Set(['mane']);
+  let shopFilter = 'all';
   const $ = selector => document.querySelector(selector);
   const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   try { const raw = localStorage.getItem(KEY); if (raw) state = G.restore(JSON.parse(raw)); } catch { storageAvailable = false; }
@@ -83,7 +84,7 @@
   }
   function unicornPanel(closet = false) {
     const level = G.level(state.earned), percent = level.next ? (state.earned - level.at)/(level.next.at-level.at)*100 : 100;
-    return `<aside class="unicorn-panel" aria-label="Din enhjørning">${scene()}<div class="unicorn-identity"><h2>${escape(state.name)}</h2><span class="level-badge">Nivå ${level.index + 1}</span></div><p class="level-name">${level.name}</p><div class="level-track" role="progressbar" aria-label="Fremgang til neste nivå" aria-valuenow="${Math.round(percent)}" aria-valuemin="0" aria-valuemax="100"><span style="width:${percent}%"></span></div><p class="level-caption">${level.next ? `${level.next.at - state.earned} stjerner til neste nivå` : 'Du er en ekte eventyrmester! ✦'}</p>${closet ? previewBar() : ''}${closet ? `<form class="name-form" id="name-form"><label for="unicorn-name" class="sr-only">Enhjørningens navn</label><input id="unicorn-name" aria-label="Enhjørningens navn" maxlength="24" value="${escape(state.name)}" required><button type="submit">Lagre navn</button></form><p class="stats-note">${state.answered} oppgaver utforsket<br>${state.earned} stjerner tjent gjennom hele eventyret</p>` : '<button class="shop-link" data-view="closet">✧ Kle på enhjørningen</button>'}</aside>`;
+    return `<aside class="unicorn-panel" aria-label="Din enhjørning">${scene()}<div class="unicorn-identity"><h2>${escape(state.name)}</h2><span class="level-badge">Nivå ${level.index + 1}</span></div><p class="level-name">${level.name}</p><div class="level-track" role="progressbar" aria-label="Fremgang til neste nivå" aria-valuenow="${Math.round(percent)}" aria-valuemin="0" aria-valuemax="100"><span style="width:${percent}%"></span></div><p class="level-caption">${level.next ? `${level.next.at - state.earned} stjerner til neste nivå` : 'Du er en ekte eventyrmester! ✦'}</p>${closet ? previewBar() : ''}${closet ? `<form class="name-form" id="name-form"><label for="unicorn-name" class="sr-only">Enhjørningens navn</label><input id="unicorn-name" aria-label="Enhjørningens navn" maxlength="24" value="${escape(state.name)}" required><button type="button" class="name-dice" id="random-name" aria-label="Trekk et nytt navn" title="Trekk et nytt navn"><span aria-hidden="true">↻</span></button><button type="submit">Lagre navn</button></form><p class="stats-note">${state.answered} oppgaver utforsket<br>${state.earned} stjerner tjent gjennom hele eventyret</p>` : '<button class="shop-link" data-view="closet">✧ Kle på enhjørningen</button>'}</aside>`;
   }
   function chart(q) {
     return `<div class="bar-chart" role="img" aria-label="Søylediagram. ${q.bars.map(b=>`${escape(b.label)}: ${b.value} blomster`).join('. ')}"><div class="chart-ticks" aria-hidden="true">${Array.from({length:11},(_,i)=>`<span style="top:${i*10}%">${10-i}</span>`).join('')}</div>${q.bars.map((b,i)=>`<div class="bar-column" aria-hidden="true"><div class="bar" style="height:${b.value*10}%;--bar-color:${['#dba4ba','#e6c36c','#88b3cb','#ad96c6'][i]}"></div><span class="bar-label">${escape(b.label)}</span></div>`).join('')}</div>`;
@@ -184,15 +185,20 @@
           : `<button data-try="${item.id}" aria-label="Prøv ${item.name}, koster ${item.price} stjerner">Prøv · ${item.price} ★</button>`;
         return `<article class="item ${equipped?'equipped':''} ${trying?'trying':''}"><span class="item-icon" aria-hidden="true">${item.icon}</span><h3>${item.name}</h3><p>${item.description}</p>${button}</article>`;
       };
+      // «Mine ting» viser bare det som er kjøpt, med alle grupper åpne, så det går raskt å kle om.
+      const mine = shopFilter === 'mine' && state.owned.length > 0;
       const groups = slotOrder.map(slot => {
-        const items = G.ITEMS.filter(item=>item.slot===slot).sort((a,b)=>a.price-b.price), ownedCount = items.filter(item=>state.owned.includes(item.id)).length;
-        return `<details class="shop-group" data-shop-group="${slot}" ${shopOpenGroups.has(slot)?'open':''}><summary><span class="shop-group-name">${slotLabels[slot]}</span><span class="shop-group-count">${items.length} valg</span><span class="shop-group-owned">${ownedCount} kjøpt</span><span class="shop-group-chevron" aria-hidden="true">⌄</span></summary><div class="items-grid">${items.map(itemCard).join('')}</div></details>`;
+        const all = G.ITEMS.filter(item=>item.slot===slot).sort((a,b)=>a.price-b.price), ownedCount = all.filter(item=>state.owned.includes(item.id)).length;
+        const items = mine ? all.filter(item=>state.owned.includes(item.id)) : all;
+        if (!items.length) return '';
+        return `<details class="shop-group" data-shop-group="${slot}" ${mine||shopOpenGroups.has(slot)?'open':''}><summary><span class="shop-group-name">${slotLabels[slot]}</span><span class="shop-group-count">${mine?`${items.length} ting`:`${items.length} valg`}</span><span class="shop-group-owned">${ownedCount} kjøpt</span><span class="shop-group-chevron" aria-hidden="true">⌄</span></summary><div class="items-grid">${items.map(itemCard).join('')}</div></details>`;
       }).join('');
-      $('#main').innerHTML = warning + `<div class="intro"><div><h1>Et eventyr helt på din måte.</h1><p>Velg noe fint til ${escape(state.name)}. Alt du kjøper, får du beholde.</p></div></div><div class="closet-grid">${unicornPanel(true)}<section class="shop-section" aria-labelledby="shop-title"><div class="shop-heading"><h2 id="shop-title">Enhjørningsbutikken</h2><span>${G.ITEMS.length} skatter i seks grupper</span></div>${groups}<p class="stats-note">Stjernene du bruker i butikken, teller fortsatt mot neste nivå.</p></section></div>`;
+      $('#main').innerHTML = warning + `<div class="intro"><div><h1>Et eventyr helt på din måte.</h1><p>Velg noe fint til ${escape(state.name)}. Alt du kjøper, får du beholde.</p></div></div><div class="closet-grid">${unicornPanel(true)}<section class="shop-section" aria-labelledby="shop-title"><div class="shop-heading"><h2 id="shop-title">${mine?'Mine ting':'Enhjørningsbutikken'}</h2><span>${mine?`${state.owned.length} av ${G.ITEMS.length} skatter`:`${G.ITEMS.length} skatter i seks grupper`}</span></div><div class="shop-filter" role="group" aria-label="Vis"><button data-filter="all" aria-pressed="${!mine}">Hele butikken</button><button data-filter="mine" aria-pressed="${mine}" ${state.owned.length?'':'disabled'}>Mine ting · ${state.owned.length}</button>${mine&&Object.keys(state.equipped).length?'<button class="text-button" id="undress">Ta av alt</button>':''}</div>${groups}<p class="stats-note">Stjernene du bruker i butikken, teller fortsatt mot neste nivå.</p></section></div>`;
     }
     bind();
   }
   function switchView(nextView) { view = nextView; preview = null; render(); }
+  function focusAfterRender(selector) { document.querySelector(selector)?.focus({preventScroll:true}); }
   function respond(value) {
     const previous = G.level(state.earned).index, result = G.answer(state,value); if (!result) return;
     save(); render(); reveal($('#next-question')); $('#next-question')?.focus({preventScroll:true});
@@ -215,6 +221,10 @@
     $('#hint-button')?.addEventListener('click',()=>{state.current.hintOpen=!state.current.hintOpen;if(state.current.hintOpen)G.useHint(state);save();render();$('#hint-button')?.focus({preventScroll:true});});
     $('#name-form')?.addEventListener('submit',e=>{e.preventDefault();const name=$('#unicorn-name').value.trim().slice(0,24);if(!name){$('#unicorn-name').setCustomValidity('Skriv et navn til enhjørningen.');$('#unicorn-name').reportValidity();return;}state.name=name;save();render();notify(`Enhjørningen din heter nå ${name}.`);});
     $('#unicorn-name')?.addEventListener('input',e=>e.target.setCustomValidity(''));
+    // Terningen fyller inn et nytt navn. Det lagres først når barnet trykker «Lagre navn».
+    $('#random-name')?.addEventListener('click',()=>{const input=$('#unicorn-name');input.value=G.randomName(input.value.trim());input.setCustomValidity('');input.classList.remove('name-new');void input.offsetWidth;input.classList.add('name-new');});
+    document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{shopFilter=b.dataset.filter;preview=null;render();focusAfterRender(`[data-filter="${shopFilter}"]`);}));
+    $('#undress')?.addEventListener('click',()=>{state.equipped={};save();render();focusAfterRender('[data-filter="mine"]');notify(`${state.name} har tatt av alt utstyret.`);});
     // Kjøpt utstyr tas av og på. Ukjøpt utstyr prøves først, og kjøpes med en egen knapp.
     document.querySelectorAll('[data-item]').forEach(b=>b.addEventListener('click',()=>{const item=G.ITEMS.find(i=>i.id===b.dataset.item);preview=null;if(G.buyOrEquip(state,item.id)){save();render();document.querySelector(`[data-item="${item.id}"]`)?.focus({preventScroll:true});notify(state.equipped[item.slot]===item.id?`${item.name} er tatt på.`:`${item.name} er tatt av.`);}}));
     document.querySelectorAll('[data-try]').forEach(b=>b.addEventListener('click',()=>{const item=G.ITEMS.find(i=>i.id===b.dataset.try);preview=item.id;render();document.querySelector(`.item [data-buy="${item.id}"]`)?.focus({preventScroll:true});if(matchMedia('(max-width: 700px)').matches)reveal($('.unicorn-scene'));}));
@@ -227,7 +237,7 @@
   $('#difficulty').addEventListener('change',e=>{state.difficulty=e.target.value;save();notify('Den nye vanskelighetsgraden gjelder fra neste oppgave.');});
   $('#reset-button').addEventListener('click',()=>{$('#reset-confirm').hidden=false;$('#reset-no').focus();});
   $('#reset-no').addEventListener('click',()=>{$('#reset-confirm').hidden=true;$('#reset-button').focus();});
-  $('#reset-yes').addEventListener('click',()=>{state=G.fresh();view='play';save();$('#settings-dialog').close();render();notify('Et nytt eventyr venter på deg og Luna.');});
+  $('#reset-yes').addEventListener('click',()=>{state=G.fresh();view='play';save();$('#settings-dialog').close();render();notify(`Et nytt eventyr venter på deg og ${state.name}.`);});
   // Tastene 1–4 velger kort etter plassering; tegnene <, = og > velger kortet med samme tegn.
   document.addEventListener('keydown',e=>{if(e.repeat||e.altKey||e.ctrlKey||e.metaKey||view!=='play'||$('#settings-dialog').open||['INPUT','SELECT','TEXTAREA','BUTTON'].includes(e.target.tagName)||!state.current||state.current.selected!==undefined) return;const chosen=/^[1-4]$/.test(e.key)?state.current.options[Number(e.key)-1]:state.current.options.find(o=>o.value===e.key);if(chosen){e.preventDefault();respond(chosen.value);}});
   save(); render();

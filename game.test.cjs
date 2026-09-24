@@ -149,8 +149,10 @@ test('lagring bevarer svarte oppgaver og hindrer nye poeng etter gjenåpning', (
 });
 
 test('ugyldig lagring erstattes med trygge verdier', () => {
-  assert.deepEqual(G.restore(null), G.fresh());
-  assert.deepEqual(G.restore({ version: 42 }), G.fresh());
+  const same = s => ({ ...s, name: '' });
+  assert.deepEqual(same(G.restore(null)), same(G.fresh()));
+  assert.deepEqual(same(G.restore({ version: 42 })), same(G.fresh()));
+  assert.ok(G.NAMES.includes(G.restore(null).name));
   const state = G.restore({ version: 1, balance: -5, earned: 'abc', current: { options: [] }, owned: ['bad'], equipped: { head: 'crown' }, round: { done: 99 }, difficulty: 'invalid' });
   assert.equal(state.balance, 0); assert.equal(state.current, null); assert.deepEqual(state.owned, []); assert.deepEqual(state.equipped, {});
   assert.equal(state.round.done, 0); assert.equal(state.difficulty, 'auto');
@@ -311,6 +313,14 @@ test('blandede runder gir ikke samme tema to ganger på rad', () => {
     if (s.round.done === 8) s.round = { done: 0, correct: 0, earned: 0 };
     s.current = G.nextQuestion(s); assert.notEqual(s.current.type, previous); previous = s.current.type; G.answer(s, s.current.answer);
   }
+});
+
+test('nye spillere får et tilfeldig navn fra listen, og et nytt trekk gir aldri samme navn', () => {
+  const names = new Set(Array.from({ length: 400 }, () => G.fresh().name));
+  assert.ok(names.size > 10); for (const n of names) assert.ok(G.NAMES.includes(n));
+  assert.equal(new Set(G.NAMES).size, G.NAMES.length); assert.ok(G.NAMES.every(n => n.length <= 24));
+  for (const n of G.NAMES) assert.notEqual(G.randomName(n), n);
+  assert.equal(G.restore({ ...G.fresh(), name: 'Stella' }).name, 'Stella');
 });
 
 test('oppgavemetadata skiller tierovergang fra større tall uten overgang', () => {

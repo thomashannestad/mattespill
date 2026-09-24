@@ -86,3 +86,15 @@
 .preview-actions .primary-button:disabled{background:#d9dccf;color:#6f7669}
 .unicorn-scene{scroll-margin-top:10px}
 .preview-bar p span{margin-right:5px}
+
+/* Trekk nytt navn, og filteret for «Mine ting» i butikken. */
+.name-form{max-width:320px}
+.name-form .name-dice{background:#f0eafa;color:var(--purple);font-size:22px;width:44px;flex-shrink:0;padding:0;border-radius:9px}
+.name-form input.name-new{animation:name-pop .35s ease-out}
+@keyframes name-pop{from{background:#f3e8b8}to{background:#fff}}
+.shop-filter{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:-6px 0 12px}
+.shop-filter button[data-filter]{background:#fffefa;border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:14px;font-weight:600;min-height:40px}
+.shop-filter button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
+.shop-filter button:disabled{opacity:.5}
+.shop-filter .text-button{margin-left:auto}
+@media(prefers-reduced-motion:reduce){.name-form input.name-new{animation:none}}

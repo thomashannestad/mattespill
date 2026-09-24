@@ -31,6 +31,11 @@
     { id: 'auroraSky', slot: 'world', name: 'Nordlysdalen', description: 'Grønne lys danser over enga', price: 58, icon: '🌌' },
     { id: 'moonGarden', slot: 'world', name: 'Månehagen', description: 'En stille hage badet i månelys', price: 98, icon: '🌕' }
   ];
+  // Navn som passer en enhjørning. Nye spillere får et tilfeldig navn, og kan trekke nye.
+  const NAMES = ['Luna', 'Stella', 'Nova', 'Fia', 'Tindra', 'Aurora', 'Lilja', 'Mira', 'Selma', 'Ronja', 'Saga', 'Iris', 'Frøya', 'Tuva', 'Ylva', 'Juni', 'Siri', 'Alma',
+    'Stjerneglans', 'Måneskinn', 'Solstråle', 'Regnbue', 'Glitter', 'Perle', 'Fjærlett', 'Sukkerspinn', 'Dugg', 'Snøfnugg', 'Kløver', 'Blåklokke', 'Rosenknopp', 'Sommerfugl',
+    'Nordlys', 'Bomull', 'Drømmesky', 'Stjerneskudd', 'Himmelblå', 'Lavendel', 'Morgenrøde', 'Tusenfryd'];
+  function randomName(except) { const pool = NAMES.filter(n => n !== except); return pool[Math.floor(Math.random() * pool.length)]; }
   const LEVELS = [{ at: 0, name: 'Liten drømmer' }, { at: 24, name: 'Engvenn' }, { at: 60, name: 'Stjernevenn' }, { at: 120, name: 'Magisk følgesvenn' }, { at: 210, name: 'Eventyrmester' }];
   const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
   const shuffle = values => { const a = [...values]; for (let i = a.length - 1; i > 0; i--) { const j = rand(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -310,7 +315,7 @@
       p.level = Math.min(SKILLS[q.meta.skill].max, p.level + 1); p.recent = []; p.support = false;
     } else if (p.support && p.recent.length >= 2 && p.recent.slice(-2).every(r => r.correct)) p.support = false;
   }
-  function fresh() { return { version: 2, balance: 0, earned: 0, answered: 0, correct: 0, name: 'Luna', owned: [], equipped: {}, difficulty: 'auto', topic: 'mixed', mastery: profiles(), round: { done: 0, correct: 0, earned: 0 }, current: null }; }
+  function fresh() { return { version: 2, balance: 0, earned: 0, answered: 0, correct: 0, name: randomName(), owned: [], equipped: {}, difficulty: 'auto', topic: 'mixed', mastery: profiles(), round: { done: 0, correct: 0, earned: 0 }, current: null }; }
   function level(earned) { let index = 0; LEVELS.forEach((l, i) => { if (earned >= l.at) index = i; }); return { ...LEVELS[index], index, next: LEVELS[index + 1] || null }; }
   const integer = (value, min, max) => Number.isInteger(value) && value >= min && value <= max;
   const shortText = (value, max) => typeof value === 'string' && value.length >= 1 && value.length <= max;
@@ -378,6 +383,6 @@
     if (state.equipped[item.slot] === id) delete state.equipped[item.slot]; else state.equipped[item.slot] = id;
     return true;
   }
-  const api = { TOPICS, SKILLS, ITEMS, LEVELS, option, question, generate, nextQuestion, useHint, fresh, restore, level, answer, buyOrEquip };
+  const api = { TOPICS, SKILLS, ITEMS, LEVELS, NAMES, randomName, option, question, generate, nextQuestion, useHint, fresh, restore, level, answer, buyOrEquip };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.MathGame = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
