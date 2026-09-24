@@ -40,7 +40,7 @@ Ikonlenkene følger [Apples veiledning for hjemskjermikoner](https://developer.a
 
 ## Slik spiller dere
 
-- Velg ett av svarkortene. De fleste oppgaver har fire tall, mens sammenligning har tegnene <, = og >. Riktig svar gir **3 stjerner totalt**, et annet svar gir **1 stjerne** for innsatsen. Bare første svar på oppgaven gir poeng.
+- Velg ett av svarkortene. De fleste oppgaver har fire tall, men noen har tegn eller ord, for eksempel <, = og >, fargenavn eller plasser i rutenettet. Riktig svar gir **3 stjerner totalt**, et annet svar gir **1 stjerne** for innsatsen. Bare første svar på oppgaven gir poeng.
 - Et hint er alltid gratis. Ved feil vises riktig svar med en kort forklaring. Det er ingen tidtaking.
 - Hver runde har åtte oppgaver. Spill en ny runde eller besøk butikken når runden er ferdig.
 - Under **Min enhjørning** kan dere velge navn, kjøpe utstyr og ta utstyret av og på. Butikken er delt i sammenleggbare grupper for pynt, manefarger, hover, halstilbehør, vinger og eventyrsteder. Ett utstyr per kategori kan brukes om gangen. Det dere har kjøpt, beholdes.
@@ -63,20 +63,22 @@ Standard er nå **Tilpass til meg · automatisk**. Tema velges over oppgaven. Fa
 | Plassverdi | Én tier og enere | Flere tiere, hundrere, deretter null på tierplassen |
 | Dobling og halvering | Doble små tall | Større tall, og halvering når barnet er klart |
 | Åpne regnestykker | Manglende tall sist i en addisjon | Ukjent tall først eller sist, også i subtraksjon |
+| Likevekt | Hvilken side av skålvekten er tyngst, eller er de like tunge | Finne loddet som mangler for at vekten skal balansere, med større lodd og ukjent lodd på begge sider |
 | Multiplikasjon | Like grupper med 2–5 i hver | Flere grupper og større tall |
 | Deling | Dele bær likt mellom kurver | Flere grupper og større tall; divisjon henger sammen med multiplikasjon |
 | Sammenligne | Sett riktig tegn (<, = eller >) mellom to tall opp til 20 | Uttrykk med pluss og minus, tall til 50, til slutt gangestykker innenfor gangetabellen. Omtrent hver fjerde oppgave har like sider |
 | Areal | Rektangel dekket av enhetsruter | Større rutenett; telle rader og kolonner |
 | Koordinater | Finne et punkt og lese vannrett retning | Lese vannrett og loddrett retning på større rutenett |
-| Diagrammer | Lese av søyler med 1–5 blomster | Søyler til 10, deretter summere fire søyler |
+| Instruksjoner i rutenettet | Følge én instruksjon, for eksempel «gå 2 til høyre», og finne den nye plassen | To og tre instruksjoner etter hverandre på større rutenett |
+| Diagrammer | Lese av søyler med 1–5 blomster | Søyler til 10, hvilken farge har flest eller færrest, forskjellen mellom to søyler, og summen av alle fire |
 
-Tierbrettet har to rekker med fem ruter. Når svaret er valgt, fylles de manglende rutene med grønne blomster. Pluss- og minusoppgaver viser mellomregning med hopp. Multiplikasjon viser like grupper. Deling viser bærene i én haug og tomme kurver før svaret, og fordelingen etter svaret. Areal viser ruter i et rektangel, og koordinater bruker et enkelt rutenett. Hint kan vise mellomregningsmodellen før svaret, med sluttallet skjult. I blandede runder fordeles øvingen mellom ferdighetene, så diagrammer er én av flere oppgavetyper.
+Tierbrettet har to rekker med fem ruter. Når svaret er valgt, fylles de manglende rutene med grønne blomster. Pluss- og minusoppgaver viser mellomregning med hopp. Multiplikasjon viser like grupper. Deling viser bærene i én haug og tomme kurver før svaret, og fordelingen etter svaret. Areal viser ruter i et rektangel. Koordinater og instruksjoner bruker et enkelt rutenett, der startpunktet vises etter svaret. Likevekt vises som en skålvekt med lodd; den holdes rett til barnet har svart, og vipper så mot den tyngste siden. Hint kan vise mellomregningsmodellen før svaret, med sluttallet skjult. I blandede runder fordeles øvingen mellom ferdighetene, så diagrammer er én av flere oppgavetyper.
 
 ## Automatisk tilpasning
 
 Dette er en enkel startmodell som kan justeres etter utprøving med barnet, ikke en standardisert faglig vurdering.
 
-- Hver ferdighet har sin egen profil og begynner på første faglige trinn. Tallrekker og plassverdi følges separat, selv om begge vises under Tallvenner. Hver ny oppgavetype kan derfor bli lettere eller vanskeligere uavhengig av de andre.
+- Hver ferdighet har sin egen profil og begynner på første faglige trinn. Tallrekker og plassverdi følges separat, selv om begge vises under Tallvenner. Det samme gjelder avlesning og instruksjoner under Koordinater. Hver ny oppgavetype kan derfor bli lettere eller vanskeligere uavhengig av de andre.
 - Oppgaven lagrer ferdighet, trinn, egenskaper (for eksempel tierovergang), rolle i øvingen og om hint er brukt. Svartid brukes ikke.
 - Minst 7 riktige uten hint blant de siste 8 oppgavene på gjeldende trinn øker trinnet med én. To feil på rad, eller tre feil blant de siste fem, senker trinnet med én og gir støtte. Trinnet går aldri utenfor ferdighetens grenser.
 - Historikken som bestemmer nivåbytte tømmes ved bytte, slik at nye observasjoner kreves. Ekstra støtte åpner hintet automatisk og viser modellen der den finnes. Etter to riktige oppgaver med ekstra støtte går barnet tilbake til vanlig støtte for trinnet. Oppgaver med ekstra støtte teller ikke som selvstendig mestring.

@@ -8,7 +8,8 @@ function checkQuestion(q) {
   assert.equal(new Set(q.options.map(o => o.value)).size, q.options.length);
   assert.ok(q.options.some(o => o.value === q.answer));
   assert.ok(q.options.every(o => typeof o.label === 'string' && o.label.length > 0));
-  if (q.kind !== 'compare') { assert.equal(q.options.length, 4); assert.ok(q.options.every(o => Number.isInteger(o.value) && o.value >= 0 && o.label === String(o.value))); }
+  if (typeof q.answer === 'number') { assert.equal(q.options.length, 4); assert.ok(q.options.every(o => Number.isInteger(o.value) && o.value >= 0 && o.label === String(o.value))); }
+  else assert.ok(q.options.every(o => typeof o.value === 'string' && o.value.length > 0));
   if (q.kind === 'tenFrame') {
     assert.equal(q.model.a + q.answer, q.model.target);
     assert.equal(q.model.target % 10, 0);
@@ -26,8 +27,17 @@ function checkQuestion(q) {
     assert.equal(q.answer, answer);
     assert.ok(q.answer < 1000);
   } else if (q.kind === 'chart') {
-    const bar = q.bars.find(b => q.prompt.includes(b.label.toLowerCase()));
-    assert.equal(q.answer, bar ? bar.value : q.bars.reduce((a, b) => a + b.value, 0));
+    const values = q.bars.map(b => b.value), named = q.bars.filter(b => q.prompt.includes(b.label.toLowerCase()));
+    if (q.form === 'read') { assert.equal(named.length, 1); assert.equal(q.answer, named[0].value); }
+    else if (q.form === 'sum') assert.equal(q.answer, values.reduce((a, b) => a + b, 0));
+    else if (q.form === 'most' || q.form === 'fewest') {
+      const target = q.form === 'most' ? Math.max(...values) : Math.min(...values);
+      assert.equal(values.filter(v => v === target).length, 1, 'én tydelig søyle');
+      assert.equal(q.bars.find(b => b.label === q.answer).value, target);
+      assert.deepEqual(q.options.map(o => o.value), q.bars.map(b => b.label));
+    } else if (q.form === 'difference') { assert.equal(named.length, 2); assert.equal(q.answer, Math.abs(named[0].value - named[1].value)); assert.ok(q.answer > 0); }
+    else assert.fail(`ukjent diagramform: ${q.form}`);
+    assert.ok(values.every(v => v >= 1 && v <= 10));
   } else if (q.kind === 'sequence') {
     const [a, b, c] = q.prompt.match(/\d+/g).map(Number);
     assert.equal(b - a, c - b);
@@ -63,6 +73,24 @@ function checkQuestion(q) {
     const { x, y, axis, limit } = q.model;
     assert.equal(q.answer, axis === 'x' ? x : y);
     assert.ok(x >= 1 && x <= limit && y >= 1 && y <= limit);
+  } else if (q.kind === 'balance') {
+    const { form, left, right, unknown } = q.model, sum = side => side.reduce((a, b) => a + b, 0);
+    if (form === 'heavier') {
+      assert.equal(q.answer, sum(left) > sum(right) ? 'left' : sum(left) < sum(right) ? 'right' : 'equal');
+      assert.deepEqual(q.options.map(o => o.value), ['left', 'equal', 'right']); assert.equal(unknown, null);
+    } else {
+      assert.ok(['left', 'right'].includes(unknown));
+      const full = unknown === 'left' ? right : left, known = unknown === 'left' ? left : right;
+      assert.equal(sum(known) + q.answer, sum(full)); assert.ok(q.answer >= 1); assert.ok(q.prompt.includes('?'));
+    }
+  } else if (q.kind === 'gridMove') {
+    const { start, moves, end, limit } = q.model, dirs = { right: [1, 0], left: [-1, 0], up: [0, 1], down: [0, -1] };
+    let pos = { ...start };
+    for (const m of moves) { pos = { x: pos.x + dirs[m.dir][0] * m.steps, y: pos.y + dirs[m.dir][1] * m.steps }; assert.ok(pos.x >= 1 && pos.x <= limit && pos.y >= 1 && pos.y <= limit, 'holder seg i rutenettet'); assert.ok(m.steps >= 1 && m.steps <= 3); }
+    assert.deepEqual(pos, end); assert.notDeepEqual(end, start); assert.equal(q.answer, `${end.x},${end.y}`);
+    assert.equal(q.options.length, 4);
+    for (const o of q.options) { const [x, y] = o.value.split(',').map(Number); assert.equal(o.label, `(${x}, ${y})`); assert.ok(x >= 1 && x <= limit && y >= 1 && y <= limit, 'alle kort er i rutenettet'); }
+    assert.ok(q.prompt.includes(`(${start.x}, ${start.y})`)); assert.ok(q.explanation.includes(`(${end.x}, ${end.y})`));
   } else assert.fail(`ukjent oppgavetype: ${q.type}/${q.kind}`);
 }
 
@@ -240,6 +268,31 @@ test('lagring der svarkortene bare var tall, oppgraderes til kort med tekst', ()
   assert.deepEqual(G.answer(restored, restored.current.answer), { correct: true, points: 3 });
   const junk = JSON.parse(JSON.stringify(s)); junk.current.options = [{ value: 1, label: 'x' }, { value: 1, label: 'y' }, { value: 2 }, 'z'];
   assert.equal(G.restore(junk).current, null);
+});
+
+test('skålvekten har like tunge sider omtrent hver fjerde gang, og lodd som mangler på begge sider', () => {
+  let equal = 0; for (let i = 0; i < 800; i++) if (G.generate('balance', 1).answer === 'equal') equal++;
+  assert.ok(equal >= 120 && equal <= 360, `like tunge: ${equal} av 800`);
+  const sides = new Set(); for (let i = 0; i < 200; i++) sides.add(G.generate('balance', 3).model.unknown);
+  assert.deepEqual([...sides].sort(), ['left', 'right']);
+  assert.ok(Array.from({ length: 200 }, () => G.generate('balance', 2)).every(q => q.model.unknown === 'right'));
+});
+
+test('rutenettet bruker én, to og tre instruksjoner, og feilsvarene ligner vanlige feil', () => {
+  for (const [level, count] of [[1, 1], [2, 2], [3, 3]]) for (let i = 0; i < 200; i++) {
+    const q = G.generate('gridMove', level); assert.equal(q.model.moves.length, count);
+    if (count === 2) assert.notEqual(q.model.moves[0].dir === 'up' || q.model.moves[0].dir === 'down', q.model.moves[1].dir === 'up' || q.model.moves[1].dir === 'down');
+  }
+  let startAmongOptions = 0; for (let i = 0; i < 200; i++) { const q = G.generate('gridMove', 2); if (q.options.some(o => o.value === `${q.model.start.x},${q.model.start.y}`)) startAmongOptions++; }
+  assert.ok(startAmongOptions > 100, 'startpunktet er ofte et av feilsvarene');
+});
+
+test('diagrammer får nye former på trinn 3 til 5, og fargekort følger søylene', () => {
+  const forms = level => new Set(Array.from({ length: 200 }, () => G.generate('chart', level).form));
+  assert.deepEqual([...forms(1)], ['read']); assert.deepEqual([...forms(3)].sort(), ['fewest', 'most']); assert.deepEqual([...forms(4)], ['difference']); assert.deepEqual([...forms(5)], ['sum']);
+  const q = G.generate('chart', 3); const s = G.fresh(); s.current = q;
+  assert.deepEqual(G.answer(s, q.answer), { correct: true, points: 3 });
+  assert.deepEqual(G.restore(JSON.parse(JSON.stringify(s))), s);
 });
 
 test('oppgavemetadata skiller tierovergang fra større tall uten overgang', () => {

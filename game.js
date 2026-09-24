@@ -1,9 +1,9 @@
 /* Ren spillogikk, delt av nettleseren og testene. Ingen nettverk eller avhengigheter. */
 (function (root) {
   'use strict';
-  const TOPICS = { mixed: 'Litt av alt', ten: 'Tiervenner', nextTen: 'Fylle neste tier', plus: 'Pluss', minus: 'Minus', numbers: 'Tallvenner', doubleHalf: 'Dobling og halvering', equation: 'Åpne regnestykker', multiply: 'Multiplikasjon', divide: 'Deling', compare: 'Sammenligne', area: 'Areal', coordinate: 'Koordinater', chart: 'Diagrammer' };
+  const TOPICS = { mixed: 'Litt av alt', ten: 'Tiervenner', nextTen: 'Fylle neste tier', plus: 'Pluss', minus: 'Minus', numbers: 'Tallvenner', doubleHalf: 'Dobling og halvering', equation: 'Åpne regnestykker', balance: 'Likevekt', multiply: 'Multiplikasjon', divide: 'Deling', compare: 'Sammenligne', area: 'Areal', coordinate: 'Koordinater', chart: 'Diagrammer' };
   // Nivåene er faglige trinn innen én ferdighet, ikke enhjørningens belønningsnivå.
-  const SKILLS = { ten: { topic: 'ten', max: 3 }, nextTen: { topic: 'nextTen', max: 4 }, plus: { topic: 'plus', max: 5 }, minus: { topic: 'minus', max: 5 }, sequence: { topic: 'numbers', max: 4 }, place: { topic: 'numbers', max: 4 }, doubleHalf: { topic: 'doubleHalf', max: 4 }, equation: { topic: 'equation', max: 4 }, multiply: { topic: 'multiply', max: 4 }, divide: { topic: 'divide', max: 4 }, compare: { topic: 'compare', max: 4 }, area: { topic: 'area', max: 4 }, coordinate: { topic: 'coordinate', max: 3 }, chart: { topic: 'chart', max: 3 } };
+  const SKILLS = { ten: { topic: 'ten', max: 3 }, nextTen: { topic: 'nextTen', max: 4 }, plus: { topic: 'plus', max: 5 }, minus: { topic: 'minus', max: 5 }, sequence: { topic: 'numbers', max: 4 }, place: { topic: 'numbers', max: 4 }, doubleHalf: { topic: 'doubleHalf', max: 4 }, equation: { topic: 'equation', max: 4 }, balance: { topic: 'balance', max: 4 }, multiply: { topic: 'multiply', max: 4 }, divide: { topic: 'divide', max: 4 }, compare: { topic: 'compare', max: 4 }, area: { topic: 'area', max: 4 }, coordinate: { topic: 'coordinate', max: 3 }, gridMove: { topic: 'coordinate', max: 3 }, chart: { topic: 'chart', max: 5 } };
   const profiles = () => Object.fromEntries(Object.keys(SKILLS).map(key => [key, { level: 1, recent: [], history: [], seen: 0, support: false }]));
   const ITEMS = [
     { id: 'bow', slot: 'head', name: 'Sløyfefin', description: 'En rosa sløyfe i manen', price: 9, icon: '🎀' },
@@ -118,6 +118,31 @@
       q.kind = 'equation'; q.title = 'Finn tallet som mangler'; q.hint = 'Tenk på hva som må stå i ruten for at begge sider av likhetstegnet skal bli like.';
       q.explanation = `${q.prompt.replace('□', q.answer)}. Begge sider blir like store.`;
       q.meta.features = [q.model.op === '+' ? 'addition' : 'subtraction', q.model.missing === 'left' ? 'unknown-first' : 'unknown-last'];
+    } else if (skill === 'balance') {
+      // Kompetansemål 9: likevekt med skålvekt. Loddene er tallsymboler, og vekten er tegningen.
+      const form = n === 1 ? 'heavier' : 'missing', top = n <= 2 ? 10 : n === 3 ? 20 : 30;
+      const weights = count => Array.from({ length: count }, () => rand(1, top));
+      const sum = side => side.reduce((total, w) => total + w, 0);
+      const show = side => side.length > 1 ? `${side.join(' + ')} = ${sum(side)}` : `${side[0]}`;
+      q.kind = 'balance'; q.title = 'Skålvekten';
+      if (form === 'heavier') {
+        const left = weights(rand(1, 2)); let right = weights(rand(1, 2));
+        // Omtrent hver fjerde gang veier sidene like mye, så «like tunge» er et ekte alternativ.
+        if (rand(0, 3) === 0) { const target = sum(left), b = target > 1 ? rand(1, target - 1) : 0; right = b && rand(0, 1) ? [target - b, b] : [target]; }
+        const diff = sum(left) - sum(right);
+        q.answer = diff > 0 ? 'left' : diff < 0 ? 'right' : 'equal'; q.model = { form, left, right, unknown: null };
+        q.prompt = `Venstre skål: ${left.join(' og ')}. Høyre skål: ${right.join(' og ')}. Hvilken side er tyngst?`;
+        q.options = [option('left', 'Venstre'), option('equal', 'Like tunge'), option('right', 'Høyre')];
+        q.hint = 'Legg sammen loddene på hver side. Den tyngste siden går ned når vi slipper vekten.';
+        q.explanation = `Venstre: ${show(left)}. Høyre: ${show(right)}. ${diff === 0 ? 'Sidene veier like mye, så vekten står i likevekt.' : `${Math.max(sum(left), sum(right))} er mest, så ${diff > 0 ? 'venstre' : 'høyre'} side går ned.`}`;
+      } else {
+        const full = weights(n === 4 ? 3 : 2), total = sum(full), known = rand(1, Math.min(total - 1, top)), unknown = n <= 2 || rand(0, 1) ? 'right' : 'left';
+        q.answer = total - known; q.model = { form, left: unknown === 'left' ? [known] : full, right: unknown === 'right' ? [known] : full, unknown };
+        q.prompt = `Venstre skål: ${q.model.left.join(' og ')}${unknown === 'left' ? ' og ?' : ''}. Høyre skål: ${q.model.right.join(' og ')}${unknown === 'right' ? ' og ?' : ''}. Vekten er i likevekt. Hvor mye veier loddet med spørsmålstegn?`;
+        q.hint = 'Regn ut siden som er full. Hvor mye mangler på den andre siden for å få like mye?';
+        q.explanation = `${full.join(' + ')} = ${total}. ${known} + ${q.answer} = ${total}, så loddet veier ${q.answer}.`;
+      }
+      q.meta.features = [form === 'heavier' ? 'compare-sides' : 'missing-weight', `weights-to-${top}`];
     } else if (skill === 'multiply' || skill === 'divide') {
       const groups = rand(2, n === 1 ? 3 : n === 2 ? 4 : n === 3 ? 5 : 6), each = rand(2, n === 1 ? 5 : n === 2 ? 6 : n === 3 ? 8 : 10), total = groups * each;
       q.kind = 'groups'; q.model = { groups, each, total, operation: skill };
@@ -168,21 +193,71 @@
       q.prompt = `Enhjørningen står på punktet. Hvilket tall viser ${axis === 'x' ? 'vannrett retning' : 'loddrett retning'}?`; q.hint = 'Les av fra null langs kanten: først bortover (x), så oppover (y).';
       q.explanation = `Punktet er (${x}, ${y}). ${axis === 'x' ? 'Vannrett' : 'Loddrett'} viser ${q.answer}.`;
       q.meta.features = [`read-${axis}-coordinate`, 'grid-point'];
+    } else if (skill === 'gridMove') {
+      // Kompetansemål 12: følge trinnvise instruksjoner i rutenettet. Samme rutenett som koordinatoppgavene.
+      const limit = n === 1 ? 4 : n === 2 ? 5 : 6, count = n;
+      const dirs = { right: [1, 0, 'til høyre'], left: [-1, 0, 'til venstre'], up: [0, 1, 'opp'], down: [0, -1, 'ned'] };
+      const opposite = { right: 'left', left: 'right', up: 'down', down: 'up' };
+      const start = { x: rand(1, limit), y: rand(1, limit) }, pos = { ...start }, moves = [];
+      while (moves.length < count) {
+        const previous = moves.at(-1)?.dir;
+        const pool = Object.keys(dirs).filter(d => d !== previous && d !== opposite[previous] && (count > 2 || !previous || dirs[d][0] !== dirs[previous][0] || dirs[d][1] !== dirs[previous][1]) && (count !== 2 || !previous || (dirs[d][0] === 0) !== (dirs[previous][0] === 0)))
+          .filter(d => { const [dx, dy] = dirs[d]; return (dx ? (dx > 0 ? limit - pos.x : pos.x - 1) : (dy > 0 ? limit - pos.y : pos.y - 1)) >= 1; });
+        const dir = pool[rand(0, pool.length - 1)], [dx, dy] = dirs[dir];
+        const room = dx ? (dx > 0 ? limit - pos.x : pos.x - 1) : (dy > 0 ? limit - pos.y : pos.y - 1);
+        const steps = rand(1, Math.min(3, room)); moves.push({ dir, steps }); pos.x += dx * steps; pos.y += dy * steps;
+      }
+      const label = ({ x, y }) => `(${x}, ${y})`, key = ({ x, y }) => `${x},${y}`, inside = ({ x, y }) => x >= 1 && x <= limit && y >= 1 && y <= limit;
+      const text = moves.map(m => `${m.steps} ${dirs[m.dir][2]}`);
+      const instruction = text.length === 1 ? text[0] : `${text.slice(0, -1).join(', ')} og ${text.at(-1)}`;
+      q.kind = 'gridMove'; q.answer = key(pos); q.model = { start, moves, end: { ...pos }, limit }; q.title = 'Følg instruksjonen';
+      q.prompt = `Enhjørningen står på ${label(start)}. Gå ${instruction}. Hvor står den da?`;
+      // Feilsvar som ligner på vanlige feil: gått motsatt vei, byttet om tallene, bare første steg, eller stoppet for tidlig.
+      const first = { x: start.x + dirs[moves[0].dir][0] * moves[0].steps, y: start.y + dirs[moves[0].dir][1] * moves[0].steps };
+      const mirrored = moves.reduce((at, m) => ({ x: at.x - dirs[m.dir][0] * m.steps, y: at.y - dirs[m.dir][1] * m.steps }), { ...start });
+      const near = [{ x: pos.x + 1, y: pos.y }, { x: pos.x - 1, y: pos.y }, { x: pos.x, y: pos.y + 1 }, { x: pos.x, y: pos.y - 1 }];
+      const seen = new Set([q.answer]), wrong = [];
+      for (const candidate of [{ x: pos.y, y: pos.x }, mirrored, first, start, ...shuffle(near)]) if (inside(candidate) && !seen.has(key(candidate))) { seen.add(key(candidate)); wrong.push(candidate); if (wrong.length === 3) break; }
+      while (wrong.length < 3) { const candidate = { x: rand(1, limit), y: rand(1, limit) }; if (!seen.has(key(candidate))) { seen.add(key(candidate)); wrong.push(candidate); } }
+      q.options = shuffle([pos, ...wrong]).map(at => option(key(at), label(at)));
+      let walk = { ...start };
+      q.explanation = `Start på ${label(start)}. ` + moves.map(m => { walk = { x: walk.x + dirs[m.dir][0] * m.steps, y: walk.y + dirs[m.dir][1] * m.steps }; return `${m.steps} ${dirs[m.dir][2]} gir ${label(walk)}`; }).join('. ') + '.';
+      q.hint = 'Ta ett steg om gangen. Høyre og venstre endrer det første tallet, opp og ned endrer det andre.';
+      q.meta.features = [`moves-${count}`, 'follow-instructions'];
     } else if (skill === 'chart') {
       q.kind = 'chart'; const labels = ['Rosa', 'Gule', 'Blå', 'Lilla'];
+      q.form = n <= 2 ? 'read' : n === 3 ? (rand(0, 1) ? 'most' : 'fewest') : n === 4 ? 'difference' : 'sum';
       q.bars = labels.map(label => ({ label, value: rand(1, n === 1 ? 5 : 10) }));
       q.title = 'Blomster i enhjørningsdalen';
-      if (n === 3) {
+      const lower = bar => bar.label.toLowerCase();
+      if (q.form === 'most' || q.form === 'fewest') {
+        // Én søyle skal være tydelig høyest eller lavest, så svaret er entydig.
+        const most = q.form === 'most', target = q.bars[rand(0, 3)], others = q.bars.filter(b => b !== target);
+        const edge = most ? Math.max(...others.map(b => b.value)) : Math.min(...others.map(b => b.value));
+        target.value = most ? Math.min(10, edge + 1) : Math.max(1, edge - 1);
+        for (const b of others) if (most ? b.value >= target.value : b.value <= target.value) b.value = target.value + (most ? -1 : 1);
+        q.prompt = most ? 'Hvilken farge har flest blomster?' : 'Hvilken farge har færrest blomster?'; q.answer = target.label;
+        q.options = q.bars.map(b => option(b.label));
+        q.explanation = `Det er ${q.bars.map(b => `${b.value} ${lower(b)}`).join(', ')}. Søylen for ${lower(target)} er ${most ? 'høyest' : 'lavest'}.`;
+        q.hint = `Finn den ${most ? 'høyeste' : 'laveste'} søylen. Hvilken farge står under den?`;
+      } else if (q.form === 'difference') {
+        const i = rand(0, 3); let j = (i + rand(1, 3)) % 4;
+        if (q.bars[i].value === q.bars[j].value) q.bars[j].value += q.bars[j].value === 10 ? -1 : 1;
+        const [big, small] = q.bars[i].value > q.bars[j].value ? [q.bars[i], q.bars[j]] : [q.bars[j], q.bars[i]];
+        q.prompt = `Hvor mange flere ${lower(big)} enn ${lower(small)} blomster er det?`; q.answer = big.value - small.value;
+        q.explanation = `${big.label} har ${big.value} og ${lower(small)} har ${small.value}. ${big.value} − ${small.value} = ${q.answer}.`;
+        q.hint = 'Les av begge søylene. Trekk det minste tallet fra det største.';
+      } else if (q.form === 'sum') {
         q.prompt = 'Hvor mange blomster er det til sammen?'; q.answer = q.bars.reduce((sum, b) => sum + b.value, 0);
         q.explanation = `${q.bars.map(b => b.value).join(' + ')} = ${q.answer} blomster.`;
         q.hint = 'Les av høyden på hver søyle, og legg sammen de fire tallene.';
       } else {
-        const selected = rand(0, 3);
-        q.prompt = `Hvor mange ${labels[selected].toLowerCase()} blomster er det?`; q.answer = q.bars[selected].value;
-        q.explanation = `Søylen for ${labels[selected].toLowerCase()} blomster går opp til ${q.answer}.`;
-        q.hint = `Finn søylen merket «${labels[selected]}». Følg toppen bort til tallene på venstre side.`;
+        const selected = q.bars[rand(0, 3)];
+        q.prompt = `Hvor mange ${lower(selected)} blomster er det?`; q.answer = selected.value;
+        q.explanation = `Søylen for ${lower(selected)} blomster går opp til ${q.answer}.`;
+        q.hint = `Finn søylen merket «${selected.label}». Følg toppen bort til tallene på venstre side.`;
       }
-      q.meta.features = [n === 3 ? 'sum-bars' : 'read-bar'];
+      q.meta.features = [`chart-${q.form}`];
     }
     if (!q.options) q.options = choices(q.answer, q.kind === 'place' && n > 1 ? 10 : 1, q.kind === 'tenFrame' ? 10 : Infinity);
     return q;
@@ -239,6 +314,14 @@
     if (!q || q.type === 'mixed' || !Object.hasOwn(TOPICS, q.type) || !['title', 'prompt', 'explanation', 'hint'].every(k => typeof q[k] === 'string') || !validValue(q.answer)) return false;
     if (!Array.isArray(q.options) || q.options.length < 2 || q.options.length > 4 || !q.options.every(validOption) || new Set(q.options.map(o => o.value)).size !== q.options.length || !q.options.some(o => o.value === q.answer) || (q.selected !== undefined && !q.options.some(o => o.value === q.selected))) return false;
     if (q.kind === 'compare' && (!q.model || !['<', '=', '>'].includes(q.answer) || ![q.model.left, q.model.right].every(x => x && integer(x.value, 0, 1000)))) return false;
+    // Visningen leser disse modellene direkte, så en ødelagt lagring må ikke slippe gjennom.
+    const m = q.model, point = at => at && integer(at.x, 1, m.limit) && integer(at.y, 1, m.limit);
+    if (q.kind === 'groups' && !(m && integer(m.groups, 1, 12) && integer(m.each, 1, 12) && m.total === m.groups * m.each)) return false;
+    if (q.kind === 'area' && !(m && integer(m.width, 1, 12) && integer(m.height, 1, 12))) return false;
+    if ((q.kind === 'coordinate' || q.kind === 'gridMove') && !(m && integer(m.limit, 2, 8))) return false;
+    if (q.kind === 'coordinate' && !point(m)) return false;
+    if (q.kind === 'gridMove' && !(point(m.start) && point(m.end) && Array.isArray(m.moves))) return false;
+    if (q.kind === 'balance' && !(m && ['heavier', 'missing'].includes(m.form) && [m.left, m.right].every(side => Array.isArray(side) && side.length >= 1 && side.length <= 4 && side.every(w => integer(w, 1, 100))) && [null, 'left', 'right'].includes(m.unknown))) return false;
     if (q.type === 'chart' && (!Array.isArray(q.bars) || q.bars.length !== 4 || !q.bars.every(b => typeof b.label === 'string' && integer(b.value, 1, 10)))) return false;
     if (q.type === 'ten' || q.type === 'nextTen' || q.kind === 'tenFrame') {
       if (!q.model || !integer(q.model.a, 0, 999) || !integer(q.model.target, 10, 1000) || q.model.target % 10 !== 0 || q.answer !== q.model.target - q.model.a || !integer(q.answer, 0, 10)) return false;

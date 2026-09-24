@@ -2,7 +2,7 @@
 
 ## Hva vi lager
 
-Enhjørningsdalen er et lite mattespill på norsk for et barn rundt åtte år, først og fremst til øving på matematikkstoff som møter eleven på 3. trinn. Barnet løser korte oppgaver ved å velge ett av svarkortene. Kortene viser tall, eller tegn der oppgaven handler om å sammenligne. Riktig svar gir tre stjerner, og et forsøk gir én stjerne. Stjernene kan brukes i en butikk til å pynte og utvikle en enhjørning.
+Enhjørningsdalen er et lite mattespill på norsk for et barn rundt åtte år, først og fremst til øving på matematikkstoff som møter eleven på 3. trinn. Barnet løser korte oppgaver ved å velge ett av svarkortene. Kortene viser tall, tegn eller ord, alt etter oppgaven. Riktig svar gir tre stjerner, og et forsøk gir én stjerne. Stjernene kan brukes i en butikk til å pynte og utvikle en enhjørning.
 
 Spillet skal gjøre mengdetrening lystbetont og oversiktlig. Det er ingen tidtaking, konto eller straff for feil svar. Oppgavene viser hint og forklaring, og barnet kan prøve igjen i nye runder.
 
@@ -27,17 +27,19 @@ Hver oppgave har en ferdighet og et skjult vanskelighetstrinn. Spillet kan velge
 | Tallrekker og plassverdi | Finne neste tall eller sette sammen hundrere, tiere og enere |
 | Dobling og halvering | Doble et tall eller dele et partall i to like deler |
 | Åpne regnestykker | Finne det ukjente tallet i addisjon eller subtraksjon |
+| Likevekt | Avgjøre hvilken side av skålvekten som er tyngst, eller finne loddet som mangler for balanse |
 | Multiplikasjon og deling | Regne med like store grupper eller dele en mengde likt |
 | Sammenligning | Sette riktig tegn (<, = eller >) mellom to tall eller to uttrykk |
 | Areal | Telle enhetsruter i et rektangel |
 | Koordinater | Lese av vannrett eller loddrett plassering av et punkt i et rutenett |
-| Diagrammer | Lese av en søyle eller summere søylene i et lite blomsterdiagram |
+| Instruksjoner i rutenettet | Følge trinnvise instruksjoner fra et startpunkt og finne den nye plassen |
+| Diagrammer | Lese av en søyle, finne fargen med flest eller færrest, forskjellen mellom to søyler, eller summen |
 
-Oppgavebanken er laget for variasjon innen hvert trinn. Diagramoppgavene leser nå av én søyle eller summerer søylene. Utklippet om data peker også mot oppgaver som ennå ikke er med: tolke og sammenligne forskjeller i diagrammer, sortere eller gruppere datasett og følge instruksjoner for å fullføre former. De kan legges til senere dersom barnet møter dette i leksene. Leksebildene er arbeidsmateriale lokalt; de trengs ikke for å kjøre spillet og er ikke del av den publiserte nettsiden.
+Oppgavebanken er laget for variasjon innen hvert trinn. Diagramoppgavene leser av én søyle, sammenligner søyler og summerer dem. Utklippet om data peker også mot oppgaver som ennå ikke er med: sortere eller gruppere datasett og følge instruksjoner for å fullføre former. De kan legges til senere dersom barnet møter dette i leksene. Leksebildene er arbeidsmateriale lokalt; de trengs ikke for å kjøre spillet og er ikke del av den publiserte nettsiden.
 
 ## Tilpasning og læringsstøtte
 
-- Hver av de 14 ferdighetene har sin egen progresjon. Framgang i én ferdighet endrer ikke automatisk nivået i en annen.
+- Hver av de 16 ferdighetene har sin egen progresjon. Framgang i én ferdighet endrer ikke automatisk nivået i en annen.
 - I automatisk modus øker trinnet etter minst sju riktige uten hint blant de siste åtte oppgavene på trinnet. To feil på rad, eller tre feil blant de siste fem, senker trinnet og gir ekstra støtte.
 - Hint kan brukes uten å miste stjerner. Et riktig svar etter hint belønnes som vanlig, men teller ikke som selvstendig mestring i tilpasningen.
 - Oppgaven forklarer svaret etter at barnet har valgt. Støttemodeller brukes blant annet for tierfylling, regnehopp, like grupper, ruteareal og koordinater.
@@ -61,8 +63,8 @@ Stjerner gir synlig framgang for innsats, ikke bare for riktige svar. Barnet kan
 
 Det viktigste neste steget er å prøve spillet med barnet og bruke observasjonene til å justere oppgavetekst, hint, prisnivå og vanskelighetsprogresjon. Aktuelle utvidelser etter utprøving:
 
-1. Legge til diagramoppgaver der barnet sammenligner søyler, finner forskjeller og sorterer eller grupperer data.
-2. Utvide praktisk måling av areal og koordinatoppgaver med enkle instruksjoner og bevegelse i rutenettet.
+1. Sortere og gruppere data, og lage et diagram fra en liten tabell.
+2. Multiplikasjon som rutenett, der 3 · 4 og 4 · 3 er samme figur snudd.
 3. Lage flere oppgavevarianter innenfor ferdighetene, slik at gjentatte runder ikke får samme preg.
 4. Vurdere en valgfri måte å eksportere eller flytte lokal framgang mellom nettlesere.
 5. Gjennomgå tilgjengelighet og bruk på nettbrett etter at barnet har prøvd spillet.

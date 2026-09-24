@@ -95,9 +95,27 @@
     const { width, height } = q.model;
     return `<div class="area-model" role="img" aria-label="Rektangel med ${height} rader og ${width} ruter i hver rad"><div class="area-grid" style="--columns:${width}">${Array.from({length:width*height},()=>'<i aria-hidden="true"></i>').join('')}</div><span>${width} ruter bortover · ${height} rader</span></div>`;
   }
-  function coordinateVisual(q) {
-    const { x, y, limit } = q.model;
-    return `<div class="coordinate-model" role="img" aria-label="Rutenett med enhjørningen på et punkt"><div class="coordinate-plane"><div class="coordinate-y-numbers" style="height:${limit*32}px">${Array.from({length:limit},(_,i)=>`<span>${limit-i}</span>`).join('')}</div><div class="coordinate-grid" style="--grid-size:${limit}">${Array.from({length:limit*limit},(_,i)=>`<i class="${i % limit === x-1 && Math.floor(i/limit) === limit-y ? 'marked':''}" aria-hidden="true">${i % limit === x-1 && Math.floor(i/limit) === limit-y ? '🦄':''}</i>`).join('')}</div></div><div class="coordinate-numbers" style="width:${limit*32}px">${Array.from({length:limit},(_,i)=>`<span>${i+1}</span>`).join('')}</div><span class="axis-caption">x · bortover &nbsp;&nbsp; y · oppover</span></div>`;
+  function coordinateVisual(q, solved = false) {
+    const { limit } = q.model, moving = q.kind === 'gridMove';
+    const here = moving ? (solved ? q.model.end : q.model.start) : q.model, from = moving && solved ? q.model.start : null;
+    const cell = i => { const x = i % limit + 1, y = limit - Math.floor(i / limit); return x === here.x && y === here.y ? '<i class="marked" aria-hidden="true">🦄</i>' : from && x === from.x && y === from.y ? '<i class="start" aria-hidden="true">✿</i>' : '<i aria-hidden="true"></i>'; };
+    const description = moving ? `Rutenett. Enhjørningen står på (${here.x}, ${here.y})${from ? `, og startet på (${from.x}, ${from.y})` : ''}` : 'Rutenett med enhjørningen på et punkt';
+    return `<div class="coordinate-model" role="img" aria-label="${description}"><div class="coordinate-plane"><div class="coordinate-y-numbers" style="height:${limit*32}px">${Array.from({length:limit},(_,i)=>`<span>${limit-i}</span>`).join('')}</div><div class="coordinate-grid" style="--grid-size:${limit}">${Array.from({length:limit*limit},(_,i)=>cell(i)).join('')}</div></div><div class="coordinate-numbers" style="width:${limit*32}px">${Array.from({length:limit},(_,i)=>`<span>${i+1}</span>`).join('')}</div><span class="axis-caption">x · bortover &nbsp;&nbsp; y · oppover</span></div>`;
+  }
+  function balanceVisual(q, solved = false) {
+    const { form, left, right, unknown } = q.model, sum = side => side.reduce((total, w) => total + w, 0);
+    const totals = { left: sum(left) + (unknown === 'left' && solved ? q.answer : 0), right: sum(right) + (unknown === 'right' && solved ? q.answer : 0) };
+    // Før svaret holdes vekten rett, ellers ville den røpe svaret. Etter svaret vipper den mot den tyngste siden.
+    const tilt = form === 'heavier' && solved ? Math.sign(totals.right - totals.left) * 9 : 0, rad = tilt * Math.PI / 180;
+    const end = dir => ({ x: 160 + dir * 105 * Math.cos(rad), y: 42 + dir * 105 * Math.sin(rad) });
+    const pan = (side, dir) => {
+      const e = end(dir), x = e.x, y = e.y + 46, items = [...side.map(String), ...(unknown === (dir < 0 ? 'left' : 'right') ? [solved ? String(q.answer) : '?'] : [])];
+      const startX = x - (items.length * 30 - 4) / 2;
+      return `<path d="M${e.x} ${e.y}L${x - 56} ${y}M${e.x} ${e.y}L${x + 56} ${y}" stroke="#8d7cae" stroke-width="1.5" fill="none"/><path d="M${x - 60} ${y}h120l-10 16h-100Z" fill="#d8dfd1" stroke="#70947b" stroke-width="1.5"/>${items.map((label, i) => { const wx = startX + i * 30, box = label === '?'; return `<rect x="${wx}" y="${y - 28}" width="26" height="26" rx="5" fill="${box ? '#fffdfa' : '#f3d378'}" stroke="${box ? '#b9c4b0' : '#c29c45'}" stroke-width="1.5"${box ? ' stroke-dasharray="3 2"' : ''}/><text x="${wx + 13}" y="${y - 10}" text-anchor="middle" font-size="12" font-weight="700" fill="${box ? '#886ba4' : '#6b5218'}">${label}</text>`; }).join('')}`;
+    };
+    const l = end(-1), r = end(1), describe = side => side.join(' og ');
+    const caption = form === 'heavier' ? (solved ? (tilt === 0 ? 'Vekten står i likevekt.' : `${tilt > 0 ? 'Høyre' : 'Venstre'} side går ned.`) : 'Vekten holdes rett til du har svart.') : (solved ? `${totals.left} på hver side.` : 'Vekten er i likevekt.');
+    return `<figure class="balance-model" aria-label="Skålvekt. Venstre skål: ${describe(left)}${unknown === 'left' ? ' og et ukjent lodd' : ''}. Høyre skål: ${describe(right)}${unknown === 'right' ? ' og et ukjent lodd' : ''}. ${caption}"><svg viewBox="0 0 320 190" aria-hidden="true"><path d="M160 42L138 178h44Z" fill="#c8dbc0" stroke="#8aaa83" stroke-width="1.5"/><rect x="108" y="176" width="104" height="7" rx="3" fill="#8aaa83"/><line x1="${l.x}" y1="${l.y}" x2="${r.x}" y2="${r.y}" stroke="#8d7cae" stroke-width="8" stroke-linecap="round"/><circle cx="160" cy="42" r="6" fill="#fffdfa" stroke="#8d7cae" stroke-width="2"/>${pan(left, -1)}${pan(right, 1)}</svg><figcaption>${caption}</figcaption></figure>`;
   }
   function compareVisual(q) {
     const expr = x => x.op ? `${x.a} ${x.op} ${x.b}` : `${x.a}`, { left, right } = q.model;
@@ -108,21 +126,22 @@
     if (q.kind === 'tenFrame') return tenFrame(q,solved);
     if (q.kind === 'groups') return groupsVisual(q,solved);
     if (q.kind === 'area') return areaVisual(q);
-    if (q.kind === 'coordinate') return coordinateVisual(q);
+    if (q.kind === 'coordinate' || q.kind === 'gridMove') return coordinateVisual(q,solved);
+    if (q.kind === 'balance') return balanceVisual(q,solved);
     if (q.kind === 'compare') return compareVisual(q);
     return stepsVisual(q,solved);
   }
   function questionCard() {
     const q = state.current, answered = q.selected !== undefined, correct = q.selected === q.answer;
-    const showModel = !answered && ((q.showSupport || q.hintOpen) && (q.kind === 'tenFrame' || q.steps) || ['groups','area','coordinate'].includes(q.kind));
+    const showModel = !answered && ((q.showSupport || q.hintOpen) && (q.kind === 'tenFrame' || q.steps) || ['groups','area','coordinate','gridMove','balance'].includes(q.kind));
     return `<section class="question-card ${q.type === 'chart' ? 'chart-card' : ''} ${q.kind==='tenFrame'?'ten-card':''}" aria-label="Matteoppgave">
       <div class="round-header"><span>Oppgave ${Math.min(state.round.done+(answered?0:1),8)} av 8</span><strong>${G.TOPICS[q.type]}</strong></div>
       <div class="round-dots" aria-hidden="true">${Array.from({length:8},(_,i)=>`<span class="${i<state.round.done?'done':i===state.round.done?'current':''}"></span>`).join('')}</div>
       <div class="question-content"><h2 id="question-title" tabindex="-1">${escape(q.title)}</h2>
-      ${q.kind==='chart'?chart(q)+`<p class="chart-question">${escape(q.prompt)}</p>`:['groups','doubleHalf','area','coordinate'].includes(q.kind)?`<p class="question-text">${escape(q.prompt)}</p>`:`<p class="equation ${q.kind==='place'?'place':['tenFrame','equation','compare'].includes(q.kind)?'missing-number':q.kind==='sequence'?'sequence':''}">${escape(q.prompt)}${q.type==='plus'||q.type==='minus'?' = ?':''}</p>`}
+      ${q.kind==='chart'?chart(q)+`<p class="chart-question">${escape(q.prompt)}</p>`:['groups','doubleHalf','area','coordinate','gridMove','balance'].includes(q.kind)?`<p class="question-text">${escape(q.prompt)}</p>`:`<p class="equation ${q.kind==='place'?'place':['tenFrame','equation','compare'].includes(q.kind)?'missing-number':q.kind==='sequence'?'sequence':''}">${escape(q.prompt)}${q.type==='plus'||q.type==='minus'?' = ?':''}</p>`}
       ${showModel?learningVisual(q):''}</div>
       <p class="answer-instruction">${answered?'Riktig svar er markert med ✓':'Trykk på svaret du tror er riktig'}</p>
-      <div class="answers ${q.options.length===3?'count-3':''}">${q.options.map((o,i)=>`<button class="answer ${answered?o.value===q.answer?'correct':o.value===q.selected?'incorrect':'muted':''} ${typeof o.value==='string'?'symbol':''}" data-option="${i}" ${answered?'disabled':''} aria-label="${escape(o.spoken||o.label)}${answered&&o.value===q.answer?', riktig svar':''}"><span class="answer-key" aria-hidden="true">${i+1}</span>${escape(o.label)}${answered&&o.value===q.answer?'<span class="mark" aria-hidden="true">✓</span>':''}</button>`).join('')}</div>
+      <div class="answers ${q.options.length===3?'count-3':''}">${q.options.map((o,i)=>`<button class="answer ${answered?o.value===q.answer?'correct':o.value===q.selected?'incorrect':'muted':''} ${/^\d+$/.test(o.label)?'':o.label.length<=2?'symbol':'text'}" data-option="${i}" ${answered?'disabled':''} aria-label="${escape(o.spoken||o.label)}${answered&&o.value===q.answer?', riktig svar':''}"><span class="answer-key" aria-hidden="true">${i+1}</span>${escape(o.label)}${answered&&o.value===q.answer?'<span class="mark" aria-hidden="true">✓</span>':''}</button>`).join('')}</div>
       ${answered?`<div class="feedback ${correct?'':'try'}" role="status"><div class="feedback-top"><b>${correct?'Det stemmer!':'Takk for at du prøvde!'}</b><span class="point-award">+${correct?3:1} ★</span></div><p>${escape(q.explanation)}</p>${learningVisual(q,true)}<button class="primary-button" id="next-question">${state.round.done===8?'Se hvordan det gikk':'Neste oppgave'} <span aria-hidden="true">→</span></button></div>`:`<div class="help-row"><button class="text-button" id="hint-button" aria-expanded="${q.hintOpen?'true':'false'}" aria-controls="hint">${q.hintOpen?'Skjul hint':'Jeg vil ha et hint'}</button><span>Ingen hast. Du har god tid.</span></div><p class="hint" id="hint" ${q.hintOpen?'':'hidden'}>${escape(q.hint)}</p>`}
     </section>`;
   }
