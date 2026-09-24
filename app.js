@@ -23,7 +23,15 @@
     const mane = ({ mint: ['#83bbaa','#c5e9ca','#5c968d'], ocean: ['#80b9da','#b5e7e7','#6991c2'], rose: ['#d985a8','#f2c2d1','#a8557d'], peach: ['#ebaa83','#f8d3a4','#c87970'], auroraMane: ['#53a99d','#c3a3db','#536caa'], lavenderMane: ['#aa8ac6','#e7c4e7','#745a9c'], sunGoldMane: ['#e8ad47','#ffe5a2','#bb763b'], forestMane: ['#529676','#acd69b','#356c59'] })[eq.mane] || ['#b29acb','#e4c2dc','#8d7cae'];
     const sceneName = aurora ? 'Nordlys over dalen' : moonGarden ? 'Månehagen' : night ? 'Under stjernene' : sunset ? 'En gyllen kveld' : 'Hjemme i blomsterengen';
     const hoofColors = eq.feet === 'heartHooves' ? ['#e998b6','#c8769a'] : eq.feet === 'moonHooves' ? ['#d5d8eb','#a5a9c4'] : ['#e9c261','#cfaa51'];
-    const wingFill = eq.back === 'rainbowWings' ? ['#f2c2d1','#d6c4f2','#afdace'] : ['#f1e5fa','#b59ac8','#b59ac8'];
+    // Fjærvinger som vifter ut fra ryggen, slik som ikonet i butikken. Regnbuevingene har én fjær per regnbuefarge, rødt øverst.
+    const feather = (angle, length, width, fill, stroke) => `<g transform="translate(206 222) rotate(${angle})"><path d="M0 0C${length*.3} ${-width} ${length*.82} ${-width} ${length} 0 ${length*.82} ${width} ${length*.3} ${width} 0 0Z" fill="${fill}" stroke="${stroke}" stroke-width="1.6"/><path d="M4 0H${length*.86}" stroke="${stroke}" stroke-width="1.1" opacity=".55" fill="none"/></g>`;
+    const wings = () => {
+      const rainbow = eq.back === 'rainbowWings';
+      const colors = rainbow ? [['#e8605e','#b94643'],['#f39a4f','#c47433'],['#f4cf4e','#c9a531'],['#6fbf7f','#4b9459'],['#5fa6dc','#3f7fb3'],['#9d7ad3','#7556a8']] : Array(6).fill(['#f4ecfb','#b59ac8']);
+      const long = [[262,150],[248,154],[234,148],[220,136],[206,120],[192,104]].map(([a,l],i) => feather(a, l, 14, colors[i][0], colors[i][1]));
+      const short = [[256,74],[240,78],[224,72],[208,64]].map(([a,l]) => feather(a, l, 15, rainbow ? '#fffdf8' : '#fdfaff', rainbow ? '#d9c9a6' : '#c9b6d9'));
+      return `<g class="wings">${long.reverse().join('')}${short.reverse().join('')}</g>`;
+    };
     const itemName = id => G.ITEMS.find(item => item.id === id)?.name;
     return `<div class="unicorn-scene"><span class="scene-label">${sceneName}</span>
     <svg viewBox="0 0 500 430" role="img" aria-label="${escape(state.name)}, enhjørningen din${eq.head ? ', med '+escape(itemName(eq.head)) : ''}${eq.mane ? ', med '+escape(itemName(eq.mane)) : ''}${eq.feet ? ', med '+escape(itemName(eq.feet)) : ''}${eq.neck ? ', med '+escape(itemName(eq.neck)) : ''}${eq.back ? ', med '+escape(itemName(eq.back)) : ''}${eq.world ? ', i '+escape(itemName(eq.world)) : ''}">
@@ -46,7 +54,7 @@
         <path d="m166 261 2 65q1 9 20 6l13-53m64-11-6 58q2 10 22 5l16-67" fill="url(#coat)"/>
         <path d="m168 316 0 11q1 10 20 5l3-15m69-1-1 10q2 11 22 5l4-14" fill="${eq.feet ? hoofColors[0] : '#c4add2'}"/>
         <path d="m183 319-1 5q1 8 20 7l3-11m70-7 2 11q2 7 19 2l-1-11" fill="${eq.feet ? hoofColors[1] : '#b39bbf'}"/>
-        ${eq.back ? `<g fill="${wingFill[0]}" stroke="${wingFill[1]}"><path d="M228 237c-62-7-81-39-82-86 18 7 37 18 48 35-9-29-5-46 6-58 23 24 44 60 28 109Z"/><path d="M226 235q-44-23-66-65m65 64q-8-51-24-90" fill="none"/><path d="M225 235q-29-35-34-56" fill="none" stroke="${wingFill[2]}"/></g>` : ''}
+        ${eq.back ? wings() : ''}
         <path d="M274 112c-21-10-36 1-44 21-6 15 3 26-3 38-7 12-25 24-20 43 5 17 26 28 49 16-14-10-11-22-2-35 10-14 17-35 7-48" fill="url(#hair)"/>
         <path d="M251 124c-29 22 15 39-15 64-13 12-14 26 0 35" stroke="${mane[2]}" fill="none" opacity=".55"/>
         <path d="M279 112q-21-27-8-47 23 12 28 40" fill="url(#coat)"/><path d="m279 97-4-20 14 24" fill="#e7bfcf" stroke="none"/>
