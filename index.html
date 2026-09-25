@@ -10,20 +10,23 @@
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="apple-mobile-web-app-title" content="Matteeventyr">
-  <link rel="stylesheet" href="styles.css?v=11">
-  <script src="game.js?v=11" defer></script>
-  <script src="app.js?v=11" defer></script>
+  <link rel="stylesheet" href="styles.css?v=12">
+  <script src="game.js?v=12" defer></script>
+  <script src="app.js?v=12" defer></script>
   <script>if ('serviceWorker' in navigator && location.protocol.startsWith('http')) addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));</script>
 </head>
 <body>
+  <!-- Toppmenyen følger med når siden rulles, så stjernene og fanene alltid er synlige. -->
+  <header class="appbar">
+    <div class="appbar-inner">
+      <a class="brand" href="./index.html" aria-label="Enhjørningsdalen, hjem"><span class="brand-mark" aria-hidden="true">✦</span><span class="brand-text">Enhjørningsdalen<small>Et lite matteeventyr</small></span></a>
+      <nav class="navigation" aria-label="Spillmeny"><button class="nav-button active" id="play-tab" aria-current="page"><span class="nav-icon" aria-hidden="true">✎</span><span class="nav-long">Spill og lær</span><span class="nav-short">Spill</span></button><button class="nav-button" id="unicorn-tab"><span class="nav-icon" aria-hidden="true">✧</span><span class="nav-long">Min enhjørning</span><span class="nav-short">Enhjørning</span></button></nav>
+      <div class="header-actions"><div class="wallet" aria-label="Stjerner du kan bruke"><span aria-hidden="true">★</span><b id="balance">0</b><span class="wallet-label">stjerner</span></div><button class="icon-button" id="settings-button" aria-label="Innstillinger">⚙</button></div>
+    </div>
+  </header>
   <div class="page-shell">
-    <header class="topbar">
-      <a class="brand" href="./index.html" aria-label="Enhjørningsdalen, hjem"><span class="brand-mark" aria-hidden="true">✦</span><span>Enhjørningsdalen<small>Et lite matteeventyr</small></span></a>
-      <div class="header-actions"><div class="wallet" aria-label="Stjerner du kan bruke"><span aria-hidden="true">★</span><b id="balance">0</b><span>stjerner</span></div><button class="icon-button" id="settings-button" aria-label="Innstillinger">⚙</button></div>
-    </header>
-    <nav class="navigation" aria-label="Spillmeny"><button class="nav-button active" id="play-tab" aria-current="page"><span aria-hidden="true">✎</span> Spill og lær</button><button class="nav-button" id="unicorn-tab"><span aria-hidden="true">✧</span> Min enhjørning</button><span class="save-note" id="save-note">Lagres på denne enheten</span></nav>
     <main id="main"></main>
-    <footer>Små oppgaver. Store eventyr. <span aria-hidden="true">✦</span> I ditt eget tempo.</footer>
+    <footer>Små oppgaver. Store eventyr. <span aria-hidden="true">✦</span> I ditt eget tempo.<br><span class="save-note" id="save-note">Lagres på denne enheten</span></footer>
   </div>
   <div id="toast" role="status" class="toast" hidden></div>
   <div id="confetti" class="confetti" aria-hidden="true"></div>

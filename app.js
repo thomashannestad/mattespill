@@ -203,7 +203,7 @@
     const warning = storageAvailable ? '' : '<p class="storage-warning" role="alert">Nettleseren kan ikke lagre nå. Du kan spille, men fremgangen kan forsvinne når siden lukkes. Tillat nettleserlagring for å ta vare på eventyret.</p>';
     if (view === 'play') {
       const nextItem = G.ITEMS.find(i=>!state.owned.includes(i.id));
-      $('#main').innerHTML = warning + `<div class="intro"><div><h1>Et lite regnestykke, litt mer magi.</h1><p>Løs oppgaver og samle stjerner til ${escape(state.name)}.</p></div><label class="topic-select">Vi øver på <select id="topic">${Object.entries(G.TOPICS).map(([key,label])=>`<option value="${key}" ${key===state.topic?'selected':''}>${label}</option>`).join('')}</select></label></div><div class="play-grid">${state.round.done===8 && !state.current ? summaryCard() : questionCard()}${unicornPanel()}</div>${nextItem?`<div class="reward-strip"><div class="reward-icon" aria-hidden="true">${nextItem.icon}</div><div><h3>${nextItem.name} til ${escape(state.name)}?</h3><p>${state.balance>=nextItem.price?'Du har nok stjerner! Finn den i butikken.':`Bare ${nextItem.price-state.balance} stjerner til, så kan den bli din.`}</p></div><button class="text-button" data-view="closet">Se butikken</button></div>`:''}`;
+      $('#main').innerHTML = warning + `<h1 class="sr-only">Spill og lær</h1><div class="play-toolbar"><label class="topic-select">Vi øver på <select id="topic">${Object.entries(G.TOPICS).map(([key,label])=>`<option value="${key}" ${key===state.topic?'selected':''}>${label}</option>`).join('')}</select></label></div><div class="play-grid">${state.round.done===8 && !state.current ? summaryCard() : questionCard()}${unicornPanel()}</div>${nextItem?`<div class="reward-strip"><div class="reward-icon" aria-hidden="true">${nextItem.icon}</div><div><h3>${nextItem.name} til ${escape(state.name)}?</h3><p>${state.balance>=nextItem.price?'Du har nok stjerner! Finn den i butikken.':`Bare ${nextItem.price-state.balance} stjerner til, så kan den bli din.`}</p></div><button class="text-button" data-view="closet">Se butikken</button></div>`:''}`;
     } else {
       const slotLabels = { head: 'Pynt', mane: 'Manefarger', feet: 'Hover', neck: 'Rundt halsen', back: 'Vinger', world: 'Eventyrsteder', foal: 'Enhjørningsføll' };
       const slotOrder = ['mane','head','feet','neck','back','world','foal'];
@@ -223,15 +223,21 @@
         if (!items.length) return '';
         return `<details class="shop-group" data-shop-group="${slot}" ${mine||shopOpenGroups.has(slot)?'open':''}><summary><span class="shop-group-name">${slotLabels[slot]}</span><span class="shop-group-count">${mine?`${items.length} ting`:`${items.length} valg`}</span><span class="shop-group-owned">${ownedCount} kjøpt</span><span class="shop-group-chevron" aria-hidden="true">⌄</span></summary>${slot === 'foal' ? '<p class="shop-group-note">En liten venn å spare til. Ett føll kan være med i engen om gangen. Du beholder alle føllene du kjøper, og kan bytte når du vil.</p>' : ''}<div class="items-grid">${items.map(itemCard).join('')}</div></details>`;
       }).join('');
-      $('#main').innerHTML = warning + `<div class="intro"><div><h1>Et eventyr helt på din måte.</h1><p>Velg noe fint til ${escape(state.name)}. Alt du kjøper, får du beholde.</p></div></div><div class="closet-grid">${unicornPanel(true)}<section class="shop-section" aria-labelledby="shop-title"><div class="shop-heading"><h2 id="shop-title">${mine?'Mine ting':'Enhjørningsbutikken'}</h2><span>${mine?`${state.owned.length} av ${G.ITEMS.length} skatter`:`${G.ITEMS.length} skatter i ${slotOrder.length} grupper`}</span></div><div class="shop-filter" role="group" aria-label="Vis"><button data-filter="all" aria-pressed="${!mine}">Hele butikken</button><button data-filter="mine" aria-pressed="${mine}" ${state.owned.length?'':'disabled'}>Mine ting · ${state.owned.length}</button>${mine&&Object.keys(state.equipped).some(slot=>slot!=='foal')?'<button class="text-button" id="undress">Ta av alt</button>':''}</div>${groups}<p class="stats-note">Stjernene du bruker i butikken, teller fortsatt mot neste nivå.</p></section></div>`;
+      $('#main').innerHTML = warning + `<h1 class="sr-only">Min enhjørning</h1><div class="closet-grid">${unicornPanel(true)}<section class="shop-section" aria-labelledby="shop-title"><div class="shop-heading"><h2 id="shop-title">${mine?'Mine ting':'Enhjørningsbutikken'}</h2><span>${mine?`${state.owned.length} av ${G.ITEMS.length} skatter`:`${G.ITEMS.length} skatter i ${slotOrder.length} grupper`}</span></div><div class="shop-filter" role="group" aria-label="Vis"><button data-filter="all" aria-pressed="${!mine}">Hele butikken</button><button data-filter="mine" aria-pressed="${mine}" ${state.owned.length?'':'disabled'}>Mine ting · ${state.owned.length}</button>${mine&&Object.keys(state.equipped).some(slot=>slot!=='foal')?'<button class="text-button" id="undress">Ta av alt</button>':''}</div>${groups}<p class="stats-note">Stjernene du bruker i butikken, teller fortsatt mot neste nivå.</p></section></div>`;
     }
     bind();
   }
   function switchView(nextView) { view = nextView; preview = null; render(); }
   function focusAfterRender(selector) { document.querySelector(selector)?.focus({preventScroll:true}); }
+  // Stjernene i toppmenyen spretter og viser +3 når de øker, så barnet ser poengene selv om oppgaven er i fokus.
+  function bumpWallet(points) {
+    const wallet = $('.wallet'); wallet.classList.remove('bump'); void wallet.offsetWidth; wallet.classList.add('bump');
+    wallet.querySelector('.award')?.remove(); wallet.insertAdjacentHTML('beforeend', `<span class="award" aria-hidden="true">+${points}</span>`);
+    setTimeout(() => wallet.querySelector('.award')?.remove(), 1300);
+  }
   function respond(value) {
     const previous = G.level(state.earned).index, result = G.answer(state,value); if (!result) return;
-    save(); render(); reveal($('#next-question')); $('#next-question')?.focus({preventScroll:true});
+    save(); render(); reveal($('#next-question')); $('#next-question')?.focus({preventScroll:true}); bumpWallet(result.points);
     if (result.correct) { $('#unicorn-art')?.classList.add('unicorn-happy'); celebrate(); }
     if (G.level(state.earned).index>previous) notify(`${state.name} nådde nivå ${G.level(state.earned).index+1}! Magien vokser ✦`);
   }

@@ -104,3 +104,59 @@
 .foal-icon svg{display:block;width:96px;height:96px;max-width:100%}
 .shop-group-note{margin:0 16px 16px;color:var(--muted);font-size:13px;line-height:1.6;max-width:55ch}
 .shop-heading{gap:12px;flex-wrap:wrap}
+
+/* ===== Oppsett med fast toppmeny (iPad først, deretter telefon) =====
+   Stjernene, fanene og innstillingene ligger i en toppmeny som følger med når siden rulles.
+   På iPad og større står enhjørningen fast ved siden av oppgaven. */
+:root{--appbar-h:68px}
+.appbar{position:sticky;top:0;z-index:4;padding-top:env(safe-area-inset-top);background:#f6f8f1eb;-webkit-backdrop-filter:saturate(1.2) blur(10px);backdrop-filter:saturate(1.2) blur(10px);border-bottom:1px solid var(--line)}
+.appbar-inner{max-width:1240px;margin:auto;padding:0 44px;height:var(--appbar-h);display:flex;align-items:center;gap:16px}
+.appbar .brand{font-size:20px;letter-spacing:-.6px;flex-shrink:0}
+.appbar .brand small{font-size:11px;margin-top:2px;letter-spacing:.3px}
+.appbar .brand-mark{width:40px;height:42px;font-size:30px;border-radius:14px 14px 17px 7px}
+.appbar .navigation{margin:0 auto 0 8px;padding:4px;gap:4px;border:0;border-radius:15px;background:#e7ede1}
+.appbar .nav-button{padding:8px 16px;min-height:40px;border-radius:11px;font-size:15px;white-space:nowrap}
+.appbar .nav-button .nav-icon{font-size:18px;margin-right:7px}
+.appbar .nav-button:not(.active):hover{background:#dde6d6}
+.nav-short{display:none}
+.header-actions{gap:8px}
+.wallet{position:relative;padding:8px 16px}
+.wallet.bump{animation:wallet-bump .5s ease-out}
+.wallet .award{position:absolute;right:6px;top:-4px;font-size:15px;font-weight:800;color:#b07d14;animation:award-rise 1.2s ease-out forwards;pointer-events:none}
+@keyframes wallet-bump{0%{transform:scale(1)}35%{transform:scale(1.14);background:#ffe9a6}100%{transform:scale(1)}}
+@keyframes award-rise{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(24px)}}
+.page-shell{padding-top:18px}
+.play-toolbar{display:flex;align-items:center;justify-content:flex-start;margin:0 0 14px}
+.play-toolbar .topic-select select{max-width:none;min-width:200px;font-weight:600}
+footer .save-note{display:inline-block;margin-top:6px;font-size:11px;color:#98a497}
+.question-card{min-height:0}
+.round-header,.summary,.unicorn-scene{scroll-margin-top:calc(var(--appbar-h) + env(safe-area-inset-top) + 12px)}
+@media(min-width:701px){
+  .play-grid .unicorn-panel,.closet-grid .unicorn-panel{position:sticky;top:calc(var(--appbar-h) + env(safe-area-inset-top) + 16px)}
+}
+/* iPad stående og små nettbrett: litt strammere, men fortsatt to kolonner. */
+@media(max-width:950px){
+  .appbar-inner{padding:0 25px;gap:12px}
+  .appbar .brand small{display:none}
+  .appbar .nav-button{padding:8px 13px}
+}
+@media(min-width:701px) and (max-width:950px){.play-grid{grid-template-columns:1.25fr 1fr}}
+@media(max-width:820px){.wallet .wallet-label{display:none}.wallet{padding:8px 13px}}
+/* Telefon: bare merket, korte fanenavn og stjernetallet i én rad. */
+@media(max-width:700px){
+  :root{--appbar-h:56px}
+  .appbar-inner{padding:0 12px;gap:8px}
+  .appbar .brand-text{display:none}
+  .appbar .brand-mark{display:grid;width:36px;height:38px;font-size:26px;border-radius:12px 12px 15px 6px}
+  .appbar .navigation{margin:0 auto 0 0}
+  .appbar .nav-button{padding:7px 11px;font-size:14px;min-height:38px}
+  .appbar .nav-button .nav-icon{font-size:16px;margin-right:5px}
+  .nav-long{display:none}.nav-short{display:inline}
+  .wallet{padding:6px 11px}.header-actions{gap:2px}
+  .page-shell{padding-top:12px}
+  .play-toolbar{margin-bottom:10px}.play-toolbar .topic-select{width:100%}.play-toolbar .topic-select select{min-width:0;flex:1}
+}
+@media(max-width:360px){.appbar .nav-button .nav-icon{display:none}}
+@media(prefers-reduced-motion:reduce){.wallet.bump,.wallet .award{animation:none}.wallet .award{display:none}}
+@media(max-width:700px){.wallet .wallet-label{display:none}.wallet span:last-child:not(.wallet-label){display:inline}}
+@media(max-width:430px){.appbar .nav-button .nav-icon{display:none}.appbar .nav-button{padding:7px 10px}.appbar .navigation{gap:2px;padding:3px}.appbar .icon-button{width:38px}}
