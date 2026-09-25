@@ -98,3 +98,9 @@
 .shop-filter button:disabled{opacity:.5}
 .shop-filter .text-button{margin-left:auto}
 @media(prefers-reduced-motion:reduce){.name-form input.name-new{animation:none}}
+
+/* Føll deler koordinatsystem med den voksne, så begge holder plass ved alle skjermbredder. */
+.foal-icon{height:96px}
+.foal-icon svg{display:block;width:96px;height:96px;max-width:100%}
+.shop-group-note{margin:0 16px 16px;color:var(--muted);font-size:13px;line-height:1.6;max-width:55ch}
+.shop-heading{gap:12px;flex-wrap:wrap}

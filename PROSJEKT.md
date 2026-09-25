@@ -49,6 +49,8 @@ Oppgavebanken er laget for variasjon innen hvert trinn. Diagramoppgavene leser a
 
 Stjerner gir synlig framgang for innsats, ikke bare for riktige svar. Barnet kan gi enhjørningen navn, kjøpe ting og ta dem av og på. Butikken har sammenleggbare grupper for manefarger, pynt, hover, halstilbehør, vinger og eventyrsteder. Kjøpt utstyr beholdes, og bare ett element i hver gruppe kan være på samtidig.
 
+Butikken har også **enhjørningsføll**: Kløver (150 stjerner), Fersken (210) og Månefnugg (280). Ett føll kan følge den voksne i engen om gangen. Føll kan forhåndsvises gratis, kjøpte føll beholdes, og det er gratis å bytte eller la dem hvile. «Ta av alt» fjerner utstyret, men lar føllet bli med.
+
 ## Teknologi, lagring og publisering
 
 - Nettleserbasert, statisk app med vanlig HTML, CSS og JavaScript. Den trenger ingen serverkode eller eksterne pakker for selve spillet.

@@ -44,6 +44,7 @@ Ikonlenkene følger [Apples veiledning for hjemskjermikoner](https://developer.a
 - Et hint er alltid gratis. Ved feil vises riktig svar med en kort forklaring. Det er ingen tidtaking.
 - Hver runde har åtte oppgaver. Spill en ny runde eller besøk butikken når runden er ferdig.
 - Under **Min enhjørning** kan dere velge navn, prøve og kjøpe utstyr, og ta utstyret av og på. Et trykk på «Prøv» viser tingen på enhjørningen uten å bruke stjerner. Kjøpet skjer først når dere trykker «Kjøp». Butikken er delt i sammenleggbare grupper for pynt, manefarger, hover, halstilbehør, vinger og eventyrsteder. Ett utstyr per kategori kan brukes om gangen. Det dere har kjøpt, beholdes.
+- Butikken har også **enhjørningsføll**: Kløver (150 stjerner), Fersken (210) og Månefnugg (280). Ett føll kan følge den voksne i engen om gangen. Føll kan forhåndsvises gratis, kjøpte føll beholdes, og det er gratis å bytte eller la dem hvile. «Ta av alt» fjerner utstyret, men lar føllet bli med.
 - Enhjørningens nivå følger alle stjernene som er tjent. Kjøp reduserer ikke nivået. Nye nivåer nås ved 24, 60, 120 og 210 opptjente stjerner; enhjørningen vokser litt og får flere magiske detaljer.
 - Tannhjulet åpner innstillinger for vanskelighetsgrad og mulighet til å starte på nytt. Sletting krever en ekstra bekreftelse.
 

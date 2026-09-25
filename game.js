@@ -16,7 +16,7 @@
     { id: 'wings', slot: 'back', name: 'Drømmevinger', description: 'Vinger til din magiske venn', price: 60, icon: '🪽' },
     { id: 'night', slot: 'world', name: 'Stjernenatt', description: 'En hel himmel av stjerner', price: 75, icon: '🌙' },
     { id: 'pearl', slot: 'head', name: 'Perlespenne', description: 'En liten perle som glitrer i manen', price: 16, icon: '🫧' },
-    { id: 'starclip', slot: 'head', name: 'Stjernedryss', description: 'En stjerne til enhjørningens lugg', price: 34, icon: '🌟' },
+    { id: 'starclip', slot: 'head', name: 'Stjernedryss', description: 'En stjerne til enhjørningens man', price: 34, icon: '🌟' },
     { id: 'rose', slot: 'mane', name: 'Rosedrøm', description: 'En myk man i rosa og plomme', price: 22, icon: '🌷' },
     { id: 'peach', slot: 'mane', name: 'Ferskenmagi', description: 'En varm man med ferskenfarger', price: 32, icon: '🍑' },
     { id: 'auroraMane', slot: 'mane', name: 'Nordlysman', description: 'Turkis og lilla farger danser i manen', price: 54, icon: '💫' },
@@ -29,7 +29,10 @@
     { id: 'bell', slot: 'neck', name: 'Stjernebjelle', description: 'En liten bjelle som glitrer', price: 38, icon: '🔔' },
     { id: 'rainbowWings', slot: 'back', name: 'Regnbuevinger', description: 'Fargerike vinger til store svev', price: 92, icon: '🪽' },
     { id: 'auroraSky', slot: 'world', name: 'Nordlysdalen', description: 'Grønne lys danser over enga', price: 58, icon: '🌌' },
-    { id: 'moonGarden', slot: 'world', name: 'Månehagen', description: 'En stille hage badet i månelys', price: 98, icon: '🌕' }
+    { id: 'moonGarden', slot: 'world', name: 'Månehagen', description: 'En stille hage badet i månelys', price: 98, icon: '🌕' },
+    { id: 'cloverFoal', slot: 'foal', name: 'Kløver', description: 'Et nysgjerrig føll med mintgrønn man', price: 150, icon: '🌿' },
+    { id: 'peachFoal', slot: 'foal', name: 'Fersken', description: 'En liten venn med gyllen man og rosa pels', price: 210, icon: '🍑' },
+    { id: 'moonFoal', slot: 'foal', name: 'Månefnugg', description: 'Et drømmende føll med blå man og stjerne på siden', price: 280, icon: '🌙' }
   ];
   // Navn som passer en enhjørning. Nye spillere får et tilfeldig navn, og kan trekke nye.
   const NAMES = ['Luna', 'Stella', 'Nova', 'Fia', 'Tindra', 'Aurora', 'Lilja', 'Mira', 'Selma', 'Ronja', 'Saga', 'Iris', 'Frøya', 'Tuva', 'Ylva', 'Juni', 'Siri', 'Alma',
