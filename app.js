@@ -271,6 +271,29 @@
   $('#unicorn-tab').addEventListener('click',()=>switchView('closet'));
   $('#settings-button').addEventListener('click',()=>{$('#difficulty').value=state.difficulty;$('#reset-confirm').hidden=true;$('#settings-dialog').showModal();});
   $('#difficulty').addEventListener('change',e=>{state.difficulty=e.target.value;save();notify('Den nye vanskelighetsgraden gjelder fra neste oppgave.');});
+  // Foreldreoversikten regnes ut fra de siste 30 svarene i hver ferdighet.
+  function parentView() {
+    const o = G.overview(state), pct = x => x === null ? '–' : `${Math.round(x * 100)} %`;
+    const tone = s => s.last < 5 ? '' : s.correct < .6 ? 'low' : s.alone >= .85 ? 'high' : '';
+    const advice = s => s.last < 5 ? 'For få svar ennå' : s.correct < .6 ? 'Trenger støtte' : s.alone >= .85 && s.level < s.max ? 'Klar for mer' : s.alone >= .85 ? 'Mestrer øverste trinn' : '';
+    const dots = s => s.recent.map(r => `<i class="dot ${r}" title="${r === 'ok' ? 'Riktig' : r === 'hint' ? 'Riktig med hint' : 'Feil'}"></i>`).join('') || '–';
+    const w = o.lastTwoWeeks;
+    const rows = o.skills.map(s => `<tr class="${tone(s)}"><th scope="row">${escape(s.name)}${s.support ? ' <span class="tag">ekstra støtte</span>' : ''}</th><td>${s.level} av ${s.max}</td><td>${s.last}</td><td>${pct(s.correct)}</td><td>${pct(s.alone)}</td><td class="dots">${dots(s)}</td><td>${s.lastPlayed ? s.lastPlayed.slice(5).split('-').reverse().join('.') : '–'}</td><td>${advice(s)}</td></tr>`).join('');
+    const canShare = typeof navigator.share === 'function';
+    $('#parent-content').innerHTML = `<div class="parent-stats"><div><b>${o.answered}</b><span>oppgaver totalt</span></div><div><b>${o.answered ? Math.round(o.correct / o.answered * 100) : 0} %</b><span>riktige totalt</span></div><div><b>${w.days}</b><span>dager spilt siste 14 dager</span></div><div><b>${w.answered}</b><span>oppgaver siste 14 dager${w.answered ? `, ${Math.round(w.correct / w.answered * 100)} % riktige` : ''}</span></div></div>
+      <div class="parent-table-wrap"><table class="parent-table"><thead><tr><th scope="col">Ferdighet</th><th scope="col">Trinn</th><th scope="col">Svar</th><th scope="col">Riktig</th><th scope="col">Uten hint</th><th scope="col">Siste 8</th><th scope="col">Sist</th><th scope="col">Vurdering</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <p class="settings-help">Prosentene gjelder de siste 30 svarene i hver ferdighet. Trinnet øker automatisk etter 7 av 8 riktige uten hint, og går ned etter to feil på rad. «Klar for mer» betyr minst 85 % riktige uten hint; «Trenger støtte» betyr under 60 % riktige.<br><span class="legend"><i class="dot ok"></i> riktig <i class="dot hint"></i> riktig med hint <i class="dot wrong"></i> feil</span></p>
+      <h3>Eksport</h3><p class="settings-help">Eksporten inneholder tallene over og de siste svarene i hver ferdighet som tekst. Den inneholder enhjørningens navn, men ikke barnets.</p>
+      <div class="export-actions"><button class="primary-button" id="copy-report">Kopier eksport</button>${canShare ? '<button class="secondary-button" id="share-report">Del …</button>' : ''}<span id="export-status" role="status"></span></div>
+      <details class="export-text"><summary>Vis eksporten som tekst</summary><textarea id="report-text" readonly rows="8"></textarea></details>`;
+    const text = JSON.stringify(G.report(state), null, 2); $('#report-text').value = text;
+    $('#copy-report').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(text); $('#export-status').textContent = 'Kopiert. Lim den inn der du vil.'; }
+      catch { const area = $('#report-text'); area.closest('details').open = true; area.focus(); area.select(); $('#export-status').textContent = 'Merk teksten og kopier den selv.'; }
+    });
+    $('#share-report')?.addEventListener('click', () => navigator.share({ title: 'Enhjørningsdalen – eksport', text }).catch(() => {}));
+  }
+  $('#parent-button').addEventListener('click',()=>{$('#settings-dialog').close();parentView();$('#parent-dialog').showModal();});
   $('#reset-button').addEventListener('click',()=>{$('#reset-confirm').hidden=false;$('#reset-no').focus();});
   $('#reset-no').addEventListener('click',()=>{$('#reset-confirm').hidden=true;$('#reset-button').focus();});
   $('#reset-yes').addEventListener('click',()=>{state=G.fresh();view='play';save();$('#settings-dialog').close();render();notify(`Et nytt eventyr venter på deg og ${state.name}.`);});

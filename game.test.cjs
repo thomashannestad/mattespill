@@ -323,6 +323,32 @@ test('nye spillere får et tilfeldig navn fra listen, og et nytt trekk gir aldri
   assert.equal(G.restore({ ...G.fresh(), name: 'Stella' }).name, 'Stella');
 });
 
+test('svar får dato og gitt svar, og den daglige loggen overlever gjenåpning', () => {
+  const s = G.fresh();
+  attempt(s, 'plus'); attempt(s, 'plus', false); attempt(s, 'compare');
+  const day = G.today();
+  assert.deepEqual(s.days, { [day]: [3, 2] });
+  const h = s.mastery.plus.history;
+  assert.equal(h[0].at, day); assert.equal(h[0].correct, true); assert.equal(h[1].correct, false); assert.notEqual(h[1].given, undefined);
+  assert.equal(typeof s.mastery.compare.history[0].given, 'string');
+  assert.deepEqual(G.restore(JSON.parse(JSON.stringify(s))), s);
+  const bad = JSON.parse(JSON.stringify(s)); bad.days = { 'i går': [1, 0], '2026-01-01': [2, 5], '2026-01-02': [2, 1] };
+  assert.deepEqual(G.restore(bad).days, { '2026-01-02': [2, 1] });
+});
+
+test('foreldreoversikt og eksport regner andel riktige fra de siste svarene', () => {
+  const s = G.fresh();
+  for (let i = 0; i < 6; i++) attempt(s, 'minus', i < 3, i === 0);
+  const minus = G.overview(s).skills.find(x => x.key === 'minus');
+  assert.equal(minus.last, 6); assert.equal(minus.correct, .5); assert.equal(Math.round(minus.alone * 100), 33);
+  assert.equal(minus.lastPlayed, G.today()); assert.equal(G.overview(s).skills.length, Object.keys(G.SKILLS).length);
+  const r = G.report(s);
+  assert.equal(r.skills.minus.last30.correctPct, 50); assert.equal(r.totals.answered, 6);
+  assert.match(r.skills.minus.history[0], /riktig med hint \| \d+ − \d+ \| svarte \d+$/);
+  assert.ok(r.skills.minus.history.every(line => !line.includes('{')), 'ingen tegningsdata i eksporten');
+  assert.doesNotThrow(() => JSON.parse(JSON.stringify(r)));
+});
+
 test('oppgavemetadata skiller tierovergang fra større tall uten overgang', () => {
   for (let i = 0; i < 500; i++) {
     for (const skill of ['plus','minus']) for (const level of [4,5]) {

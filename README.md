@@ -91,6 +91,14 @@ Dette er en enkel startmodell som kan justeres etter utprøving med barnet, ikke
 
 Fast nivå bruker trinn 1 for «En rolig start», trinn 3 (eller ferdighetens høyeste trinn) for «Passe utfordring» og høyeste trinn for «Litt vanskeligere».
 
+## Foreldreoversikt og eksport
+
+Tannhjulet har knappen **Foreldreoversikt og eksport**. Oversikten viser trinn, antall svar, andel riktige og andel riktige uten hint per ferdighet, regnet fra de siste 30 svarene. Den viser også de siste åtte svarene som prikker, dato for siste spill og en kort vurdering: «Klar for mer» ved minst 85 % riktige uten hint, og «Trenger støtte» under 60 % riktige.
+
+**Kopier eksport** legger en tekst på utklippstavlen med nøkkeltallene og de siste svarene i hver ferdighet, med dato, oppgavetekst og svaret barnet ga. På iPad kan den også deles til for eksempel Notater eller Meldinger. Eksporten inneholder enhjørningens navn, men ikke barnets, og sendes ingen steder av seg selv.
+
+Dato og gitt svar lagres fra og med denne versjonen. Eldre svar vises uten dato. Den daglige loggen holder de siste 90 dagene.
+
 ## Lagring
 
 Spillet lagrer automatisk stjerner, navn, utstyr, innstillinger, mestring per ferdighet og den pågående runden i nettleserens `localStorage`. Det er ingen konto, analyseverktøy, eksterne skrifttyper eller nettverkstjenester.

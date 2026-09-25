@@ -10,9 +10,9 @@
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="apple-mobile-web-app-title" content="Matteeventyr">
-  <link rel="stylesheet" href="styles.css?v=12">
-  <script src="game.js?v=12" defer></script>
-  <script src="app.js?v=12" defer></script>
+  <link rel="stylesheet" href="styles.css?v=13">
+  <script src="game.js?v=13" defer></script>
+  <script src="app.js?v=13" defer></script>
   <script>if ('serviceWorker' in navigator && location.protocol.startsWith('http')) addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));</script>
 </head>
 <body>
@@ -39,8 +39,15 @@
     <p class="settings-help">Talloppgaver og diagrammer er inspirert av ukens lekse. Ingen tidtaking, og ingen stjerner blir trukket for feil.</p>
     <div class="rule-box"><b>Slik får du stjerner</b><p>Riktig svar: 3 stjerner totalt.<br>Et annet svar: 1 stjerne for innsatsen.</p><p>Alle stjernene du tjener teller mot neste nivå, også når du bruker dem i butikken.</p></div>
     <p class="settings-help">Fremgangen lagres bare i denne nettleseren. Den deles ikke mellom enheter og kan forsvinne hvis nettleserdata slettes.</p>
+    <button id="parent-button" class="secondary-button">Foreldreoversikt og eksport</button>
     <button id="reset-button" class="text-button danger">Start helt på nytt …</button>
     <div id="reset-confirm" hidden><p>Vil du slette alle stjerner, alt utstyr og all fremgang?</p><button id="reset-yes" class="danger-button">Ja, slett fremgangen</button><button id="reset-no" class="text-button">Behold eventyret</button></div>
+  </dialog>
+  <!-- Foreldreoversikt: trinn og andel riktige per ferdighet, og eksport som tekst. -->
+  <dialog id="parent-dialog" class="parent-dialog" aria-labelledby="parent-title">
+    <form method="dialog"><button class="dialog-close icon-button" aria-label="Lukk foreldreoversikten">×</button></form>
+    <h2 id="parent-title">Foreldreoversikt</h2>
+    <div id="parent-content"></div>
   </dialog>
 </body>
 </html>

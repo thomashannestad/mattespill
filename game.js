@@ -304,7 +304,7 @@
   function recordAttempt(state, q, correct) {
     if (!q.meta || !Object.hasOwn(SKILLS, q.meta.skill)) return; // Oppgaver fra versjon 1 beholdes, men er ikke kalibrerte.
     const p = state.mastery[q.meta.skill], result = { correct, hint: Boolean(q.hintUsed || q.extraSupport) };
-    p.seen++; p.history.push({ ...result, level: q.meta.level, role: q.meta.role, prompt: signature(q) }); p.history = p.history.slice(-30);
+    p.seen++; p.history.push({ ...result, level: q.meta.level, role: q.meta.role, prompt: signature(q), at: today(), given: q.selected }); p.history = p.history.slice(-30);
     // Repetisjon, manuell øving og prøveoppgaver styrer ikke det etablerte nivået.
     if (!q.meta.adaptive || q.meta.role !== 'current' || q.meta.level !== p.level) {
       if (q.meta.adaptive && !correct) p.support = true;
@@ -318,7 +318,10 @@
       p.level = Math.min(SKILLS[q.meta.skill].max, p.level + 1); p.recent = []; p.support = false;
     } else if (p.support && p.recent.length >= 2 && p.recent.slice(-2).every(r => r.correct)) p.support = false;
   }
-  function fresh() { return { version: 2, balance: 0, earned: 0, answered: 0, correct: 0, name: randomName(), owned: [], equipped: {}, difficulty: 'auto', topic: 'mixed', mastery: profiles(), round: { done: 0, correct: 0, earned: 0 }, current: null }; }
+  // Lokal dato som ÅÅÅÅ-MM-DD. Brukes i historikken og den daglige loggen til foreldreoversikten.
+  function today(date = new Date()) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
+  const DAY = /^\d{4}-\d{2}-\d{2}$/;
+  function fresh() { return { version: 2, days: {}, balance: 0, earned: 0, answered: 0, correct: 0, name: randomName(), owned: [], equipped: {}, difficulty: 'auto', topic: 'mixed', mastery: profiles(), round: { done: 0, correct: 0, earned: 0 }, current: null }; }
   function level(earned) { let index = 0; LEVELS.forEach((l, i) => { if (earned >= l.at) index = i; }); return { ...LEVELS[index], index, next: LEVELS[index + 1] || null }; }
   const integer = (value, min, max) => Number.isInteger(value) && value >= min && value <= max;
   const shortText = (value, max) => typeof value === 'string' && value.length >= 1 && value.length <= max;
@@ -354,13 +357,14 @@
     state.owned = [...new Set(Array.isArray(raw.owned) ? raw.owned.filter(id => ITEMS.some(i => i.id === id)) : [])];
     for (const item of ITEMS) if (state.owned.includes(item.id) && raw.equipped?.[item.slot] === item.id) state.equipped[item.slot] = item.id;
     if (raw.round && ['done', 'correct', 'earned'].every(k => Number.isInteger(raw.round[k]) && raw.round[k] >= 0) && raw.round.done <= 8 && raw.round.correct <= raw.round.done && raw.round.earned <= raw.round.done * 3) state.round = { done: raw.round.done, correct: raw.round.correct, earned: raw.round.earned };
+    if (raw.days && typeof raw.days === 'object') state.days = Object.fromEntries(Object.entries(raw.days).filter(([day, v]) => DAY.test(day) && Array.isArray(v) && v.length === 2 && integer(v[0], 1, 100000) && integer(v[1], 0, v[0])).sort(([a], [b]) => a.localeCompare(b)).slice(-90));
     if (raw.version === 2) for (const skill of Object.keys(SKILLS)) {
       const p = raw.mastery?.[skill]; if (!p || !integer(p.level, 1, Number.MAX_SAFE_INTEGER)) continue;
       const level = Math.min(p.level, SKILLS[skill].max);
       const validResult = r => r && typeof r.correct === 'boolean' && typeof r.hint === 'boolean';
       state.mastery[skill] = { level, seen: integer(p.seen, 0, Number.MAX_SAFE_INTEGER) ? p.seen : 0, support: p.support === true,
         recent: Array.isArray(p.recent) ? p.recent.filter(validResult).slice(-8).map(r => ({correct:r.correct,hint:r.hint})) : [],
-        history: Array.isArray(p.history) ? p.history.filter(r => validResult(r) && integer(r.level, 1, SKILLS[skill].max) && ['current','review','challenge'].includes(r.role) && typeof r.prompt === 'string').slice(-30).map(r => ({correct:r.correct,hint:r.hint,level:r.level,role:r.role,prompt:r.prompt})) : [] };
+        history: Array.isArray(p.history) ? p.history.filter(r => validResult(r) && integer(r.level, 1, SKILLS[skill].max) && ['current','review','challenge'].includes(r.role) && typeof r.prompt === 'string').slice(-30).map(r => ({correct:r.correct,hint:r.hint,level:r.level,role:r.role,prompt:r.prompt,...(typeof r.at === 'string' && DAY.test(r.at) ? {at:r.at} : {}),...(validValue(r.given) ? {given:r.given} : {})})) : [] };
     }
     // Lagringer fra før tegn-svar hadde bare tall som svarkort.
     const current = raw.current && Array.isArray(raw.current.options) && raw.current.options.every(Number.isInteger) ? { ...raw.current, options: raw.current.options.map(value => option(value)) } : raw.current;
@@ -371,12 +375,39 @@
     }
     return state;
   }
+  // Foreldreoversikt: nøkkeltall per ferdighet, regnet fra de siste 30 svarene.
+  const TOPIC_OF_SKILL = { sequence: 'Tallrekker', place: 'Plassverdi', coordinate: 'Koordinater, lese av', gridMove: 'Koordinater, instruksjoner' };
+  function overview(state) {
+    const skills = Object.entries(SKILLS).map(([key, info]) => {
+      const p = state.mastery[key], h = p.history, n = h.length;
+      const right = h.filter(r => r.correct).length, alone = h.filter(r => r.correct && !r.hint).length;
+      const dates = h.map(r => r.at).filter(Boolean);
+      return { key, name: TOPIC_OF_SKILL[key] || TOPICS[info.topic], level: p.level, max: info.max, seen: p.seen, support: p.support, last: n,
+        correct: n ? right / n : null, alone: n ? alone / n : null, recent: p.recent.map(r => r.correct ? (r.hint ? 'hint' : 'ok') : 'wrong'), lastPlayed: dates.at(-1) || null };
+    });
+    const days = Object.entries(state.days), since = today(new Date(Date.now() - 13 * 864e5));
+    const fortnight = days.filter(([day]) => day >= since);
+    return { skills, answered: state.answered, correct: state.correct, earned: state.earned,
+      lastTwoWeeks: { days: fortnight.length, answered: fortnight.reduce((s, [, v]) => s + v[0], 0), correct: fortnight.reduce((s, [, v]) => s + v[1], 0) } };
+  }
+  // Eksport som kan limes inn i en samtale: lesbar tekst per svar, uten tegningsdata.
+  function report(state) {
+    const o = overview(state), pct = x => x === null ? null : Math.round(x * 100);
+    return { app: 'Enhjørningsdalen', format: 1, exported: new Date().toISOString(), settings: { difficulty: state.difficulty, topic: state.topic },
+      totals: { answered: o.answered, correct: o.correct, earned: o.earned, balance: state.balance, unicornLevel: level(state.earned).index + 1 },
+      lastTwoWeeks: o.lastTwoWeeks, days: state.days,
+      skills: Object.fromEntries(o.skills.map(s => [s.key, { name: s.name, level: `${s.level} av ${s.max}`, seen: s.seen, support: s.support,
+        last30: { answers: s.last, correctPct: pct(s.correct), withoutHintPct: pct(s.alone) }, recent8: s.recent.join(' '),
+        history: state.mastery[s.key].history.map(r => `${r.at || '?'} trinn ${r.level} ${r.role} ${r.correct ? 'riktig' : 'feil'}${r.hint ? ' med hint' : ''} | ${r.prompt.split(/[[{]/)[0].trim()}${r.given !== undefined ? ` | svarte ${r.given}` : ''}`) }])) };
+  }
   function answer(state, value) {
     const q = state.current;
     if (!q || q.selected !== undefined || !q.options.some(o => o.value === value) || state.round.done >= 8) return null;
     const correct = value === q.answer, points = correct ? 3 : 1;
     q.selected = value; state.balance += points; state.earned += points; state.answered++; state.correct += Number(correct);
     state.round.done++; state.round.correct += Number(correct); state.round.earned += points;
+    const day = today(), log = state.days[day] || [0, 0]; state.days[day] = [log[0] + 1, log[1] + Number(correct)];
+    state.days = Object.fromEntries(Object.entries(state.days).sort(([a], [b]) => a.localeCompare(b)).slice(-90));
     recordAttempt(state, q, correct);
     return { correct, points };
   }
@@ -386,6 +417,6 @@
     if (state.equipped[item.slot] === id) delete state.equipped[item.slot]; else state.equipped[item.slot] = id;
     return true;
   }
-  const api = { TOPICS, SKILLS, ITEMS, LEVELS, NAMES, randomName, option, question, generate, nextQuestion, useHint, fresh, restore, level, answer, buyOrEquip };
+  const api = { TOPICS, SKILLS, ITEMS, LEVELS, NAMES, randomName, option, today, overview, report, question, generate, nextQuestion, useHint, fresh, restore, level, answer, buyOrEquip };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.MathGame = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
