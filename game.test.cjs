@@ -8,7 +8,7 @@ function checkQuestion(q) {
   assert.equal(new Set(q.options.map(o => o.value)).size, q.options.length);
   assert.ok(q.options.some(o => o.value === q.answer));
   assert.ok(q.options.every(o => typeof o.label === 'string' && o.label.length > 0));
-  if (typeof q.answer === 'number') { assert.equal(q.options.length, 4); assert.ok(q.options.every(o => Number.isInteger(o.value) && o.value >= 0 && o.label === String(o.value))); }
+  if (typeof q.answer === 'number') { assert.equal(q.options.length, 4); assert.ok(q.options.every(o => Number.isInteger(o.value) && o.value >= 0 && (o.label === String(o.value) || o.label === `${o.value} cm`))); }
   else assert.ok(q.options.every(o => typeof o.value === 'string' && o.value.length > 0));
   if (q.kind === 'tenFrame') {
     assert.equal(q.model.a + q.answer, q.model.target);
@@ -69,10 +69,19 @@ function checkQuestion(q) {
     assert.ok(q.prompt.includes('□'));
   } else if (q.kind === 'area') {
     assert.equal(q.answer, q.model.width * q.model.height);
+  } else if (q.kind === 'measure') {
+    const m = q.model;
+    const expected = { squares: m.length, rug: m.side === 'length' ? m.length : m.width, ruler: m.length, offset: m.length, compare: m.length - m.otherLength }[m.form];
+    assert.equal(q.answer, expected); assert.ok(q.answer >= 1);
+    if (m.form === 'rug') assert.ok(m.length > m.width, 'lengden er den lange siden');
+    if (m.form === 'offset') { assert.ok(m.start >= 1); assert.ok(q.options.some(o => o.value === m.start + m.length), 'sluttallet er et av feilsvarene'); }
+    if (m.form === 'compare') assert.ok(m.length > m.otherLength && m.length <= 13);
+    if (['ruler', 'offset', 'compare'].includes(m.form)) { assert.ok(m.start + m.length <= 14, 'får plass på linjalen'); assert.ok(q.options.every(o => o.label.endsWith(' cm'))); }
   } else if (q.kind === 'coordinate') {
     const { x, y, axis, limit } = q.model;
     assert.equal(q.answer, axis === 'x' ? x : y);
     assert.ok(x >= 1 && x <= limit && y >= 1 && y <= limit);
+    assert.ok(q.options.every(o => o.value >= 1 && o.value <= limit), 'svarkortene ligger på rutenettets tall');
   } else if (q.kind === 'balance') {
     const { form, left, right, unknown } = q.model, sum = side => side.reduce((a, b) => a + b, 0);
     if (form === 'heavier') {
@@ -167,7 +176,7 @@ function attempt(state, skill, correct = true, hint = false, overrides = {}) {
 }
 
 test('åtte observasjoner og minst sju riktige uten hint øker bare den aktuelle ferdigheten', () => {
-  const s = G.fresh();
+  const s = G.fresh(); s.mastery.ten.seen = 20; // forbi rask start
   for (let i = 0; i < 7; i++) attempt(s, 'ten');
   assert.equal(s.mastery.ten.level, 1);
   attempt(s, 'ten', false);
@@ -347,6 +356,26 @@ test('foreldreoversikt og eksport regner andel riktige fra de siste svarene', ()
   assert.match(r.skills.minus.history[0], /riktig med hint \| \d+ − \d+ \| svarte \d+$/);
   assert.ok(r.skills.minus.history.every(line => !line.includes('{')), 'ingen tegningsdata i eksporten');
   assert.doesNotThrow(() => JSON.parse(JSON.stringify(r)));
+});
+
+test('rask start: fire riktige på rad uten hint løfter trinnet i de første svarene, men ikke senere', () => {
+  const s = G.fresh();
+  for (let i = 0; i < 3; i++) attempt(s, 'plus');
+  assert.equal(s.mastery.plus.level, 1);
+  attempt(s, 'plus'); assert.equal(s.mastery.plus.level, 2); assert.deepEqual(s.mastery.plus.recent, []);
+  for (let i = 0; i < 4; i++) attempt(s, 'plus'); assert.equal(s.mastery.plus.level, 3);
+  const hinted = G.fresh(); for (let i = 0; i < 6; i++) attempt(hinted, 'minus', true, true); assert.equal(hinted.mastery.minus.level, 1);
+  const late = G.fresh(); late.mastery.area.seen = 16; for (let i = 0; i < 4; i++) attempt(late, 'area'); assert.equal(late.mastery.area.level, 1);
+});
+
+test('foreldre kan flytte trinnet innenfor ferdighetens grenser, og målingen starter på nytt', () => {
+  const s = G.fresh(); attempt(s, 'coordinate', false); attempt(s, 'coordinate', false);
+  assert.equal(s.mastery.coordinate.support, true);
+  assert.equal(G.setLevel(s, 'coordinate', 3), true);
+  assert.equal(s.mastery.coordinate.level, 3); assert.equal(s.mastery.coordinate.support, false); assert.deepEqual(s.mastery.coordinate.recent, []);
+  assert.equal(G.setLevel(s, 'coordinate', 9), false); assert.equal(s.mastery.coordinate.level, 3);
+  assert.equal(G.setLevel(s, 'coordinate', 0), true); assert.equal(s.mastery.coordinate.level, 1);
+  assert.equal(G.setLevel(s, 'finnes-ikke', 2), false);
 });
 
 test('oppgavemetadata skiller tierovergang fra større tall uten overgang', () => {

@@ -1,9 +1,9 @@
 /* Ren spillogikk, delt av nettleseren og testene. Ingen nettverk eller avhengigheter. */
 (function (root) {
   'use strict';
-  const TOPICS = { mixed: 'Litt av alt', ten: 'Tiervenner', nextTen: 'Fylle neste tier', plus: 'Pluss', minus: 'Minus', numbers: 'Tallvenner', doubleHalf: 'Dobling og halvering', equation: 'Åpne regnestykker', balance: 'Likevekt', multiply: 'Multiplikasjon', divide: 'Deling', compare: 'Sammenligne', area: 'Areal', coordinate: 'Koordinater', chart: 'Diagrammer' };
+  const TOPICS = { mixed: 'Litt av alt', ten: 'Tiervenner', nextTen: 'Fylle neste tier', plus: 'Pluss', minus: 'Minus', numbers: 'Tallvenner', doubleHalf: 'Dobling og halvering', equation: 'Åpne regnestykker', balance: 'Likevekt', multiply: 'Multiplikasjon', divide: 'Deling', compare: 'Sammenligne', area: 'Areal', measure: 'Måling', coordinate: 'Koordinater', chart: 'Diagrammer' };
   // Nivåene er faglige trinn innen én ferdighet, ikke enhjørningens belønningsnivå.
-  const SKILLS = { ten: { topic: 'ten', max: 3 }, nextTen: { topic: 'nextTen', max: 4 }, plus: { topic: 'plus', max: 5 }, minus: { topic: 'minus', max: 5 }, sequence: { topic: 'numbers', max: 4 }, place: { topic: 'numbers', max: 4 }, doubleHalf: { topic: 'doubleHalf', max: 4 }, equation: { topic: 'equation', max: 4 }, balance: { topic: 'balance', max: 4 }, multiply: { topic: 'multiply', max: 4 }, divide: { topic: 'divide', max: 4 }, compare: { topic: 'compare', max: 4 }, area: { topic: 'area', max: 4 }, coordinate: { topic: 'coordinate', max: 3 }, gridMove: { topic: 'coordinate', max: 3 }, chart: { topic: 'chart', max: 5 } };
+  const SKILLS = { ten: { topic: 'ten', max: 3 }, nextTen: { topic: 'nextTen', max: 4 }, plus: { topic: 'plus', max: 5 }, minus: { topic: 'minus', max: 5 }, sequence: { topic: 'numbers', max: 4 }, place: { topic: 'numbers', max: 4 }, doubleHalf: { topic: 'doubleHalf', max: 4 }, equation: { topic: 'equation', max: 4 }, balance: { topic: 'balance', max: 4 }, multiply: { topic: 'multiply', max: 4 }, divide: { topic: 'divide', max: 4 }, compare: { topic: 'compare', max: 4 }, area: { topic: 'area', max: 4 }, measure: { topic: 'measure', max: 5 }, coordinate: { topic: 'coordinate', max: 3 }, gridMove: { topic: 'coordinate', max: 3 }, chart: { topic: 'chart', max: 5 } };
   const profiles = () => Object.fromEntries(Object.keys(SKILLS).map(key => [key, { level: 1, recent: [], history: [], seen: 0, support: false }]));
   const ITEMS = [
     { id: 'bow', slot: 'head', name: 'Sløyfefin', description: 'En rosa sløyfe i manen', price: 9, icon: '🎀' },
@@ -44,9 +44,9 @@
   const shuffle = values => { const a = [...values]; for (let i = a.length - 1; i > 0; i--) { const j = rand(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   // Et svarkort har en verdi (tall eller tegn), en tekst som vises, og eventuelt en tekst for opplesning.
   const option = (value, label = String(value), spoken) => spoken ? { value, label, spoken } : { value, label };
-  function choices(answer, step = 1, max = Infinity) {
+  function choices(answer, step = 1, max = Infinity, min = 0) {
     const values = new Set([answer]);
-    for (const delta of shuffle([-3, -2, -1, 1, 2, 3])) { if (answer + delta * step >= 0 && answer + delta * step <= max) values.add(answer + delta * step); if (values.size === 4) break; }
+    for (const delta of shuffle([-3, -2, -1, 1, 2, 3])) { if (answer + delta * step >= min && answer + delta * step <= max) values.add(answer + delta * step); if (values.size === 4) break; }
     return shuffle([...values]).map(value => option(value));
   }
   function generate(skill, difficulty) {
@@ -196,11 +196,52 @@
       q.answer = width * height; q.kind = 'area'; q.model = { width, height }; q.title = 'Tell rutene'; q.prompt = 'Hvor mange ruter dekker teppet?';
       q.hint = `Tell ${width} ruter i hver rad. Hvor mange rader er det?`; q.explanation = `${width} ruter i hver av ${height} rader gir ${q.answer} ruter.`;
       q.meta.features = ['area-by-unit-squares', `rectangle-${width}x${height}`];
+    } else if (skill === 'measure') {
+      // Måling av lengde: ruter, lengde og bredde på et teppe, linjal fra 0, linjal som ikke starter på 0, og forskjell mellom to lengder.
+      const THINGS = [{ name: 'skjerf', def: 'skjerfet', neuter: true, color: '#a384bd', icon: '🧣' }, { name: 'blyant', def: 'blyanten', color: '#e6c36c', icon: '✏️' },
+        { name: 'gulrot', def: 'gulroten', color: '#eb9a5a', icon: '🥕' }, { name: 'bånd', def: 'båndet', neuter: true, color: '#e7a7b4', icon: '🎀' },
+        { name: 'fjær', def: 'fjæra', color: '#88b3cb', icon: '🪶' }, { name: 'pinne', def: 'pinnen', color: '#b58a5e', icon: '🪵' }];
+      const [thing, other] = shuffle(THINGS), long = t => t.neuter ? 'langt' : 'lang';
+      const form = ['squares', 'rug', 'ruler', 'offset', 'compare'][n - 1];
+      const cards = (extra = []) => { const set = new Set([q.answer, ...extra.filter(v => v >= 1 && v !== q.answer)].slice(0, 4)); for (const d of shuffle([-3, -2, -1, 1, 2, 3])) { if (set.size === 4) break; if (q.answer + d >= 1) set.add(q.answer + d); } return shuffle([...set]).map(v => option(v, form === 'squares' || form === 'rug' ? String(v) : `${v} cm`)); };
+      q.kind = 'measure'; q.title = 'Mål lengden';
+      if (form === 'squares') {
+        const length = rand(2, 8); q.answer = length; q.model = { form, thing, length };
+        q.prompt = `Hvor mange ruter ${long(thing)} er ${thing.def}?`; q.hint = 'Tell rutene fra den ene enden til den andre.';
+        q.explanation = `${thing.def[0].toUpperCase() + thing.def.slice(1)} dekker ${length} ruter bortover, så ${thing.neuter ? 'det' : 'den'} er ${length} ruter ${long(thing)}.`;
+        q.options = cards();
+      } else if (form === 'rug') {
+        const length = rand(3, 8), width = rand(2, length - 1), side = rand(0, 1) ? 'length' : 'width';
+        q.answer = side === 'length' ? length : width; q.model = { form, length, width, side };
+        q.prompt = side === 'length' ? 'Hvor mange ruter langt er teppet?' : 'Hvor mange ruter bredt er teppet?';
+        q.hint = 'Lengden er den lange siden. Bredden er den korte siden. Tell rutene langs den siden du blir spurt om.';
+        q.explanation = `Teppet er ${length} ruter langt og ${width} ruter bredt. ${side === 'length' ? `Lengden er ${length}.` : `Bredden er ${width}.`}`;
+        q.options = cards([side === 'length' ? width : length]);
+      } else if (form === 'ruler') {
+        const length = rand(2, 12); q.answer = length; q.model = { form, thing, length, start: 0 };
+        q.prompt = `Hvor ${long(thing)} er ${thing.def}?`; q.hint = `${thing.def[0].toUpperCase() + thing.def.slice(1)} starter på 0. Se hvilket tall enden står ved.`;
+        q.explanation = `${thing.def[0].toUpperCase() + thing.def.slice(1)} går fra 0 til ${length}, så ${thing.neuter ? 'det' : 'den'} er ${length} cm ${long(thing)}.`;
+        q.options = cards();
+      } else if (form === 'offset') {
+        const start = rand(1, 5), length = rand(2, 8), end = start + length; q.answer = length; q.model = { form, thing, length, start };
+        q.prompt = `${thing.def[0].toUpperCase() + thing.def.slice(1)} ligger ikke ved 0. Hvor ${long(thing)} er ${thing.neuter ? 'det' : 'den'}?`;
+        q.hint = `Starten er på ${start}, ikke på 0. Tell centimeterne fra ${start} til enden, eller regn ut slutt minus start.`;
+        q.explanation = `${thing.def[0].toUpperCase() + thing.def.slice(1)} går fra ${start} til ${end}. ${end} − ${start} = ${length}, så ${thing.neuter ? 'det' : 'den'} er ${length} cm ${long(thing)}.`;
+        q.options = cards([end]);
+      } else {
+        let a = rand(4, 13), b = rand(2, 11); if (a === b) a = Math.min(13, a + 2); if (a < b) [a, b] = [b, a];
+        q.answer = a - b; q.model = { form, thing, length: a, other, otherLength: b, start: 0 };
+        q.prompt = `Hvor mye lengre er ${thing.def} enn ${other.def}?`; q.hint = 'Les av begge lengdene. Trekk den korteste fra den lengste.';
+        q.explanation = `${thing.def[0].toUpperCase() + thing.def.slice(1)} er ${a} cm og ${other.def} er ${b} cm. ${a} − ${b} = ${q.answer} cm.`;
+        q.options = cards([a, b]);
+      }
+      q.meta.features = [`measure-${form}`];
     } else if (skill === 'coordinate') {
       const limit = n === 1 ? 4 : n === 2 ? 5 : 6, x = rand(1, limit), y = (x + rand(1, limit - 1) - 1) % limit + 1, axis = n === 1 ? 'x' : n === 2 ? 'y' : (rand(0, 1) ? 'x' : 'y');
       q.answer = axis === 'x' ? x : y; q.kind = 'coordinate'; q.model = { x, y, axis, limit }; q.title = 'Finn punktet på rutenettet';
-      q.prompt = `Enhjørningen står på punktet. Hvilket tall viser ${axis === 'x' ? 'vannrett retning' : 'loddrett retning'}?`; q.hint = 'Tallene under rutenettet viser x (bortover). Tallene til venstre viser y (oppover).';
-      q.explanation = `Punktet er (${x}, ${y}). ${axis === 'x' ? 'Vannrett' : 'Loddrett'} viser ${q.answer}.`;
+      q.prompt = axis === 'x' ? 'Hvor langt bortover står enhjørningen?' : 'Hvor høyt opp står enhjørningen?';
+      q.hint = axis === 'x' ? 'Følg ruten rett ned fra enhjørningen til tallene under rutenettet.' : 'Følg raden bortover fra enhjørningen til tallene til venstre.';
+      q.explanation = `Enhjørningen står ${x} bortover og ${y} opp. Vi skriver det (${x}, ${y}): først bortover, så opp.`;
       q.meta.features = [`read-${axis}-coordinate`, 'grid-point'];
     } else if (skill === 'gridMove') {
       // Kompetansemål 12: følge trinnvise instruksjoner i rutenettet. Samme rutenett som koordinatoppgavene.
@@ -230,8 +271,8 @@
       while (wrong.length < 3) { const candidate = { x: rand(1, limit), y: rand(1, limit) }; if (!seen.has(key(candidate))) { seen.add(key(candidate)); wrong.push(candidate); } }
       q.options = shuffle([pos, ...wrong]).map(at => option(key(at), label(at)));
       let walk = { ...start };
-      q.explanation = `Start på ${label(start)}. ` + moves.map(m => { walk = { x: walk.x + dirs[m.dir][0] * m.steps, y: walk.y + dirs[m.dir][1] * m.steps }; return `${m.steps} ${dirs[m.dir][2]} gir ${label(walk)}`; }).join('. ') + '.';
-      q.hint = 'Ta ett steg om gangen. Høyre og venstre endrer det første tallet, opp og ned endrer det andre.';
+      q.explanation = `Start på ${label(start)}, altså ${start.x} bortover og ${start.y} opp. ` + moves.map(m => { walk = { x: walk.x + dirs[m.dir][0] * m.steps, y: walk.y + dirs[m.dir][1] * m.steps }; return `${m.steps} ${dirs[m.dir][2]} gir ${label(walk)}`; }).join('. ') + '.';
+      q.hint = 'Ta ett steg om gangen. Det første tallet er bortover: høyre og venstre endrer det. Det andre tallet er opp: opp og ned endrer det.';
       q.meta.features = [`moves-${count}`, 'follow-instructions'];
     } else if (skill === 'chart') {
       q.kind = 'chart'; const labels = ['Rosa', 'Gule', 'Blå', 'Lilla'];
@@ -268,7 +309,7 @@
       }
       q.meta.features = [`chart-${q.form}`];
     }
-    if (!q.options) q.options = choices(q.answer, q.kind === 'place' && n > 1 ? 10 : 1, q.kind === 'tenFrame' ? 10 : Infinity);
+    if (!q.options) q.options = choices(q.answer, q.kind === 'place' && n > 1 ? 10 : 1, q.kind === 'tenFrame' ? 10 : q.kind === 'coordinate' ? q.model.limit : Infinity, q.kind === 'coordinate' ? 1 : 0);
     return q;
   }
   function skillsFor(topic) { return Object.keys(SKILLS).filter(s => topic === 'mixed' || SKILLS[s].topic === topic); }
@@ -301,6 +342,8 @@
     return q;
   }
   function useHint(state) { if (!state.current || state.current.selected !== undefined) return; state.current.hintUsed = true; }
+  // Rask start: i de første svarene i en ferdighet går trinnet opp etter fire riktige på rad uten hint, så barnet ikke blir stående på altfor lette oppgaver.
+  const FAST_START = 16;
   function recordAttempt(state, q, correct) {
     if (!q.meta || !Object.hasOwn(SKILLS, q.meta.skill)) return; // Oppgaver fra versjon 1 beholdes, men er ikke kalibrerte.
     const p = state.mastery[q.meta.skill], result = { correct, hint: Boolean(q.hintUsed || q.extraSupport) };
@@ -314,7 +357,7 @@
     const twoWrong = p.recent.length >= 2 && p.recent.slice(-2).every(r => !r.correct);
     const threeWrong = p.recent.slice(-5).filter(r => !r.correct).length >= 3;
     if (twoWrong || threeWrong) { p.level = Math.max(1, p.level - 1); p.recent = []; p.support = true; }
-    else if (p.recent.length === 8 && p.recent.filter(r => r.correct && !r.hint).length >= 7) {
+    else if ((p.recent.length === 8 && p.recent.filter(r => r.correct && !r.hint).length >= 7) || (p.seen <= FAST_START && p.recent.length >= 4 && p.recent.slice(-4).every(r => r.correct && !r.hint))) {
       p.level = Math.min(SKILLS[q.meta.skill].max, p.level + 1); p.recent = []; p.support = false;
     } else if (p.support && p.recent.length >= 2 && p.recent.slice(-2).every(r => r.correct)) p.support = false;
   }
@@ -335,6 +378,7 @@
     const m = q.model, point = at => at && integer(at.x, 1, m.limit) && integer(at.y, 1, m.limit);
     if (q.kind === 'groups' && !(m && integer(m.groups, 1, 12) && integer(m.each, 1, 12) && m.total === m.groups * m.each)) return false;
     if (q.kind === 'area' && !(m && integer(m.width, 1, 12) && integer(m.height, 1, 12))) return false;
+    if (q.kind === 'measure' && !(m && ['squares', 'rug', 'ruler', 'offset', 'compare'].includes(m.form) && integer(m.length, 1, 15) && (m.form !== 'rug' || integer(m.width, 1, 15)) && (m.form === 'rug' || (m.thing && typeof m.thing.color === 'string' && typeof m.thing.def === 'string')) && (m.form !== 'compare' || (m.other && integer(m.otherLength, 1, 15))) && (!['ruler', 'offset', 'compare'].includes(m.form) || integer(m.start, 0, 10)))) return false;
     if ((q.kind === 'coordinate' || q.kind === 'gridMove') && !(m && integer(m.limit, 2, 8))) return false;
     if (q.kind === 'coordinate' && !point(m)) return false;
     if (q.kind === 'gridMove' && !(point(m.start) && point(m.end) && Array.isArray(m.moves))) return false;
@@ -400,6 +444,13 @@
         last30: { answers: s.last, correctPct: pct(s.correct), withoutHintPct: pct(s.alone) }, recent8: s.recent.join(' '),
         history: state.mastery[s.key].history.map(r => `${r.at || '?'} trinn ${r.level} ${r.role} ${r.correct ? 'riktig' : 'feil'}${r.hint ? ' med hint' : ''} | ${r.prompt.split(/[[{]/)[0].trim()}${r.given !== undefined ? ` | svarte ${r.given}` : ''}`) }])) };
   }
+  // Foreldre kan flytte trinnet i en ferdighet. Målingen starter på nytt, og ekstra støtte slås av.
+  function setLevel(state, skill, level) {
+    if (!Object.hasOwn(SKILLS, skill)) return false;
+    const p = state.mastery[skill], next = Math.max(1, Math.min(SKILLS[skill].max, level));
+    if (next === p.level) return false;
+    p.level = next; p.recent = []; p.support = false; return true;
+  }
   function answer(state, value) {
     const q = state.current;
     if (!q || q.selected !== undefined || !q.options.some(o => o.value === value) || state.round.done >= 8) return null;
@@ -417,6 +468,6 @@
     if (state.equipped[item.slot] === id) delete state.equipped[item.slot]; else state.equipped[item.slot] = id;
     return true;
   }
-  const api = { TOPICS, SKILLS, ITEMS, LEVELS, NAMES, randomName, option, today, overview, report, question, generate, nextQuestion, useHint, fresh, restore, level, answer, buyOrEquip };
+  const api = { setLevel, TOPICS, SKILLS, ITEMS, LEVELS, NAMES, randomName, option, today, overview, report, question, generate, nextQuestion, useHint, fresh, restore, level, answer, buyOrEquip };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.MathGame = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

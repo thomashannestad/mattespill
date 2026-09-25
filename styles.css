@@ -178,10 +178,24 @@ dialog.parent-dialog{max-width:900px;width:calc(100% - 24px);max-height:calc(100
 .parent-table tr.low{background:#fdf3ee}.parent-table tr.high{background:#f1f8ee}
 .parent-table .tag{font-size:11px;font-weight:600;background:#fff0ca;border-radius:6px;padding:1px 6px;margin-left:4px}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:3px;vertical-align:middle}
-.dot.ok{background:#6fa86a}.dot.hint{background:#e3b94f}.dot.wrong{background:#d3826a}
+.dot.dot-ok{background:#6fa86a}.dot.dot-hint{background:#e3b94f}.dot.dot-wrong{background:#d3826a}
 .legend{display:inline-block;margin-top:6px}.legend .dot{margin-left:8px}
 .export-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 #export-status{font-size:13px;color:var(--muted)}
 .export-text{margin-top:12px}.export-text summary{cursor:pointer;font-size:13px;color:var(--muted)}
 .export-text textarea{width:100%;margin-top:8px;font:12px/1.4 ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:9px;padding:8px}
 @media(max-width:700px){.parent-stats{grid-template-columns:repeat(2,minmax(0,1fr))}dialog.parent-dialog{padding:22px 16px}}
+
+/* Hjelpelinje i koordinatoppgaver, og − og + for trinn i foreldreoversikten. */
+.coordinate-grid i.guide{background:#f3e8b8a8}
+.coordinate-numbers span.on,.coordinate-y-numbers span.on{color:#9a6f12;font-weight:800}
+.level-cell{display:flex;align-items:center;gap:6px}
+.level-cell .step{min-height:30px;width:30px;border-radius:8px;border:1px solid var(--line);background:#fffefa;font-size:16px;font-weight:700;line-height:1;padding:0}
+.level-cell .step:disabled{opacity:.35}
+.level-cell span{min-width:42px;text-align:center}
+
+/* Måling: rutepapir, teppe og linjal. */
+.measure-model{margin:10px auto 16px;text-align:center}
+.measure-model svg{display:block;width:100%;height:auto;margin:0 auto}
+.measure-model figcaption{font-size:12px;color:var(--muted);margin-top:2px}
+.measure-model .asked path{stroke:#b07d14;stroke-width:3}.measure-model .asked text{fill:#9a6f12;font-weight:700}

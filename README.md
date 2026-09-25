@@ -69,7 +69,8 @@ Standard er nå **Tilpass til meg · automatisk**. Tema velges over oppgaven. Fa
 | Deling | Dele bær likt mellom kurver | Flere grupper og større tall; divisjon henger sammen med multiplikasjon |
 | Sammenligne | Sett riktig tegn (<, = eller >) mellom to tall opp til 20 | Uttrykk med pluss og minus, tall til 50, til slutt gangestykker innenfor gangetabellen. Omtrent hver fjerde oppgave har like sider |
 | Areal | Rektangel dekket av enhetsruter | Større rutenett; telle rader og kolonner |
-| Koordinater | Finne et punkt og lese vannrett retning | Lese vannrett og loddrett retning på større rutenett |
+| Måling | Hvor mange ruter lang er en ting? | Lengde og bredde på et teppe i ruter, måle med linjal i centimeter fra 0, måle når tingen ikke ligger ved 0, og hvor mye lengre én ting er enn en annen |
+| Koordinater | Hvor langt bortover står enhjørningen? | Også hvor høyt opp den står, på større rutenett. Hintet markerer ruten ned eller raden bort til tallet |
 | Instruksjoner i rutenettet | Følge én instruksjon, for eksempel «gå 2 til høyre», og finne den nye plassen | To og tre instruksjoner etter hverandre på større rutenett |
 | Diagrammer | Lese av søyler med 1–5 blomster | Søyler til 10, hvilken farge har flest eller færrest, forskjellen mellom to søyler, og summen av alle fire |
 
@@ -81,7 +82,7 @@ Dette er en enkel startmodell som kan justeres etter utprøving med barnet, ikke
 
 - Hver ferdighet har sin egen profil og begynner på første faglige trinn. Tallrekker og plassverdi følges separat, selv om begge vises under Tallvenner. Det samme gjelder avlesning og instruksjoner under Koordinater. Hver ny oppgavetype kan derfor bli lettere eller vanskeligere uavhengig av de andre.
 - Oppgaven lagrer ferdighet, trinn, egenskaper (for eksempel tierovergang), rolle i øvingen og om hint er brukt. Svartid brukes ikke.
-- Minst 7 riktige uten hint blant de siste 8 oppgavene på gjeldende trinn øker trinnet med én. To feil på rad, eller tre feil blant de siste fem, senker trinnet med én og gir støtte. Trinnet går aldri utenfor ferdighetens grenser.
+- Minst 7 riktige uten hint blant de siste 8 oppgavene på gjeldende trinn øker trinnet med én. I de første 16 svarene i en ferdighet holder det med 4 riktige på rad uten hint, så barnet raskt kommer til et passende trinn. To feil på rad, eller tre feil blant de siste fem, senker trinnet med én og gir støtte. Trinnet går aldri utenfor ferdighetens grenser.
 - Historikken som bestemmer nivåbytte tømmes ved bytte, slik at nye observasjoner kreves. Ekstra støtte åpner hintet automatisk og viser modellen der den finnes. Etter to riktige oppgaver med ekstra støtte går barnet tilbake til vanlig støtte for trinnet. Oppgaver med ekstra støtte teller ikke som selvstendig mestring.
 - Omtrent 20 % av oppgavene kan være repetisjon ett trinn under. Omtrent 10 % kan være en utfordring ett trinn over, men bare etter minst fire riktige uten hint blant de siste fem observasjonene. Resten er på gjeldende trinn. Uten nok mestring eller ved ekstra støtte brukes gjeldende trinn i stedet for utfordringer.
 - Repetisjon og utfordringer brukes ikke til å endre det etablerte trinnet. Feil på slike oppgaver utløser støtte i neste oppgave i ferdigheten. Manuell øving endrer heller ikke mestringstrinnet.
@@ -93,7 +94,7 @@ Fast nivå bruker trinn 1 for «En rolig start», trinn 3 (eller ferdighetens h�
 
 ## Foreldreoversikt og eksport
 
-Tannhjulet har knappen **Foreldreoversikt og eksport**. Oversikten viser trinn, antall svar, andel riktige og andel riktige uten hint per ferdighet, regnet fra de siste 30 svarene. Den viser også de siste åtte svarene som prikker, dato for siste spill og en kort vurdering: «Klar for mer» ved minst 85 % riktige uten hint, og «Trenger støtte» under 60 % riktige.
+Tannhjulet har knappen **Foreldreoversikt og eksport**. Der kan trinnet i hver ferdighet flyttes med − og +. Oversikten viser trinn, antall svar, andel riktige og andel riktige uten hint per ferdighet, regnet fra de siste 30 svarene. Den viser også de siste åtte svarene som prikker, dato for siste spill og en kort vurdering: «Klar for mer» ved minst 85 % riktige uten hint, og «Trenger støtte» under 60 % riktige.
 
 **Kopier eksport** legger en tekst på utklippstavlen med nøkkeltallene og de siste svarene i hver ferdighet, med dato, oppgavetekst og svaret barnet ga. På iPad kan den også deles til for eksempel Notater eller Meldinger. Eksporten inneholder enhjørningens navn, men ikke barnets, og sendes ingen steder av seg selv.
 

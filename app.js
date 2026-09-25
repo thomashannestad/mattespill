@@ -138,6 +138,31 @@
     if (operation === 'divide' && !solved) return `<div class="groups-model" role="img" aria-label="${total} bær i én haug og ${groups} tomme kurver"><span class="groups-caption">${total} bær skal deles likt i ${groups} kurver</span><div class="flower-pile">${flowers(total)}</div><div class="groups-row">${Array.from({length:groups},()=>'<span class="flower-group empty" aria-hidden="true"></span>').join('')}</div></div>`;
     return `<div class="groups-model" role="img" aria-label="${groups} like grupper med ${each} ${operation === 'divide' ? 'bær' : 'blomster'} i hver"><span class="groups-caption">${operation === 'multiply' ? 'Like store grupper' : 'Bærene delt likt'}</span><div class="groups-row">${Array.from({length:groups},(_,i)=>`<span class="flower-group" aria-label="Gruppe ${i+1}">${flowers(each)}</span>`).join('')}</div></div>`;
   }
+  // Måling: ting på rutepapir, teppe med lengde og bredde, eller ting på en linjal i centimeter.
+  function measureVisual(q, solved = false) {
+    const m = q.model, C = 34;
+    const bar = (x, y, w, t) => `<rect x="${x}" y="${y}" width="${w}" height="14" rx="7" fill="${t.color}" stroke="#00000022"/><text x="${x - 4}" y="${y + 12}" text-anchor="end" font-size="14">${t.icon}</text>`;
+    if (m.form === 'squares') {
+      const cols = m.length + 2, w = cols * C;
+      const cells = Array.from({ length: cols * 2 }, (_, i) => `<rect x="${(i % cols) * C}" y="${Math.floor(i / cols) * C}" width="${C}" height="${C}" fill="#fffdf6" stroke="#d6dccd"/>`).join('');
+      const marks = solved ? Array.from({ length: m.length }, (_, i) => `<text x="${(i + 1.5) * C}" y="${2 * C + 16}" text-anchor="middle" font-size="12" fill="#6b587c">${i + 1}</text>`).join('') : '';
+      return `<figure class="measure-model" aria-label="Rutepapir med ${escape(m.thing.name)}${solved ? ` som er ${m.length} ruter ${m.thing.neuter ? 'langt' : 'lang'}` : ''}"><svg viewBox="-24 -6 ${w + 30} ${2 * C + 26}" style="max-width:${Math.round((w + 30) * 1.4)}px" aria-hidden="true">${cells}${bar(C, C - 7, m.length * C, m.thing)}${marks}</svg></figure>`;
+    }
+    if (m.form === 'rug') {
+      const cols = m.length + 2, rows = m.width + 2, w = cols * C, h = rows * C;
+      const cells = Array.from({ length: cols * rows }, (_, i) => { const x = i % cols, y = Math.floor(i / cols), on = x >= 1 && x <= m.length && y >= 1 && y <= m.width; return `<rect x="${x * C}" y="${y * C}" width="${C}" height="${C}" fill="${on ? ((x + y) % 2 ? '#e7a7b4' : '#f2c2d1') : '#fffdf6'}" stroke="${on ? '#c98a9c' : '#d6dccd'}"/>`; }).join('');
+      const lengthLabel = solved ? `lengde ${m.length}` : 'lengde', widthLabel = solved ? `bredde ${m.width}` : 'bredde';
+      const hi = side => solved && m.side === side ? ' class="asked"' : '';
+      return `<figure class="measure-model" aria-label="Et teppe på rutepapir. Den lange siden er lengden, den korte siden er bredden.${solved ? ` Teppet er ${m.length} ruter langt og ${m.width} ruter bredt.` : ''}"><svg viewBox="-6 -26 ${w + 70} ${h + 32}" style="max-width:${Math.round((w + 70) * 1.25)}px" aria-hidden="true">${cells}<g${hi('length')}><path d="M${C} -10H${(m.length + 1) * C}M${C} -15v10M${(m.length + 1) * C} -15v10" stroke="#6b587c" stroke-width="2"/><text x="${(m.length / 2 + 1) * C}" y="-14" text-anchor="middle" font-size="12" fill="#6b587c">${lengthLabel}</text></g><g${hi('width')}><path d="M${w + 8} ${C}V${(m.width + 1) * C}M${w + 3} ${C}h10M${w + 3} ${(m.width + 1) * C}h10" stroke="#6b587c" stroke-width="2"/><text x="${w + 16}" y="${(m.width / 2 + 1) * C + 4}" font-size="12" fill="#6b587c">${widthLabel}</text></g></svg></figure>`;
+    }
+    // Linjal: 30 piksler per centimeter, med tall under hver centimeter.
+    const U = 30, top = m.form === 'compare' ? 54 : 30, max = Math.max(8, Math.min(15, (m.form === 'compare' ? m.length : m.start + m.length) + 2)), w = max * U;
+    const ticks = Array.from({ length: max * 2 + 1 }, (_, i) => `<path d="M${i * U / 2} ${top}v${i % 2 ? 7 : 13}" stroke="#6f7d6a"/>`).join('') + Array.from({ length: max + 1 }, (_, i) => `<text x="${i * U}" y="${top + 27}" text-anchor="middle" font-size="13" fill="#4d5c49">${i}</text>`).join('');
+    const guides = (start, end, y) => `<path d="M${start * U} ${y + 14}V${top}M${end * U} ${y + 14}V${top}" stroke="#9a6f12" stroke-dasharray="3 3"/>`;
+    const items = m.form === 'compare' ? bar(0, 6, m.length * U, m.thing) + bar(0, 30, m.otherLength * U, m.other) + (solved ? guides(0, m.length, 6) + guides(0, m.otherLength, 30) : '') : bar(m.start * U, 8, m.length * U, m.thing) + (solved || m.form === 'offset' ? guides(m.start, m.start + m.length, 8) : '');
+    const label = m.form === 'compare' ? `${m.thing.name} og ${m.other.name} på en linjal` : `${m.thing.name} på en linjal`;
+    return `<figure class="measure-model" aria-label="${escape(label)}${solved ? '' : ', mål i centimeter'}"><svg viewBox="-28 0 ${w + 40} ${top + 34}" style="max-width:${Math.round((w + 40) * 1.4)}px" aria-hidden="true"><rect x="-8" y="${top}" width="${w + 16}" height="32" rx="4" fill="#f7efcf" stroke="#d9c58a"/>${ticks}${items}</svg><figcaption>Linjal i centimeter</figcaption></figure>`;
+  }
   function areaVisual(q) {
     const { width, height } = q.model;
     return `<div class="area-model" role="img" aria-label="Rektangel med ${height} rader og ${width} ruter i hver rad"><div class="area-grid" style="--columns:${width}">${Array.from({length:width*height},()=>'<i aria-hidden="true"></i>').join('')}</div><span>${width} ruter bortover · ${height} rader</span></div>`;
@@ -145,9 +170,12 @@
   function coordinateVisual(q, solved = false) {
     const { limit } = q.model, moving = q.kind === 'gridMove';
     const here = moving ? (solved ? q.model.end : q.model.start) : q.model, from = moving && solved ? q.model.start : null;
-    const cell = i => { const x = i % limit + 1, y = limit - Math.floor(i / limit); return x === here.x && y === here.y ? '<i class="marked" aria-hidden="true">🦄</i>' : from && x === from.x && y === from.y ? '<i class="start" aria-hidden="true">✿</i>' : '<i aria-hidden="true"></i>'; };
-    const description = `Rutenett. Enhjørningen står på (${here.x}, ${here.y})${from ? `, og startet på (${from.x}, ${from.y})` : ''}`;
-    return `<div class="coordinate-model" role="img" aria-label="${description}"><div class="coordinate-plane"><div class="coordinate-y-numbers" style="height:${limit*32}px">${Array.from({length:limit},(_,i)=>`<span>${limit-i}</span>`).join('')}</div><div class="coordinate-grid" style="--grid-size:${limit}">${Array.from({length:limit*limit},(_,i)=>cell(i)).join('')}</div><div class="coordinate-numbers" style="width:${limit*32+2}px">${Array.from({length:limit},(_,i)=>`<span>${i+1}</span>`).join('')}</div></div><span class="axis-caption">x · bortover &nbsp;&nbsp; y · oppover</span></div>`;
+    // Med hint, ekstra støtte eller etter svar markeres ruten ned til tallet (bortover) eller raden bort til tallet (opp).
+    const guide = !moving && (solved || q.hintOpen || q.extraSupport) ? q.model.axis : null;
+    const lit = (x, y) => guide === 'x' ? x === here.x && y < here.y : guide === 'y' ? y === here.y && x < here.x : false;
+    const cell = i => { const x = i % limit + 1, y = limit - Math.floor(i / limit); return x === here.x && y === here.y ? '<i class="marked" aria-hidden="true">🦄</i>' : from && x === from.x && y === from.y ? '<i class="start" aria-hidden="true">✿</i>' : `<i${lit(x, y) ? ' class="guide"' : ''} aria-hidden="true"></i>`; };
+    const description = moving || solved ? `Rutenett. Enhjørningen står på (${here.x}, ${here.y})${from ? `, og startet på (${from.x}, ${from.y})` : ''}` : 'Rutenett med enhjørningen på et punkt';
+    return `<div class="coordinate-model" role="img" aria-label="${description}"><div class="coordinate-plane"><div class="coordinate-y-numbers" style="height:${limit*32}px">${Array.from({length:limit},(_,i)=>`<span${guide==='y'&&limit-i===here.y?' class="on"':''}>${limit-i}</span>`).join('')}</div><div class="coordinate-grid" style="--grid-size:${limit}">${Array.from({length:limit*limit},(_,i)=>cell(i)).join('')}</div><div class="coordinate-numbers" style="width:${limit*32+2}px">${Array.from({length:limit},(_,i)=>`<span${guide==='x'&&i+1===here.x?' class="on"':''}>${i+1}</span>`).join('')}</div></div><span class="axis-caption">x · bortover &nbsp;&nbsp; y · oppover</span></div>`;
   }
   function balanceVisual(q, solved = false) {
     const { form, left, right, unknown } = q.model, sum = side => side.reduce((total, w) => total + w, 0);
@@ -173,6 +201,7 @@
     if (q.kind === 'tenFrame') return tenFrame(q,solved);
     if (q.kind === 'groups') return groupsVisual(q,solved);
     if (q.kind === 'area') return areaVisual(q);
+    if (q.kind === 'measure') return measureVisual(q,solved);
     if (q.kind === 'coordinate' || q.kind === 'gridMove') return coordinateVisual(q,solved);
     if (q.kind === 'balance') return balanceVisual(q,solved);
     if (q.kind === 'compare') return compareVisual(q);
@@ -180,12 +209,12 @@
   }
   function questionCard() {
     const q = state.current, answered = q.selected !== undefined, correct = q.selected === q.answer;
-    const showModel = !answered && ((q.showSupport || q.hintOpen) && (q.kind === 'tenFrame' || q.steps) || ['groups','area','coordinate','gridMove','balance'].includes(q.kind));
+    const showModel = !answered && ((q.showSupport || q.hintOpen) && (q.kind === 'tenFrame' || q.steps) || ['groups','area','measure','coordinate','gridMove','balance'].includes(q.kind));
     return `<section class="question-card ${q.type === 'chart' ? 'chart-card' : ''} ${q.kind==='tenFrame'?'ten-card':''}" aria-label="Matteoppgave">
       <div class="round-header"><span>Oppgave ${Math.min(state.round.done+(answered?0:1),8)} av 8</span><strong>${G.TOPICS[q.type]}</strong></div>
       <div class="round-dots" aria-hidden="true">${Array.from({length:8},(_,i)=>`<span class="${i<state.round.done?'done':i===state.round.done?'current':''}"></span>`).join('')}</div>
       <div class="question-content"><h2 id="question-title" tabindex="-1">${escape(q.title)}</h2>
-      ${q.kind==='chart'?chart(q)+`<p class="chart-question">${escape(q.prompt)}</p>`:['groups','doubleHalf','area','coordinate','gridMove','balance'].includes(q.kind)?`<p class="question-text">${escape(q.prompt)}</p>`:`<p class="equation ${q.kind==='place'?'place':['tenFrame','equation','compare'].includes(q.kind)?'missing-number':q.kind==='sequence'?'sequence':''}">${escape(q.prompt)}${q.type==='plus'||q.type==='minus'?' = ?':''}</p>`}
+      ${q.kind==='chart'?chart(q)+`<p class="chart-question">${escape(q.prompt)}</p>`:['groups','doubleHalf','area','measure','coordinate','gridMove','balance'].includes(q.kind)?`<p class="question-text">${escape(q.prompt)}</p>`:`<p class="equation ${q.kind==='place'?'place':['tenFrame','equation','compare'].includes(q.kind)?'missing-number':q.kind==='sequence'?'sequence':''}">${escape(q.prompt)}${q.type==='plus'||q.type==='minus'?' = ?':''}</p>`}
       ${showModel?learningVisual(q):''}</div>
       <p class="answer-instruction">${answered?'Riktig svar er markert med ✓':'Trykk på svaret du tror er riktig'}</p>
       <div class="answers ${q.options.length===3?'count-3':''}">${q.options.map((o,i)=>`<button class="answer ${answered?o.value===q.answer?'correct':o.value===q.selected?'incorrect':'muted':''} ${/^\d+$/.test(o.label)?'':o.label.length<=2?'symbol':'text'}" data-option="${i}" ${answered?'disabled':''} aria-label="${escape(o.spoken||o.label)}${answered&&o.value===q.answer?', riktig svar':''}"><span class="answer-key" aria-hidden="true">${i+1}</span>${escape(o.label)}${answered&&o.value===q.answer?'<span class="mark" aria-hidden="true">✓</span>':''}</button>`).join('')}</div>
@@ -276,13 +305,13 @@
     const o = G.overview(state), pct = x => x === null ? '–' : `${Math.round(x * 100)} %`;
     const tone = s => s.last < 5 ? '' : s.correct < .6 ? 'low' : s.alone >= .85 ? 'high' : '';
     const advice = s => s.last < 5 ? 'For få svar ennå' : s.correct < .6 ? 'Trenger støtte' : s.alone >= .85 && s.level < s.max ? 'Klar for mer' : s.alone >= .85 ? 'Mestrer øverste trinn' : '';
-    const dots = s => s.recent.map(r => `<i class="dot ${r}" title="${r === 'ok' ? 'Riktig' : r === 'hint' ? 'Riktig med hint' : 'Feil'}"></i>`).join('') || '–';
+    const dots = s => s.recent.map(r => `<i class="dot dot-${r}" title="${r === 'ok' ? 'Riktig' : r === 'hint' ? 'Riktig med hint' : 'Feil'}"></i>`).join('') || '–';
     const w = o.lastTwoWeeks;
-    const rows = o.skills.map(s => `<tr class="${tone(s)}"><th scope="row">${escape(s.name)}${s.support ? ' <span class="tag">ekstra støtte</span>' : ''}</th><td>${s.level} av ${s.max}</td><td>${s.last}</td><td>${pct(s.correct)}</td><td>${pct(s.alone)}</td><td class="dots">${dots(s)}</td><td>${s.lastPlayed ? s.lastPlayed.slice(5).split('-').reverse().join('.') : '–'}</td><td>${advice(s)}</td></tr>`).join('');
+    const rows = o.skills.map(s => `<tr class="${tone(s)}"><th scope="row">${escape(s.name)}${s.support ? ' <span class="tag">ekstra støtte</span>' : ''}</th><td class="level-cell"><button class="step" data-level-skill="${s.key}" data-step="-1" ${s.level<=1?'disabled':''} aria-label="Lavere trinn i ${escape(s.name)}">−</button><span>${s.level} av ${s.max}</span><button class="step" data-level-skill="${s.key}" data-step="1" ${s.level>=s.max?'disabled':''} aria-label="Høyere trinn i ${escape(s.name)}">+</button></td><td>${s.last}</td><td>${pct(s.correct)}</td><td>${pct(s.alone)}</td><td class="dots">${dots(s)}</td><td>${s.lastPlayed ? s.lastPlayed.slice(5).split('-').reverse().join('.') : '–'}</td><td>${advice(s)}</td></tr>`).join('');
     const canShare = typeof navigator.share === 'function';
     $('#parent-content').innerHTML = `<div class="parent-stats"><div><b>${o.answered}</b><span>oppgaver totalt</span></div><div><b>${o.answered ? Math.round(o.correct / o.answered * 100) : 0} %</b><span>riktige totalt</span></div><div><b>${w.days}</b><span>dager spilt siste 14 dager</span></div><div><b>${w.answered}</b><span>oppgaver siste 14 dager${w.answered ? `, ${Math.round(w.correct / w.answered * 100)} % riktige` : ''}</span></div></div>
       <div class="parent-table-wrap"><table class="parent-table"><thead><tr><th scope="col">Ferdighet</th><th scope="col">Trinn</th><th scope="col">Svar</th><th scope="col">Riktig</th><th scope="col">Uten hint</th><th scope="col">Siste 8</th><th scope="col">Sist</th><th scope="col">Vurdering</th></tr></thead><tbody>${rows}</tbody></table></div>
-      <p class="settings-help">Prosentene gjelder de siste 30 svarene i hver ferdighet. Trinnet øker automatisk etter 7 av 8 riktige uten hint, og går ned etter to feil på rad. «Klar for mer» betyr minst 85 % riktige uten hint; «Trenger støtte» betyr under 60 % riktige.<br><span class="legend"><i class="dot ok"></i> riktig <i class="dot hint"></i> riktig med hint <i class="dot wrong"></i> feil</span></p>
+      <p class="settings-help">Med − og + flytter du trinnet i en ferdighet. Det gjelder fra neste oppgave i ferdigheten, og målingen for opp og ned starter på nytt. Prosentene gjelder de siste 30 svarene i hver ferdighet, også fra tidligere trinn. Trinnet øker automatisk etter 7 av 8 riktige uten hint, og går ned etter to feil på rad. «Klar for mer» betyr minst 85 % riktige uten hint; «Trenger støtte» betyr under 60 % riktige.<br><span class="legend"><i class="dot dot-ok"></i> riktig <i class="dot dot-hint"></i> riktig med hint <i class="dot dot-wrong"></i> feil</span></p>
       <h3>Eksport</h3><p class="settings-help">Eksporten inneholder tallene over og de siste svarene i hver ferdighet som tekst. Den inneholder enhjørningens navn, men ikke barnets.</p>
       <div class="export-actions"><button class="primary-button" id="copy-report">Kopier eksport</button>${canShare ? '<button class="secondary-button" id="share-report">Del …</button>' : ''}<span id="export-status" role="status"></span></div>
       <details class="export-text"><summary>Vis eksporten som tekst</summary><textarea id="report-text" readonly rows="8"></textarea></details>`;
@@ -291,6 +320,10 @@
       try { await navigator.clipboard.writeText(text); $('#export-status').textContent = 'Kopiert. Lim den inn der du vil.'; }
       catch { const area = $('#report-text'); area.closest('details').open = true; area.focus(); area.select(); $('#export-status').textContent = 'Merk teksten og kopier den selv.'; }
     });
+    document.querySelectorAll('[data-level-skill]').forEach(b => b.addEventListener('click', () => {
+      const skill = b.dataset.levelSkill, step = Number(b.dataset.step);
+      if (G.setLevel(state, skill, state.mastery[skill].level + step)) { save(); parentView(); (document.querySelector(`[data-level-skill="${skill}"][data-step="${step}"]:not(:disabled)`) || document.querySelector(`[data-level-skill="${skill}"]:not(:disabled)`))?.focus(); }
+    }));
     $('#share-report')?.addEventListener('click', () => navigator.share({ title: 'Enhjørningsdalen – eksport', text }).catch(() => {}));
   }
   $('#parent-button').addEventListener('click',()=>{$('#settings-dialog').close();parentView();$('#parent-dialog').showModal();});

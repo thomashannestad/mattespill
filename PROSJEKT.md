@@ -31,6 +31,7 @@ Hver oppgave har en ferdighet og et skjult vanskelighetstrinn. Spillet kan velge
 | Multiplikasjon og deling | Regne med like store grupper eller dele en mengde likt |
 | Sammenligning | Sette riktig tegn (<, = eller >) mellom to tall eller to uttrykk |
 | Areal | Telle enhetsruter i et rektangel |
+| Måling | Måle lengde i ruter og centimeter, lengde og bredde, linjal som ikke starter på 0, og forskjell mellom to lengder |
 | Koordinater | Lese av vannrett eller loddrett plassering av et punkt i et rutenett |
 | Instruksjoner i rutenettet | Følge trinnvise instruksjoner fra et startpunkt og finne den nye plassen |
 | Diagrammer | Lese av en søyle, finne fargen med flest eller færrest, forskjellen mellom to søyler, eller summen |
@@ -39,7 +40,7 @@ Oppgavebanken er laget for variasjon innen hvert trinn. Diagramoppgavene leser a
 
 ## Tilpasning og læringsstøtte
 
-- Hver av de 16 ferdighetene har sin egen progresjon. Framgang i én ferdighet endrer ikke automatisk nivået i en annen.
+- Hver av de 17 ferdighetene har sin egen progresjon. Framgang i én ferdighet endrer ikke automatisk nivået i en annen.
 - I automatisk modus øker trinnet etter minst sju riktige uten hint blant de siste åtte oppgavene på trinnet. To feil på rad, eller tre feil blant de siste fem, senker trinnet og gir ekstra støtte.
 - Hint kan brukes uten å miste stjerner. Et riktig svar etter hint belønnes som vanlig, men teller ikke som selvstendig mestring i tilpasningen.
 - Oppgaven forklarer svaret etter at barnet har valgt. Støttemodeller brukes blant annet for tierfylling, regnehopp, like grupper, ruteareal og koordinater.
