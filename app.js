@@ -227,12 +227,14 @@
   function render() {
     if (!state.current && state.round.done < 8) { state.current = G.nextQuestion(state); save(); }
     $('#balance').textContent = state.balance;
-    $('#play-tab').classList.toggle('active',view==='play'); $('#unicorn-tab').classList.toggle('active',view==='closet');
-    for (const [selector, active] of [['#play-tab',view==='play'],['#unicorn-tab',view==='closet']]) { if(active) $(selector).setAttribute('aria-current','page'); else $(selector).removeAttribute('aria-current'); }
+    $('#play-tab').classList.toggle('active',view!=='closet'); $('#unicorn-tab').classList.toggle('active',view==='closet');
+    for (const [selector, active] of [['#play-tab',view!=='closet'],['#unicorn-tab',view==='closet']]) { if(active) $(selector).setAttribute('aria-current','page'); else $(selector).removeAttribute('aria-current'); }
     const warning = storageAvailable ? '' : '<p class="storage-warning" role="alert">Nettleseren kan ikke lagre nå. Du kan spille, men fremgangen kan forsvinne når siden lukkes. Tillat nettleserlagring for å ta vare på eventyret.</p>';
-    if (view === 'play') {
+    if (view === 'topics') {
+      $('#main').innerHTML = warning + topicsView();
+    } else if (view === 'play') {
       const nextItem = G.ITEMS.find(i=>!state.owned.includes(i.id));
-      $('#main').innerHTML = warning + `<h1 class="sr-only">Spill og lær</h1><div class="play-toolbar"><label class="topic-select">Vi øver på <select id="topic">${Object.entries(G.TOPICS).map(([key,label])=>`<option value="${key}" ${key===state.topic?'selected':''}>${label}</option>`).join('')}</select></label></div><div class="play-grid">${state.round.done===8 && !state.current ? summaryCard() : questionCard()}${unicornPanel()}</div>${nextItem?`<div class="reward-strip"><div class="reward-icon" aria-hidden="true">${nextItem.icon}</div><div><h3>${nextItem.name} til ${escape(state.name)}?</h3><p>${state.balance>=nextItem.price?'Du har nok stjerner! Finn den i butikken.':`Bare ${nextItem.price-state.balance} stjerner til, så kan den bli din.`}</p></div><button class="text-button" data-view="closet">Se butikken</button></div>`:''}`;
+      $('#main').innerHTML = warning + `<h1 class="sr-only">Spill og lær</h1><div class="play-toolbar"><div class="topic-heading"><span class="topic-icon" aria-hidden="true">${topicIcon(state.topic)}</span><div><span class="topic-label">Vi øver på</span><h2>${G.TOPICS[state.topic]}</h2></div></div><button class="secondary-button" data-view="topics">Bytt tema</button></div><div class="play-grid">${state.round.done===8 && !state.current ? summaryCard() : questionCard()}${unicornPanel()}</div>${nextItem?`<div class="reward-strip"><div class="reward-icon" aria-hidden="true">${nextItem.icon}</div><div><h3>${nextItem.name} til ${escape(state.name)}?</h3><p>${state.balance>=nextItem.price?'Du har nok stjerner! Finn den i butikken.':`Bare ${nextItem.price-state.balance} stjerner til, så kan den bli din.`}</p></div><button class="text-button" data-view="closet">Se butikken</button></div>`:''}`;
     } else {
       const slotLabels = { head: 'Pynt', mane: 'Manefarger', feet: 'Hover', neck: 'Rundt halsen', back: 'Vinger', world: 'Eventyrsteder', foal: 'Enhjørningsføll' };
       const slotOrder = ['mane','head','feet','neck','back','world','foal'];
@@ -255,6 +257,16 @@
       $('#main').innerHTML = warning + `<h1 class="sr-only">Min enhjørning</h1><div class="closet-grid">${unicornPanel(true)}<section class="shop-section" aria-labelledby="shop-title"><div class="shop-heading"><h2 id="shop-title">${mine?'Mine ting':'Enhjørningsbutikken'}</h2><span>${mine?`${state.owned.length} av ${G.ITEMS.length} skatter`:`${G.ITEMS.length} skatter i ${slotOrder.length} grupper`}</span></div><div class="shop-filter" role="group" aria-label="Vis"><button data-filter="all" aria-pressed="${!mine}">Hele butikken</button><button data-filter="mine" aria-pressed="${mine}" ${state.owned.length?'':'disabled'}>Mine ting · ${state.owned.length}</button>${mine&&Object.keys(state.equipped).some(slot=>slot!=='foal')?'<button class="text-button" id="undress">Ta av alt</button>':''}</div>${groups}<p class="stats-note">Stjernene du bruker i butikken, teller fortsatt mot neste nivå.</p></section></div>`;
     }
     bind();
+  }
+  // Ikon og kort beskrivelse for hvert tema i temaoversikten.
+  const TOPIC_INFO = { mixed: ['🎲', 'Litt av hvert tema, blandet'], ten: ['🖐️', 'Hvilke tall blir 10 sammen?'], nextTen: ['🔟', 'Hvor mange mangler til neste hele tier?'],
+    plus: ['➕', 'Legg sammen, også over tieren'], minus: ['➖', 'Trekk fra, også over tieren'], numbers: ['🔢', 'Tallrekker, tiere og enere'],
+    doubleHalf: ['✌️', 'Doble tall og dele i to'], equation: ['❓', 'Finn tallet som mangler'], balance: ['⚖️', 'Få skålvekten til å balansere'],
+    multiply: ['✖️', 'Like store grupper'], divide: ['🧺', 'Del bær likt i kurvene'], compare: ['🐊', 'Større enn, mindre enn eller lik'],
+    area: ['🟪', 'Tell rutene i teppet'], measure: ['📏', 'Mål med ruter og linjal'], coordinate: ['🗺️', 'Finn og flytt enhjørningen i rutenettet'], chart: ['📊', 'Les av søylediagrammer'] };
+  const topicIcon = key => TOPIC_INFO[key]?.[0] || '✦';
+  function topicsView() {
+    return `<div class="topics-head"><button class="text-button" data-view="play">← Tilbake</button><h1>Hva vil du øve på?</h1></div><div class="topic-grid">${Object.entries(G.TOPICS).map(([key, label]) => `<button class="topic-card ${key===state.topic?'current':''}" data-topic="${key}" ${key===state.topic?'aria-current="true"':''}><span class="topic-icon" aria-hidden="true">${topicIcon(key)}</span><span class="topic-name">${label}</span><span class="topic-desc">${TOPIC_INFO[key]?.[1] || ''}</span>${key===state.topic?'<span class="topic-now">Øver nå</span>':''}</button>`).join('')}</div>`;
   }
   function switchView(nextView) { view = nextView; preview = null; render(); }
   function focusAfterRender(selector) { document.querySelector(selector)?.focus({preventScroll:true}); }
@@ -282,7 +294,11 @@
     document.querySelectorAll('[data-option]').forEach(b=>b.addEventListener('click',()=>respond(state.current.options[Number(b.dataset.option)].value)));
     $('#next-question')?.addEventListener('click',nextQuestion);
     $('#new-round')?.addEventListener('click',()=>{state.round={done:0,correct:0,earned:0};state.current=null;save();render();reveal($('.round-header'));$('#question-title')?.focus({preventScroll:true});});
-    $('#topic')?.addEventListener('change',e=>{state.topic=e.target.value;if(state.current && state.current.selected===undefined) state.current=G.nextQuestion(state);save();render();});
+    document.querySelectorAll('[data-topic]').forEach(b=>b.addEventListener('click',()=>{
+      const topic=b.dataset.topic;
+      if (topic!==state.topic) { state.topic=topic; state.round={done:0,correct:0,earned:0}; state.current=null; save(); }
+      view='play'; render(); scrollTo({top:0}); $('#question-title')?.focus({preventScroll:true});
+    }));
     $('#hint-button')?.addEventListener('click',()=>{state.current.hintOpen=!state.current.hintOpen;if(state.current.hintOpen)G.useHint(state);save();render();$('#hint-button')?.focus({preventScroll:true});});
     $('#name-form')?.addEventListener('submit',e=>{e.preventDefault();const name=$('#unicorn-name').value.trim().slice(0,24);if(!name){$('#unicorn-name').setCustomValidity('Skriv et navn til enhjørningen.');$('#unicorn-name').reportValidity();return;}state.name=name;save();render();notify(`Enhjørningen din heter nå ${name}.`);});
     $('#unicorn-name')?.addEventListener('input',e=>e.target.setCustomValidity(''));
