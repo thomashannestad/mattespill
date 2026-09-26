@@ -42,7 +42,7 @@ Ikonlenkene følger [Apples veiledning for hjemskjermikoner](https://developer.a
 
 - Velg ett av svarkortene. De fleste oppgaver har fire tall, men noen har tegn eller ord, for eksempel <, = og >, fargenavn eller plasser i rutenettet. Riktig svar gir **3 stjerner totalt**, et annet svar gir **1 stjerne** for innsatsen. Bare første svar på oppgaven gir poeng.
 - Et hint er alltid gratis. Ved feil vises riktig svar med en kort forklaring. Det er ingen tidtaking.
-- Hver runde har åtte oppgaver. Spill en ny runde eller besøk butikken når runden er ferdig.
+- Hver runde har åtte oppgaver. Når runden er ferdig, kan dere spille en ny runde i samme tema, få et nytt tilfeldig tema, spille litt av alt, velge tema selv eller besøke butikken.
 - Under **Min enhjørning** kan dere velge navn, prøve og kjøpe utstyr, og ta utstyret av og på. Et trykk på «Prøv» viser tingen på enhjørningen uten å bruke stjerner. Kjøpet skjer først når dere trykker «Kjøp». Butikken er delt i sammenleggbare grupper for pynt, manefarger, hover, halstilbehør, vinger og eventyrsteder. Ett utstyr per kategori kan brukes om gangen. Det dere har kjøpt, beholdes.
 - Butikken har også **enhjørningsføll**: Kløver (150 stjerner), Fersken (210) og Månefnugg (280). Ett føll kan følge den voksne i engen om gangen. Føll kan forhåndsvises gratis, kjøpte føll beholdes, og det er gratis å bytte eller la dem hvile. «Ta av alt» fjerner utstyret, men lar føllet bli med.
 - Enhjørningens nivå følger alle stjernene som er tjent. Kjøp reduserer ikke nivået. Nye nivåer nås ved 24, 60, 120 og 210 opptjente stjerner; enhjørningen vokser litt og får flere magiske detaljer.
@@ -52,7 +52,7 @@ Ikonlenkene følger [Apples veiledning for hjemskjermikoner](https://developer.a
 
 Utklippene under `Grunnlag oppgaver` nevner tallene 1–50, tall til 1000 og søylediagrammer. Spillet lager nye oppgaver innen disse temaene, og supplerer dem med sentrale regnestrategier og representasjoner for 3. trinn. Utklippene inneholder ikke selve spillarket eller konkrete regnestykker, så oppgavene er laget til spillet.
 
-Standard er nå **Tilpass til meg · automatisk**. Over oppgaven står temaet dere øver på, med knappen **Bytt tema**. Den åpner en oversikt med ett kort per tema, med ikon og kort beskrivelse. Et valg starter en ny runde på åtte oppgaver i temaet. Fast vanskelighetsgrad kan velges via tannhjulet og gjelder fra neste oppgave.
+Standard er nå **Tilpass til meg · automatisk**. Øverst i oppgavekortet står temaet dere øver på, med knappen **Bytt tema**. I «Litt av alt» viser kortet også hvilket tema oppgaven er fra. Den åpner en oversikt med ett kort per tema, med ikon og kort beskrivelse. Et valg starter en ny runde på åtte oppgaver i temaet. Fast vanskelighetsgrad kan velges via tannhjulet og gjelder fra neste oppgave.
 
 | Ferdighet | Start | Videre progresjon |
 |---|---|---|

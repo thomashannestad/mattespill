@@ -211,7 +211,7 @@
     const q = state.current, answered = q.selected !== undefined, correct = q.selected === q.answer;
     const showModel = !answered && ((q.showSupport || q.hintOpen) && (q.kind === 'tenFrame' || q.steps) || ['groups','area','measure','coordinate','gridMove','balance'].includes(q.kind));
     return `<section class="question-card ${q.type === 'chart' ? 'chart-card' : ''} ${q.kind==='tenFrame'?'ten-card':''}" aria-label="Matteoppgave">
-      <div class="round-header"><span>Oppgave ${Math.min(state.round.done+(answered?0:1),8)} av 8</span><strong>${G.TOPICS[q.type]}</strong></div>
+      ${cardTopic()}<div class="round-header"><span>Oppgave ${Math.min(state.round.done+(answered?0:1),8)} av 8</span>${state.topic==='mixed'&&G.TOPICS[q.type]?`<span class="task-topic"><span aria-hidden="true">${topicIcon(q.type)}</span> ${G.TOPICS[q.type]}</span>`:''}</div>
       <div class="round-dots" aria-hidden="true">${Array.from({length:8},(_,i)=>`<span class="${i<state.round.done?'done':i===state.round.done?'current':''}"></span>`).join('')}</div>
       <div class="question-content"><h2 id="question-title" tabindex="-1">${escape(q.title)}</h2>
       ${q.kind==='chart'?chart(q)+`<p class="chart-question">${escape(q.prompt)}</p>`:['groups','doubleHalf','area','measure','coordinate','gridMove','balance'].includes(q.kind)?`<p class="question-text">${escape(q.prompt)}</p>`:`<p class="equation ${q.kind==='place'?'place':['tenFrame','equation','compare'].includes(q.kind)?'missing-number':q.kind==='sequence'?'sequence':''}">${escape(q.prompt)}${q.type==='plus'||q.type==='minus'?' = ?':''}</p>`}
@@ -221,8 +221,11 @@
       ${answered?`<div class="feedback ${correct?'':'try'}" role="status"><div class="feedback-top"><b>${correct?'Det stemmer!':'Takk for at du prøvde!'}</b><span class="point-award">+${correct?3:1} ★</span></div><p>${escape(q.explanation)}</p>${learningVisual(q,true)}<button class="primary-button" id="next-question">${state.round.done===8?'Se hvordan det gikk':'Neste oppgave'} <span aria-hidden="true">→</span></button></div>`:`<div class="help-row"><button class="text-button" id="hint-button" aria-expanded="${q.hintOpen?'true':'false'}" aria-controls="hint">${q.hintOpen?'Skjul hint':'Jeg vil ha et hint'}</button><span>Ingen hast. Du har god tid.</span></div><p class="hint" id="hint" ${q.hintOpen?'':'hidden'}>${escape(q.hint)}</p>`}
     </section>`;
   }
+  function cardTopic() {
+    return `<div class="card-topic"><span class="topic-icon" aria-hidden="true">${topicIcon(state.topic)}</span><div class="card-topic-text"><span class="topic-label">Vi øver på</span><p class="topic-title">${G.TOPICS[state.topic]}</p></div><button class="secondary-button" data-view="topics">Bytt tema</button></div>`;
+  }
   function summaryCard() {
-    return `<section class="question-card summary"><span class="summary-icon" aria-hidden="true">✦</span><h2>For en fin innsats!</h2><p>Du har utforsket 8 oppgaver<br>og hjulpet ${escape(state.name)} å vokse.</p><div class="summary-score">${state.round.earned} <span aria-hidden="true">★</span></div><p>stjerner i denne runden<br>${state.round.correct} av 8 riktige svar</p><div class="summary-buttons"><button class="primary-button" id="new-round">Spill en ny runde</button><button class="shop-link" data-view="closet">Besøk enhjørningsbutikken</button></div></section>`;
+    return `<section class="question-card summary">${cardTopic()}<span class="summary-icon" aria-hidden="true">✦</span><h2>For en fin innsats!</h2><p>Du har utforsket 8 oppgaver<br>og hjulpet ${escape(state.name)} å vokse.</p><div class="summary-score">${state.round.earned} <span aria-hidden="true">★</span></div><p>stjerner i denne runden<br>${state.round.correct} av 8 riktige svar</p><div class="summary-buttons"><button class="primary-button" data-round="same"><span aria-hidden="true">${topicIcon(state.topic)}</span> Ny runde: ${G.TOPICS[state.topic]}</button><div class="summary-choices"><button class="secondary-button" data-round="random"><span aria-hidden="true">🔀</span> Nytt tilfeldig tema</button>${state.topic!=='mixed'?`<button class="secondary-button" data-round="mixed"><span aria-hidden="true">${topicIcon('mixed')}</span> Litt av alt</button>`:''}<button class="secondary-button" data-view="topics"><span aria-hidden="true">🗂️</span> Velg tema selv</button></div><button class="shop-link" data-view="closet">Besøk enhjørningsbutikken</button></div></section>`;
   }
   function render() {
     if (!state.current && state.round.done < 8) { state.current = G.nextQuestion(state); save(); }
@@ -234,7 +237,7 @@
       $('#main').innerHTML = warning + topicsView();
     } else if (view === 'play') {
       const nextItem = G.ITEMS.find(i=>!state.owned.includes(i.id));
-      $('#main').innerHTML = warning + `<h1 class="sr-only">Spill og lær</h1><div class="play-toolbar"><div class="topic-heading"><span class="topic-icon" aria-hidden="true">${topicIcon(state.topic)}</span><div><span class="topic-label">Vi øver på</span><h2>${G.TOPICS[state.topic]}</h2></div></div><button class="secondary-button" data-view="topics">Bytt tema</button></div><div class="play-grid">${state.round.done===8 && !state.current ? summaryCard() : questionCard()}${unicornPanel()}</div>${nextItem?`<div class="reward-strip"><div class="reward-icon" aria-hidden="true">${nextItem.icon}</div><div><h3>${nextItem.name} til ${escape(state.name)}?</h3><p>${state.balance>=nextItem.price?'Du har nok stjerner! Finn den i butikken.':`Bare ${nextItem.price-state.balance} stjerner til, så kan den bli din.`}</p></div><button class="text-button" data-view="closet">Se butikken</button></div>`:''}`;
+      $('#main').innerHTML = warning + `<h1 class="sr-only">Spill og lær</h1><div class="play-grid">${state.round.done===8 && !state.current ? summaryCard() : questionCard()}${unicornPanel()}</div>${nextItem?`<div class="reward-strip"><div class="reward-icon" aria-hidden="true">${nextItem.icon}</div><div><h3>${nextItem.name} til ${escape(state.name)}?</h3><p>${state.balance>=nextItem.price?'Du har nok stjerner! Finn den i butikken.':`Bare ${nextItem.price-state.balance} stjerner til, så kan den bli din.`}</p></div><button class="text-button" data-view="closet">Se butikken</button></div>`:''}`;
     } else {
       const slotLabels = { head: 'Pynt', mane: 'Manefarger', feet: 'Hover', neck: 'Rundt halsen', back: 'Vinger', world: 'Eventyrsteder', foal: 'Enhjørningsføll' };
       const slotOrder = ['mane','head','feet','neck','back','world','foal'];
@@ -286,14 +289,20 @@
     if (!state.current || state.current.selected === undefined) return;
     state.current = state.round.done < 8 ? G.nextQuestion(state) : null;
     save(); render(); if (state.round.done===8) celebrate();
-    reveal($('.round-header') || $('.summary')); $('#question-title')?.focus({preventScroll:true});
+    reveal($('.question-card')); $('#question-title')?.focus({preventScroll:true});
   }
   function bind() {
     document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
     document.querySelectorAll('[data-shop-group]').forEach(group=>group.addEventListener('toggle',()=>{if(group.open)shopOpenGroups.add(group.dataset.shopGroup);else shopOpenGroups.delete(group.dataset.shopGroup);}));
     document.querySelectorAll('[data-option]').forEach(b=>b.addEventListener('click',()=>respond(state.current.options[Number(b.dataset.option)].value)));
     $('#next-question')?.addEventListener('click',nextQuestion);
-    $('#new-round')?.addEventListener('click',()=>{state.round={done:0,correct:0,earned:0};state.current=null;save();render();reveal($('.round-header'));$('#question-title')?.focus({preventScroll:true});});
+    // Ny runde etter oppsummeringen: samme tema, et tilfeldig annet tema, eller litt av alt.
+    document.querySelectorAll('[data-round]').forEach(b=>b.addEventListener('click',()=>{
+      const choice=b.dataset.round, others=Object.keys(G.TOPICS).filter(t=>t!=='mixed'&&t!==state.topic);
+      if (choice==='random') state.topic=others[Math.floor(Math.random()*others.length)]; else if (choice==='mixed') state.topic='mixed';
+      state.round={done:0,correct:0,earned:0}; state.current=null; save(); render(); reveal($('.question-card')); $('#question-title')?.focus({preventScroll:true});
+      if (choice==='random') notify(`Nytt tema: ${G.TOPICS[state.topic]}`);
+    }));
     document.querySelectorAll('[data-topic]').forEach(b=>b.addEventListener('click',()=>{
       const topic=b.dataset.topic;
       if (topic!==state.topic) { state.topic=topic; state.round={done:0,correct:0,earned:0}; state.current=null; save(); }
