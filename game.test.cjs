@@ -378,6 +378,17 @@ test('foreldre kan flytte trinnet innenfor ferdighetens grenser, og målingen st
   assert.equal(G.setLevel(s, 'finnes-ikke', 2), false);
 });
 
+test('ti nivåer med magi, og stjernemerker for hver 100. stjerne etter toppnivået', () => {
+  assert.equal(G.LEVELS.length, 10);
+  for (let i = 1; i < G.LEVELS.length; i++) { assert.ok(G.LEVELS[i].at > G.LEVELS[i - 1].at); assert.equal(typeof G.LEVELS[i].magic, 'string'); }
+  assert.deepEqual([24, 60, 120, 210].map(n => G.level(n).index), [1, 2, 3, 4], 'de gamle grensene er uendret');
+  assert.equal(G.level(209).index, 3); assert.equal(G.level(330).name, 'Regnbuerytter');
+  const top = G.LEVELS.at(-1).at;
+  assert.deepEqual([G.level(top).badges, G.level(top).nextBadge], [0, top + 100]);
+  assert.deepEqual([G.level(top + 99).badges, G.level(top + 250).badges, G.level(top + 250).nextBadge], [0, 2, top + 300]);
+  assert.equal(G.level(100).badges, 0); assert.equal(G.level(100).nextBadge, null);
+});
+
 test('oppgavemetadata skiller tierovergang fra større tall uten overgang', () => {
   for (let i = 0; i < 500; i++) {
     for (const skill of ['plus','minus']) for (const level of [4,5]) {

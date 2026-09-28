@@ -64,10 +64,12 @@
     const itemName = id => G.ITEMS.find(item => item.id === id)?.name;
     return `<div class="unicorn-scene"><span class="scene-label">${sceneName}</span>
     <svg viewBox="0 0 500 430" role="img" aria-label="${escape(state.name)}, enhjørningen din${eq.head ? ', med '+escape(itemName(eq.head)) : ''}${eq.mane ? ', med '+escape(itemName(eq.mane)) : ''}${eq.feet ? ', med '+escape(itemName(eq.feet)) : ''}${eq.neck ? ', med '+escape(itemName(eq.neck)) : ''}${eq.back ? ', med '+escape(itemName(eq.back)) : ''}${eq.world ? ', i '+escape(itemName(eq.world)) : ''}${eq.foal ? ', sammen med føllet '+escape(itemName(eq.foal)) : ''}">
-      <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="${aurora ? '#283f64' : moonGarden ? '#343552' : night ? '#303e69' : sunset ? '#f2c6b1' : '#dfede7'}"/><stop offset="1" stop-color="${aurora ? '#547b85' : moonGarden ? '#77718f' : night ? '#8c91b0' : sunset ? '#f8e5c6' : '#f2f4dd'}"/></linearGradient><linearGradient id="coat" x2=".5" y2="1"><stop stop-color="#fffef8"/><stop offset="1" stop-color="#eee8f1"/></linearGradient><linearGradient id="hair" x2=".8" y2="1"><stop stop-color="${mane[1]}"/><stop offset="1" stop-color="${mane[0]}"/></linearGradient><linearGradient id="horn" x2="1" y2="1"><stop stop-color="${eq.head === 'pearl' ? '#ffffff' : '#ffe5a2'}"/><stop offset="1" stop-color="${eq.head === 'pearl' ? '#a9c8db' : '#d0a04d'}"/></linearGradient></defs>
+      <defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="${aurora ? '#283f64' : moonGarden ? '#343552' : night ? '#303e69' : sunset ? '#f2c6b1' : '#dfede7'}"/><stop offset="1" stop-color="${aurora ? '#547b85' : moonGarden ? '#77718f' : night ? '#8c91b0' : sunset ? '#f8e5c6' : '#f2f4dd'}"/></linearGradient><linearGradient id="coat" x2=".5" y2="1"><stop stop-color="#fffef8"/><stop offset="1" stop-color="#eee8f1"/></linearGradient><linearGradient id="hair" x2=".8" y2="1"><stop stop-color="${mane[1]}"/><stop offset="1" stop-color="${mane[0]}"/></linearGradient><linearGradient id="horn" x2="1" y2="1"><stop stop-color="${eq.head === 'pearl' ? '#ffffff' : '#ffe5a2'}"/><stop offset="1" stop-color="${eq.head === 'pearl' ? '#a9c8db' : '#d0a04d'}"/></linearGradient><radialGradient id="hornGlow"><stop stop-color="#fffbe0"/><stop offset=".35" stop-color="#ffe36b" stop-opacity=".85"/><stop offset="1" stop-color="#ffd23f" stop-opacity="0"/></radialGradient><radialGradient id="aura"><stop stop-color="#ffe98f" stop-opacity=".95"/><stop offset=".55" stop-color="#f7cf5c" stop-opacity=".45"/><stop offset="1" stop-color="#f7cf5c" stop-opacity="0"/></radialGradient></defs>
       <path fill="url(#sky)" d="M0 0h500v430H0z"/>
       ${aurora ? '<path d="M0 118Q105 30 206 99T500 70v69Q390 103 277 150T0 173Z" fill="#a4e7bf" opacity=".33"/><path d="M0 146Q121 65 231 126T500 99v49Q370 132 256 175T0 198Z" fill="#c1a6e8" opacity=".32"/>' : ''}
       ${night ? '<g fill="#fff3c9"><circle cx="90" cy="84" r="2"/><circle cx="148" cy="52" r="2"/><circle cx="394" cy="112" r="2.5"/><circle cx="425" cy="55" r="2"/><path d="M372 66a26 26 0 1 1-27-32 22 22 0 0 0 27 32"/></g>' : '<circle cx="391" cy="90" r="36" fill="#fff9dc" opacity=".9"/><g fill="#fffefa" opacity=".67"><path d="M28 123c-6-18 18-31 29-16 4-29 48-25 47 2 22-10 39 8 30 21H28Z"/><path d="M349 165c-4-12 13-21 22-11 2-20 34-20 36 0 16-8 30 7 25 15h-83Z"/></g>'}
+      ${lvl >= 5 ? `<g fill="none" stroke-width="7" opacity=".5">${['#ef8a86','#f5b27a','#f6dc7e','#9fd3a3','#93c2e6','#b9a2de'].map((c, i) => `<path d="M${40 + i * 7} 300A${210 - i * 7} ${190 - i * 7} 0 0 1 ${460 - i * 7} 300" stroke="${c}"/>`).join('')}</g>` : ''}
+      ${lvl >= 9 ? '<ellipse cx="250" cy="228" rx="170" ry="150" fill="url(#aura)"/>' : ''}
       <path d="M0 247Q90 158 194 231T500 225V430H0" fill="${night ? '#879c9b' : '#c8dbc0'}"/>
       <path d="M0 292Q151 216 282 269T500 263V430H0" fill="${night ? '#6f8c81' : '#b7d1ad'}"/>
       <path d="M0 346Q123 302 264 326T500 306V430H0" fill="${night ? '#9db39b' : '#d2dfb8'}"/>
@@ -75,7 +77,7 @@
       <g fill="none" stroke="${night ? '#577765' : '#8aaa83'}" stroke-width="2" stroke-linecap="round"><path d="m53 347-4-13m4 13 7-7m359 39 4-16m-4 16-5-7M102 395l-2-15m2 15 5-9m356-40 2-15"/></g>
       <g fill="#fcf4d6"><circle cx="49" cy="331" r="5"/><circle cx="421" cy="361" r="5"/><circle cx="99" cy="379" r="4"/></g><g fill="#c597b5"><circle cx="63" cy="366" r="4"/><circle cx="436" cy="330" r="5"/><circle cx="462" cy="382" r="4"/></g>
       <ellipse cx="248" cy="337" rx="116" ry="15" fill="#748a70" opacity=".17"/>
-      <g id="unicorn-art"><g stroke="#a997b3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(${(1-(.94+lvl*.015))*250} ${(1-(.94+lvl*.015))*330}) scale(${.94+lvl*.015})">
+      <g id="unicorn-art"><g stroke="#a997b3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(${(1-(.94+Math.min(lvl,4)*.015))*250} ${(1-(.94+Math.min(lvl,4)*.015))*330}) scale(${.94+Math.min(lvl,4)*.015})">
         <path d="M161 224c-37-28-64-2-68 23-4 29 13 48-19 56 43 12 71-9 59-37-8-17 5-25 25-16" fill="url(#hair)"/>
         <path d="M123 235c-29 20 15 45-21 57" fill="none" stroke="${mane[2]}" opacity=".6"/>
         <path d="m190 265-8 58q1 10 20 8l18-60m45-1 10 52q2 10 20 4l-2-65" fill="#e0d9e9"/>
@@ -89,6 +91,7 @@
         <path d="M274 112c-21-10-36 1-44 21-6 15 3 26-3 38-7 12-25 24-20 43 5 17 26 28 49 16-14-10-11-22-2-35 10-14 17-35 7-48" fill="url(#hair)"/>
         <path d="M251 124c-29 22 15 39-15 64-13 12-14 26 0 35" stroke="${mane[2]}" fill="none" opacity=".55"/>
         <path d="M279 112q-21-27-8-47 23 12 28 40" fill="url(#coat)"/><path d="m279 97-4-20 14 24" fill="#e7bfcf" stroke="none"/>
+        ${lvl >= 7 ? '<circle cx="321" cy="80" r="52" fill="url(#hornGlow)" stroke="none" class="glow"/>' : ''}
         <path d="m306 112 27-61-5 68" fill="url(#horn)" stroke="#c0a062"/><path d="m319 83 11 5m-17 8 16 5" stroke="#c0a062"/>
         <path d="M257 150c-5-34 16-53 44-48 22 3 24 21 32 30 5 7 27 10 29 27 1 20-24 35-50 26-22-7-20-24-30-22l-6 19" fill="url(#coat)"/>
         <path d="M256 140c-19-17-4-42 20-45 23-4 44 6 46 23-18 7-27-1-31-10-1 18-17 20-26 14Z" fill="url(#hair)"/>
@@ -101,6 +104,8 @@
         ${eq.head === 'pearl' ? '<path d="m265 119 17-4" stroke="#b6c8d7" stroke-width="4"/><circle cx="274" cy="116" r="7" fill="#edf5fc" stroke="#b6c8d7"/><circle cx="272" cy="113" r="2.5" fill="#fff" stroke="none"/>' : ''}
         ${eq.head === 'starclip' ? '<path d="m244 164 4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1Z" fill="#f1cd69" stroke="#c69d45"/><circle cx="244" cy="180" r="3" fill="#fff4c6" stroke="none"/>' : ''}
         ${lvl >= 2 ? '<path d="m220 247 3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1Z" fill="#e3c676" stroke="none"/>' : ''}
+        ${lvl >= 6 ? `<g fill="#ffe36b" stroke="#c9a02f" stroke-width="1.2" class="twinkle">${[[90,256,11],[70,298,10],[120,232,8],[108,288,8],[56,272,7]].map(([x,y,r]) => `<path d="M${x} ${y - r}L${x + r * .3} ${y - r * .3}L${x + r} ${y}L${x + r * .3} ${y + r * .3}L${x} ${y + r}L${x - r * .3} ${y + r * .3}L${x - r} ${y}L${x - r * .3} ${y - r * .3}Z"/>`).join('')}</g>` : ''}
+        ${lvl >= 8 ? `<path d="M230 104Q246 58 290 50" fill="none" stroke="#e7c35a" stroke-width="3" opacity=".8"/><g fill="#ffd84d" stroke="#b8902e" stroke-width="1.4" class="twinkle">${[[232,102,10],[241,78,12],[259,60,13],[284,50,11]].map(([x,y,r]) => `<path d="M${x} ${y - r}L${x + r * .32} ${y - r * .32}L${x + r} ${y}L${x + r * .32} ${y + r * .32}L${x} ${y + r}L${x - r * .32} ${y + r * .32}L${x - r} ${y}L${x - r * .32} ${y - r * .32}Z"/>`).join('')}</g>` : ''}
       </g></g>
       ${eq.foal ? `<ellipse cx="403" cy="361" rx="56" ry="9" fill="#748a70" opacity=".17"/><g transform="translate(324 224) scale(.8)">${foalArt(eq.foal)}</g>` : ''}
       <g fill="${night ? '#ffe6ac' : '#b29ac4'}" opacity=".8"><path d="m118 156 3 9 9 3-9 3-3 9-3-9-9-3 9-3Z"/><path d="m384 225 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z"/>${lvl>=1?'<path d="m181 83 2 6 6 2-6 2-2 6-2-6-6-2 6-2Z"/>':''}${lvl>=3?'<path d="m376 153 4 11 11 4-11 4-4 11-4-11-11-4 11-4Z"/>':''}</g>
@@ -111,9 +116,13 @@
     const afford = state.balance >= item.price;
     return `<div class="preview-bar" role="status"><p><span aria-hidden="true">${item.icon}</span> ${item.slot === 'foal' ? 'Du møter' : 'Du prøver'} <b>${escape(item.name)}</b></p><div class="preview-actions"><button class="primary-button" data-buy="${item.id}" ${afford?'':'disabled'}>${afford?`Kjøp · ${item.price} ★`:`Mangler ${item.price-state.balance} ★`}</button><button class="text-button" data-cancel-preview>${item.slot === 'foal' ? 'Tilbake' : 'Ta av igjen'}</button></div></div>`;
   }
+  // Oversikt over magien nivåene låser opp, vist i garderoben.
+  function magicList(current) {
+    return `<details class="magic-list"><summary>Magi du låser opp med stjerner</summary><ol>${G.LEVELS.map((l, i) => i === 0 ? '' : `<li class="${i <= current.index ? 'open' : ''}"><span class="magic-level">Nivå ${i + 1} · ${l.name}</span><span>${escape(l.magic)}</span><span class="magic-at">${i <= current.index ? '✓' : `${l.at} ★`}</span></li>`).join('')}</ol><p>Etter nivå ${G.LEVELS.length} gir hver ${G.BADGE}. stjerne et stjernemerke.</p></details>`;
+  }
   function unicornPanel(closet = false) {
-    const level = G.level(state.earned), percent = level.next ? (state.earned - level.at)/(level.next.at-level.at)*100 : 100;
-    return `<aside class="unicorn-panel" aria-label="Din enhjørning">${scene()}<div class="unicorn-identity"><h2>${escape(state.name)}</h2><span class="level-badge">Nivå ${level.index + 1}</span></div><p class="level-name">${level.name}</p><div class="level-track" role="progressbar" aria-label="Fremgang til neste nivå" aria-valuenow="${Math.round(percent)}" aria-valuemin="0" aria-valuemax="100"><span style="width:${percent}%"></span></div><p class="level-caption">${level.next ? `${level.next.at - state.earned} stjerner til neste nivå` : 'Du er en ekte eventyrmester! ✦'}</p>${closet ? previewBar() : ''}${closet ? `<form class="name-form" id="name-form"><label for="unicorn-name" class="sr-only">Enhjørningens navn</label><input id="unicorn-name" aria-label="Enhjørningens navn" maxlength="24" value="${escape(state.name)}" required><button type="button" class="name-dice" id="random-name" aria-label="Trekk et nytt navn" title="Trekk et nytt navn"><span aria-hidden="true">↻</span></button><button type="submit">Lagre navn</button></form><p class="stats-note">${state.answered} oppgaver utforsket<br>${state.earned} stjerner tjent gjennom hele eventyret</p>` : '<button class="shop-link" data-view="closet">✧ Kle på enhjørningen</button>'}</aside>`;
+    const level = G.level(state.earned), percent = level.next ? (state.earned - level.at)/(level.next.at-level.at)*100 : (state.earned - (level.nextBadge - G.BADGE))/G.BADGE*100;
+    return `<aside class="unicorn-panel" aria-label="Din enhjørning">${scene()}<div class="unicorn-identity"><h2>${escape(state.name)}</h2><span class="level-badge">Nivå ${level.index + 1}</span></div><p class="level-name">${level.name}</p><div class="level-track" role="progressbar" aria-label="Fremgang til neste nivå" aria-valuenow="${Math.round(percent)}" aria-valuemin="0" aria-valuemax="100"><span style="width:${percent}%"></span></div><p class="level-caption">${level.next ? `${level.next.at - state.earned} stjerner til neste nivå${level.next.magic ? `: ${escape(level.next.magic.toLowerCase())}` : ''}` : `${level.badges ? `<span class="badges" aria-label="${level.badges} stjernemerker">${'★'.repeat(Math.min(level.badges, 10))}${level.badges > 10 ? ` × ${level.badges}` : ''}</span><br>` : ''}${level.nextBadge - state.earned} stjerner til neste stjernemerke`}</p>${closet ? magicList(level) : ''}${closet ? previewBar() : ''}${closet ? `<form class="name-form" id="name-form"><label for="unicorn-name" class="sr-only">Enhjørningens navn</label><input id="unicorn-name" aria-label="Enhjørningens navn" maxlength="24" value="${escape(state.name)}" required><button type="button" class="name-dice" id="random-name" aria-label="Trekk et nytt navn" title="Trekk et nytt navn"><span aria-hidden="true">↻</span></button><button type="submit">Lagre navn</button></form><p class="stats-note">${state.answered} oppgaver utforsket<br>${state.earned} stjerner tjent gjennom hele eventyret</p>` : '<button class="shop-link" data-view="closet">✧ Kle på enhjørningen</button>'}</aside>`;
   }
   function chart(q) {
     return `<div class="bar-chart" role="img" aria-label="Søylediagram. ${q.bars.map(b=>`${escape(b.label)}: ${b.value} blomster`).join('. ')}"><div class="chart-ticks" aria-hidden="true">${Array.from({length:11},(_,i)=>`<span style="top:${i*10}%">${10-i}</span>`).join('')}</div>${q.bars.map((b,i)=>`<div class="bar-column" aria-hidden="true"><div class="bar" style="height:${b.value*10}%;--bar-color:${['#dba4ba','#e6c36c','#88b3cb','#ad96c6'][i]}"></div><span class="bar-label">${escape(b.label)}</span></div>`).join('')}</div>`;
@@ -174,7 +183,7 @@
     const guide = !moving && (solved || q.hintOpen || q.extraSupport) ? q.model.axis : null;
     const lit = (x, y) => guide === 'x' ? x === here.x && y < here.y : guide === 'y' ? y === here.y && x < here.x : false;
     const cell = i => { const x = i % limit + 1, y = limit - Math.floor(i / limit); return x === here.x && y === here.y ? '<i class="marked" aria-hidden="true">🦄</i>' : from && x === from.x && y === from.y ? '<i class="start" aria-hidden="true">✿</i>' : `<i${lit(x, y) ? ' class="guide"' : ''} aria-hidden="true"></i>`; };
-    const description = moving || solved ? `Rutenett. Enhjørningen står på (${here.x}, ${here.y})${from ? `, og startet på (${from.x}, ${from.y})` : ''}` : 'Rutenett med enhjørningen på et punkt';
+    const description = `Rutenett. Enhjørningen står på (${here.x}, ${here.y})${from ? `, og startet på (${from.x}, ${from.y})` : ''}`;
     return `<div class="coordinate-model" role="img" aria-label="${description}"><div class="coordinate-plane"><div class="coordinate-y-numbers" style="height:${limit*32}px">${Array.from({length:limit},(_,i)=>`<span${guide==='y'&&limit-i===here.y?' class="on"':''}>${limit-i}</span>`).join('')}</div><div class="coordinate-grid" style="--grid-size:${limit}">${Array.from({length:limit*limit},(_,i)=>cell(i)).join('')}</div><div class="coordinate-numbers" style="width:${limit*32+2}px">${Array.from({length:limit},(_,i)=>`<span${guide==='x'&&i+1===here.x?' class="on"':''}>${i+1}</span>`).join('')}</div></div><span class="axis-caption">x · bortover &nbsp;&nbsp; y · oppover</span></div>`;
   }
   function balanceVisual(q, solved = false) {
@@ -280,10 +289,12 @@
     setTimeout(() => wallet.querySelector('.award')?.remove(), 1300);
   }
   function respond(value) {
-    const previous = G.level(state.earned).index, result = G.answer(state,value); if (!result) return;
+    const before = G.level(state.earned), previous = before.index, badgesBefore = before.badges, result = G.answer(state,value); if (!result) return;
     save(); render(); reveal($('#next-question')); $('#next-question')?.focus({preventScroll:true}); bumpWallet(result.points);
     if (result.correct) { $('#unicorn-art')?.classList.add('unicorn-happy'); celebrate(); }
-    if (G.level(state.earned).index>previous) notify(`${state.name} nådde nivå ${G.level(state.earned).index+1}! Magien vokser ✦`);
+    const now = G.level(state.earned);
+    if (now.index>previous) { notify(`${state.name} er nå ${now.name}, nivå ${now.index+1}! ${now.magic ? `Ny magi: ${now.magic.toLowerCase()} ✦` : ''}`); setTimeout(celebrate, 500); }
+    else if (!now.next && now.badges > badgesBefore) notify(`Nytt stjernemerke! ${state.name} har nå ${now.badges} ★`);
   }
   function nextQuestion() {
     if (!state.current || state.current.selected === undefined) return;

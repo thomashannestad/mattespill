@@ -65,7 +65,18 @@ function solve(q) {
       return sum(left) > sum(right) ? 'left' : sum(left) < sum(right) ? 'right' : 'equal';
     }
     case 'area': return q.model.width * q.model.height;
-    case 'coordinate': return text.includes('vannrett') ? q.model.x : q.model.y;
+    case 'coordinate': {
+      assert.ok(/bortover|opp/.test(text), 'spørsmålet må si om det gjelder bortover eller opp');
+      return text.includes('bortover') ? q.model.x : q.model.y;
+    }
+    // Måling har ingen tall i teksten; lengdene står i figuren, akkurat som for areal.
+    case 'measure': {
+      const m = q.model;
+      if (m.form === 'rug') { assert.ok(m.length > m.width, 'lengden er den lange siden'); return text.includes('langt') ? m.length : m.width; }
+      if (m.form === 'compare') { assert.match(text, /Hvor mye lengre/); return m.length - m.otherLength; }
+      if (m.form === 'offset') { assert.match(text, /ikke ved 0/); assert.ok(m.start >= 1); }
+      return m.length;
+    }
     case 'gridMove': {
       let [, x, y] = text.match(/står på \((\d+), (\d+)\)/).map(Number);
       const instruction = text.match(/\. Gå (.*?)\. Hvor/)[1];

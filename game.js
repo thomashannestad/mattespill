@@ -39,7 +39,14 @@
     'Stjerneglans', 'Måneskinn', 'Solstråle', 'Regnbue', 'Glitter', 'Perle', 'Fjærlett', 'Sukkerspinn', 'Dugg', 'Snøfnugg', 'Kløver', 'Blåklokke', 'Rosenknopp', 'Sommerfugl',
     'Nordlys', 'Bomull', 'Drømmesky', 'Stjerneskudd', 'Himmelblå', 'Lavendel', 'Morgenrøde', 'Tusenfryd'];
   function randomName(except) { const pool = NAMES.filter(n => n !== except); return pool[Math.floor(Math.random() * pool.length)]; }
-  const LEVELS = [{ at: 0, name: 'Liten drømmer' }, { at: 24, name: 'Engvenn' }, { at: 60, name: 'Stjernevenn' }, { at: 120, name: 'Magisk følgesvenn' }, { at: 210, name: 'Eventyrmester' }];
+  // Enhjørningens nivåer følger alle opptjente stjerner. Fra nivå 6 låser hvert nivå opp magi som ikke kan kjøpes.
+  const LEVELS = [{ at: 0, name: 'Liten drømmer' }, { at: 24, name: 'Engvenn', magic: 'En glitrende gnist i lufta' }, { at: 60, name: 'Stjernevenn', magic: 'En gyllen stjerne på siden' },
+    { at: 120, name: 'Magisk følgesvenn', magic: 'Enda flere gnister' }, { at: 210, name: 'Eventyrmester', magic: 'Enhjørningen har vokst seg stor' },
+    { at: 330, name: 'Regnbuerytter', magic: 'En regnbue over dalen' }, { at: 480, name: 'Skyseiler', magic: 'Glitter i halen' },
+    { at: 680, name: 'Nordlysvokter', magic: 'Et lysende horn' }, { at: 950, name: 'Stjernedronning', magic: 'En krone av svevende stjerner' },
+    { at: 1300, name: 'Enhjørningslegende', magic: 'Et gyllent skjær rundt hele enhjørningen' }];
+  // Etter siste nivå gir hver 100. stjerne et stjernemerke, så det alltid finnes noe å samle på.
+  const BADGE = 100;
   const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
   const shuffle = values => { const a = [...values]; for (let i = a.length - 1; i > 0; i--) { const j = rand(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   // Et svarkort har en verdi (tall eller tegn), en tekst som vises, og eventuelt en tekst for opplesning.
@@ -365,7 +372,12 @@
   function today(date = new Date()) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
   const DAY = /^\d{4}-\d{2}-\d{2}$/;
   function fresh() { return { version: 2, days: {}, balance: 0, earned: 0, answered: 0, correct: 0, name: randomName(), owned: [], equipped: {}, difficulty: 'auto', topic: 'mixed', mastery: profiles(), round: { done: 0, correct: 0, earned: 0 }, current: null }; }
-  function level(earned) { let index = 0; LEVELS.forEach((l, i) => { if (earned >= l.at) index = i; }); return { ...LEVELS[index], index, next: LEVELS[index + 1] || null }; }
+  function level(earned) {
+    let index = 0; LEVELS.forEach((l, i) => { if (earned >= l.at) index = i; });
+    const result = { ...LEVELS[index], index, next: LEVELS[index + 1] || null, badges: 0, nextBadge: null };
+    if (!result.next) { result.badges = Math.floor((earned - result.at) / BADGE); result.nextBadge = result.at + (result.badges + 1) * BADGE; }
+    return result;
+  }
   const integer = (value, min, max) => Number.isInteger(value) && value >= min && value <= max;
   const shortText = (value, max) => typeof value === 'string' && value.length >= 1 && value.length <= max;
   const validValue = value => integer(value, 0, 1100) || shortText(value, 24);
@@ -468,6 +480,6 @@
     if (state.equipped[item.slot] === id) delete state.equipped[item.slot]; else state.equipped[item.slot] = id;
     return true;
   }
-  const api = { setLevel, TOPICS, SKILLS, ITEMS, LEVELS, NAMES, randomName, option, today, overview, report, question, generate, nextQuestion, useHint, fresh, restore, level, answer, buyOrEquip };
+  const api = { BADGE, setLevel, TOPICS, SKILLS, ITEMS, LEVELS, NAMES, randomName, option, today, overview, report, question, generate, nextQuestion, useHint, fresh, restore, level, answer, buyOrEquip };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.MathGame = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
