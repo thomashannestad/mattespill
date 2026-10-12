@@ -284,3 +284,78 @@ dialog.parent-dialog{max-width:900px;width:calc(100% - 24px);max-height:calc(100
 .place-card .answer.text{font-size:18px;padding:16px 7px;line-height:1.4;overflow-wrap:anywhere}
 .place-card .question-text{font-size:21px;line-height:1.5}
 @media(max-width:700px){.place-card .question-text{font-size:18px}.place-card .answer.text{font-size:15px}.place-table th{font-size:11px}.place-table td{font-size:24px}}
+
+/* ===== Duell for to =====
+   Hele appen: ingen dobbelttrykk-zoom. Under en kamp: ingen tekstmarkering, menyer ved langt trykk eller rulling bak scenen. */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+html.duel-open,html.duel-open body{overflow:hidden}
+.toast{z-index:12}.confetti{z-index:11}
+.duel-intro{margin:4px 0 16px}.duel-intro h2{margin:0 0 4px;font-size:24px;letter-spacing:-.5px}.duel-intro p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+.duel-games{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+.duel-card{display:flex;flex-direction:column;gap:10px;background:var(--white);border:1px solid var(--line);border-bottom-width:4px;border-radius:20px;padding:18px}
+.duel-card-head{display:flex;gap:12px;align-items:center}.duel-card h3{margin:0;font-size:19px}
+.duel-icon{font-size:28px;width:52px;height:52px;display:grid;place-items:center;background:var(--purple-light);border-radius:15px;flex-shrink:0}
+.duel-tag{font-size:12px;color:var(--muted)}.duel-card>p{margin:0;font-size:14px;line-height:1.5;color:var(--muted)}
+.duel-option{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.duel-option>span{width:100%;font-size:12px;font-weight:700;color:var(--muted)}
+.chip{background:#f4f6ef;border:1px solid var(--line);border-radius:20px;padding:6px 12px;min-height:38px;font-size:13px;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}.chip:disabled{opacity:.6}
+.duel-start{margin-top:auto}
+.duel-stage{position:fixed;inset:0;z-index:9;display:flex;flex-direction:column;background:#f6f8f1;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overflow:auto;overscroll-behavior:contain;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.duel-stage *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.duel-exit{background:#fffefa;border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-size:14px;font-weight:600;min-height:40px}
+.duel-stars{font-size:13px;font-weight:700;color:#8a6c20}
+.duel-end{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.duel-confirm{position:fixed;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#203c32c4;color:#fff;text-align:center;padding:20px}
+.duel-confirm p{margin:0;font-size:24px;font-weight:800}.duel-confirm p.small{font-size:14px;font-weight:400;margin-bottom:8px}
+.duel-confirm button{width:min(280px,100%)}
+/* Regnekrig: Grønn sitter øverst (snudd 180 grader), Lilla nederst. Hver har sitt eget tastatur. */
+.duel-regnekrig{display:grid;grid-template-rows:1fr auto 1fr;overflow:hidden;touch-action:none}
+.rk-half{display:flex;flex-direction:column;justify-content:center;gap:10px;padding:14px 20px;min-height:0}
+.rk-p0{background:#f1ecf8}.rk-p1{background:#e8f2e5;transform:rotate(180deg)}
+.rk-score{display:flex;justify-content:space-between;align-items:center;font-size:14px;max-width:560px;width:100%;margin:0 auto;color:var(--muted)}
+.rk-me{font-weight:700;color:var(--ink)}.rk-me b{font-size:28px;margin-left:4px}
+.rk-p0 .rk-me{color:#5b4778}.rk-p1 .rk-me{color:#3f6446}
+.rk-task{display:flex;justify-content:center;align-items:center;gap:14px;min-height:92px}
+.rk-card{display:grid;place-items:center;width:76px;height:96px;background:#fffefa;border:2px solid #d6cbe4;border-radius:12px;font-size:42px;font-weight:800;box-shadow:0 4px 0 #0000000f}
+.rk-op{font-size:38px;font-weight:800;color:var(--muted)}.rk-count{font-size:64px;font-weight:800;color:var(--purple)}
+.rk-status{text-align:center;margin:0;font-size:16px;font-weight:600;min-height:22px}.won .rk-status{color:#3f7a45}.locked .rk-status{color:#a05647}
+.rk-pad{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:560px;width:100%;margin:0 auto}
+.rk-key{min-height:76px;border-radius:16px;background:#fffefa;border:2px solid #cdbfe0;border-bottom-width:6px;font-size:34px;font-weight:800;color:#5b4778}
+.rk-p1 .rk-key{border-color:#b8d3b2;color:#3f6446}
+.rk-key.right{background:#dff0dc;border-color:#75a36c;color:#2f5a33}.rk-key.tried{opacity:.3}.rk-key:disabled{cursor:default}
+.locked .rk-pad{opacity:.55}
+.locked .rk-pad::after{content:'';position:absolute;left:0;bottom:-9px;height:4px;width:100%;background:#d3826a;border-radius:2px;animation:duel-lock 1s linear forwards}
+@keyframes duel-lock{from{width:100%}to{width:0}}
+.rk-mid{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px;background:#fffefa;border-block:1px solid var(--line)}
+.rk-mid.ended{flex-direction:column;justify-content:center}
+@media(max-height:760px){.rk-card{width:58px;height:74px;font-size:32px}.rk-task{min-height:74px}.rk-key{min-height:58px;font-size:28px}.rk-half{gap:6px;padding:8px 14px}.rk-op{font-size:30px}}
+/* Fire på rad og Huskespill: turbasert, brettet midt på skjermen. */
+.duel-top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 18px}
+.duel-layout{flex:1;display:grid;grid-template-columns:minmax(230px,300px) minmax(0,1fr);gap:24px;align-items:center;width:100%;max-width:1100px;margin:0 auto;padding:0 24px 24px}
+.duel-side{display:flex;flex-direction:column;gap:12px;text-align:center}
+.duel-players{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.pl{padding:6px 12px;border-radius:20px;font-weight:700;font-size:14px;border:2px solid transparent}
+.pl.pl0{background:#efe8f6;color:#5b4778}.pl.pl1{background:#e3f0df;color:#3f6446}.pl.active{border-color:currentColor}
+.turn{margin:0;font-size:24px;font-weight:800}.turn.pl0{color:#6c4f91}.turn.pl1{color:#3f7a45}
+.roll{font-size:18px;padding:16px}.roll.pl0{background:#6c4f91}.roll.pl1{background:#3f7a45}
+.dice{display:flex;justify-content:center;gap:14px}.die{width:76px;height:76px;animation:duel-pop .3s ease-out}
+.duel-note{margin:0;font-size:15px;line-height:1.45;color:var(--muted)}.duel-result{margin:0;font-size:24px;font-weight:800}
+.rad-board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;width:min(100%,560px,calc(100dvh - 120px));margin:0 auto}
+.rad-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;background:#fffefa;border:2px solid #dfe5da;font-size:clamp(18px,3.4vw,28px);font-weight:800;color:var(--ink);padding:2px}
+.rad-cell small{font-size:11px;font-weight:600;opacity:.85}
+.rad-cell:not(:disabled){border-color:#b9a3cf;box-shadow:0 3px 0 #b9a3cf55}
+.rad-cell.own.pl0{background:#d3bfe9;border-color:#8d6ab6;color:#3c2a55}.rad-cell.own.pl1{background:#bfdeb7;border-color:#5f9a58;color:#24432a}
+.rad-cell.line{box-shadow:0 0 0 4px #f3c94a}
+.mem-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:min(100%,560px,calc((100dvh - 120px) * 4 / 3));margin:0 auto}
+.mem-grid.mem-16{width:min(100%,560px,calc(100dvh - 120px))}
+.mem-card{aspect-ratio:1;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,#9b7bc2,#6c4f91);border:2px solid #5e4580;color:#fff;font-size:26px;padding:4px}
+.mem-card.up{background:#fffefa;border-color:#d6decf;color:var(--ink);font-size:clamp(15px,2.6vw,22px);font-weight:800;line-height:1.2;animation:duel-flip .25s ease-out}
+.mem-card.own.pl0{background:#e6dbf3;border-color:#8d6ab6}.mem-card.own.pl1{background:#dcefd7;border-color:#5f9a58}
+@keyframes duel-pop{from{transform:scale(.6) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes duel-flip{from{transform:rotateY(90deg)}to{transform:none}}
+@media(max-width:820px){.duel-layout{grid-template-columns:1fr;gap:14px;padding:0 14px 18px;align-items:start}.rad-board,.mem-grid,.mem-grid.mem-16{width:min(100%,560px)}}
+@media(max-width:430px){.appbar .brand{display:none}.appbar .navigation{margin:0 auto 0 0}}
+@media(prefers-reduced-motion:reduce){.die,.mem-card.up{animation:none}.locked .rk-pad::after{animation:none;width:0}}
+/* Tre faner på smal telefon: litt strammere knapper i toppmenyen. */
+@media(max-width:430px){.appbar-inner{gap:6px;padding:0 10px}.appbar .nav-button{padding:7px 8px;font-size:13.5px}.appbar .navigation{gap:1px;padding:3px}.wallet{padding:6px 9px}.appbar .icon-button{width:34px}}
+@media(max-width:370px){.appbar .nav-button{padding:7px 6px;font-size:13px}.appbar-inner{gap:4px}}

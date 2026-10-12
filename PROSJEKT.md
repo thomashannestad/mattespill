@@ -78,6 +78,7 @@ Det viktigste neste steget er å prøve spillet med barnet og bruke observasjone
 ## Kodeoversikt
 
 - `index.html`: sideoppsett og tilgjengelighetsdialoger.
+- `duel.js` og `duel-ui.js`: spill for to på samme skjerm (Regnekrig, Fire på rad og Huskespill).
 - `sw.js` og `manifest.webmanifest`: installering på hjemskjerm og bruk uten nett.
 - `styles.css`: visuell utforming og responsiv layout.
 - `game.js`: oppgavegenerator, poeng, tilpasning, lagringstilstand og butikkregler.

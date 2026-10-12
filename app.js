@@ -260,10 +260,14 @@
   function render() {
     if (!state.current && state.round.done < 8) { state.current = G.nextQuestion(state); save(); }
     $('#balance').textContent = state.balance;
-    $('#play-tab').classList.toggle('active',view!=='closet'); $('#unicorn-tab').classList.toggle('active',view==='closet');
-    for (const [selector, active] of [['#play-tab',view!=='closet'],['#unicorn-tab',view==='closet']]) { if(active) $(selector).setAttribute('aria-current','page'); else $(selector).removeAttribute('aria-current'); }
+    const tabs = [['#play-tab',view==='play'||view==='topics'],['#unicorn-tab',view==='closet'],['#duel-tab',view==='duel']]; for (const [selector, active] of tabs) $(selector).classList.toggle('active',active);
+    for (const [selector, active] of tabs) { if(active) $(selector).setAttribute('aria-current','page'); else $(selector).removeAttribute('aria-current'); }
     const warning = storageAvailable ? '' : '<p class="storage-warning" role="alert">Nettleseren kan ikke lagre nå. Du kan spille, men fremgangen kan forsvinne når siden lukkes. Tillat nettleserlagring for å ta vare på eventyret.</p>';
-    if (view === 'topics') {
+    if (view === 'duel') {
+      // Duellene har egen visning i duel-ui.js. Stjerner gis gjennom award, slik at nivå og lagring følger resten av spillet.
+      if (window.DuelUI) window.DuelUI.mount($('#main'), { name: () => state.name, escape, warning, award, notify, celebrate, done: () => render() });
+      else $('#main').innerHTML = warning + '<p>Duellen kunne ikke lastes. Last siden på nytt.</p>';
+    } else if (view === 'topics') {
       $('#main').innerHTML = warning + topicsView();
     } else if (view === 'play') {
       const nextItem = G.ITEMS.find(i=>!state.owned.includes(i.id));
@@ -308,6 +312,14 @@
     const wallet = $('.wallet'); wallet.classList.remove('bump'); void wallet.offsetWidth; wallet.classList.add('bump');
     wallet.querySelector('.award')?.remove(); wallet.insertAdjacentHTML('beforeend', `<span class="award" aria-hidden="true">+${points}</span>`);
     setTimeout(() => wallet.querySelector('.award')?.remove(), 1300);
+  }
+  function award(points) {
+    const before = G.level(state.earned);
+    if (!G.reward(state, points)) return;
+    save(); $('#balance').textContent = state.balance; bumpWallet(points);
+    const now = G.level(state.earned);
+    if (now.index > before.index) { notify(`${state.name} er nå ${now.name}, nivå ${now.index+1}! ${now.magic ? `Ny magi: ${now.magic.toLowerCase()} ✦` : ''}`); setTimeout(celebrate, 500); }
+    else if (!now.next && now.badges > before.badges) notify(`Nytt stjernemerke! ${state.name} har nå ${now.badges} ★`);
   }
   function respond(value) {
     const before = G.level(state.earned), previous = before.index, badgesBefore = before.badges, result = G.answer(state,value); if (!result) return;
@@ -355,6 +367,7 @@
   }
   $('#play-tab').addEventListener('click',()=>switchView('play'));
   $('#unicorn-tab').addEventListener('click',()=>switchView('closet'));
+  $('#duel-tab').addEventListener('click',()=>switchView('duel'));
   $('#settings-button').addEventListener('click',()=>{$('#difficulty').value=state.difficulty;$('#reset-confirm').hidden=true;$('#settings-dialog').showModal();});
   $('#difficulty').addEventListener('change',e=>{state.difficulty=e.target.value;save();notify('Den nye vanskelighetsgraden gjelder fra neste oppgave.');});
   // Foreldreoversikten regnes ut fra de siste 30 svarene i hver ferdighet.

@@ -94,6 +94,16 @@ Dette er en enkel startmodell som kan justeres etter utprøving med barnet, ikke
 
 Fast nivå bruker trinn 1 for «En rolig start», trinn 3 (eller ferdighetens høyeste trinn) for «Passe utfordring» og høyeste trinn for «Litt vanskeligere».
 
+## Duell for to
+
+Fanen **Duell** har tre spill for to spillere på samme skjerm. Spillerne heter Lilla og Grønn, så ingen trenger å skrive navn. Hver oppgave dere gjør i en duell gir 1 ★ til enhjørningen, uansett hvem som svarer eller vinner. Duellene endrer ikke trinn, statistikk eller foreldreoversikten.
+
+- **Regnekrig:** iPaden ligger flatt mellom spillerne. Grønn sin halvdel er snudd, så begge leser riktig vei. To kort trekkes, og hver spiller har seks svarkort på sin side. Den som først trykker riktig, tar kortene. Feil svar stenger bare egne knapper i ett sekund, uten minuspoeng. Velg pluss, minus, gange eller blandet, og først til 5, 10 eller 15.
+- **Fire på rad:** Spillerne bytter på. Kast to terninger, regn pluss eller minus, eventuelt også gange, og ta en ledig rute med svaret på et brett med 5 × 5 ruter. Et tall som ikke passer, gir turen videre. Fire på rad vannrett, loddrett eller på skrå vinner.
+- **Huskespill:** Snu to kort. Hører de sammen, får spilleren paret og en tur til. Kortene kan være tiervenner, pluss, gange eller dobling, med 6 eller 8 par.
+
+Spillet skrur selv av zoom ved dobbelttrykk, knipezoom, tekstmarkering og menyer ved langt trykk mens en duell pågår. Ingenting må endres i innstillingene på iPaden. Begge spillerne kan trykke samtidig, og det første trykket teller. Spillogikken ligger i `duel.js` og visningen i `duel-ui.js`.
+
 ## Foreldreoversikt og eksport
 
 Tannhjulet har knappen **Foreldreoversikt og eksport**. Der kan trinnet i hver ferdighet flyttes med − og +. Oversikten viser trinn, antall svar, andel riktige og andel riktige uten hint per ferdighet, regnet fra de siste 30 svarene. Den viser også de siste åtte svarene som prikker, dato for siste spill og en kort vurdering: «Klar for mer» ved minst 85 % riktige uten hint, og «Trenger støtte» under 60 % riktige.

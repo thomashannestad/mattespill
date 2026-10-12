@@ -552,12 +552,18 @@
     recordAttempt(state, q, correct);
     return { correct, points };
   }
+  // Aktivitetsstjerner fra duellene: hver oppgave gir stjerner uansett svar. Påvirker ikke mestring eller statistikk.
+  function reward(state, points = 1) {
+    if (!Number.isSafeInteger(points) || points < 1 || points > 100) return false;
+    state.balance += points; state.earned += points;
+    return true;
+  }
   function buyOrEquip(state, id) {
     const item = ITEMS.find(i => i.id === id); if (!item) return false;
     if (!state.owned.includes(id)) { if (state.balance < item.price) return false; state.balance -= item.price; state.owned.push(id); }
     if (state.equipped[item.slot] === id) delete state.equipped[item.slot]; else state.equipped[item.slot] = id;
     return true;
   }
-  const api = { BADGE, setLevel, TOPICS, SKILLS, ITEMS, LEVELS, NAMES, randomName, option, today, overview, report, question, generate, nextQuestion, useHint, fresh, restore, level, answer, buyOrEquip };
+  const api = { reward, BADGE, setLevel, TOPICS, SKILLS, ITEMS, LEVELS, NAMES, randomName, option, today, overview, report, question, generate, nextQuestion, useHint, fresh, restore, level, answer, buyOrEquip };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.MathGame = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
