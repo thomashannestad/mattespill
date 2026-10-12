@@ -61,7 +61,7 @@ Standard er nå **Tilpass til meg · automatisk**. Øverst i oppgavekortet står
 | Pluss | Summer til 10 | Til 19 uten tierovergang, overgang ved 10, tosifrede tall uten og med overgang |
 | Minus | Tall til 9 | Tall til 18 uten tierovergang, overgang ved 10, tosifrede tall uten og med overgang |
 | Tallrekker | Telle med 1 til 20 | Til 50, deretter hopp på 2 og 5, til slutt også 10 opp til 100 |
-| Plassverdi | Én tier og enere | Flere tiere, hundrere, deretter null på tierplassen |
+| Plassverdi | Tosifrede tall med plassverditabell og konkreter | Tresifrede tall, null som plassholder, og firesifrede tall på høyeste trinn |
 | Dobling og halvering | Doble små tall | Større tall, og halvering når barnet er klart |
 | Åpne regnestykker | Manglende tall sist i en addisjon | Ukjent tall først eller sist, også i subtraksjon |
 | Likevekt | Hvilken side av skålvekten er tyngst, eller er de like tunge | Finne loddet som mangler for at vekten skal balansere, med større lodd og ukjent lodd på begge sider |
@@ -73,6 +73,8 @@ Standard er nå **Tilpass til meg · automatisk**. Øverst i oppgavekortet står
 | Koordinater | Hvor langt bortover står enhjørningen? | Også hvor høyt opp den står, på større rutenett. Hintet markerer ruten ned eller raden bort til tallet |
 | Instruksjoner i rutenettet | Følge én instruksjon, for eksempel «gå 2 til høyre», og finne den nye plassen | To og tre instruksjoner etter hverandre på større rutenett |
 | Diagrammer | Lese av søyler med 1–5 blomster | Søyler til 10, hvilken farge har flest eller færrest, forskjellen mellom to søyler, og summen av alle fire |
+
+**Plassverdi** er et eget tema under «Bytt tema», basert på ukefokuset delt 12. oktober 2026. Det omfatter å bygge tall, finne siffer og sifferverdi, telle siffer, velge utvidet form, fylle en manglende plassverdi, telle klosser og lekepenger, bytte siffer, veksle og bygge tall med mer enn ti enere. Klossene og pengene vises før svaret uten totalsum; etter svaret vises tabellen og forklaringen. Andre former har tabell som støtte på første trinn eller ved hint. Tidligere mestring og pågående plassverdioppgaver bevares.
 
 Tierbrettet har to rekker med fem ruter. Når svaret er valgt, fylles de manglende rutene med grønne blomster. Pluss- og minusoppgaver viser mellomregning med hopp. Multiplikasjon viser like grupper. Deling viser bærene i én haug og tomme kurver før svaret, og fordelingen etter svaret. Areal viser ruter i et rektangel. Koordinater og instruksjoner bruker et enkelt rutenett, der startpunktet vises etter svaret. Likevekt vises som en skålvekt med lodd; den holdes rett til barnet har svart, og vipper så mot den tyngste siden. Hint kan vise mellomregningsmodellen før svaret, med sluttallet skjult. I blandede runder fordeles øvingen mellom ferdighetene, så diagrammer er én av flere oppgavetyper.
 
@@ -118,4 +120,4 @@ Kjør testene med Node.js. GitHub Actions kjører dem også automatisk ved hver 
 node --test *.test.cjs
 ```
 
-Kvalitetskontrollen i `question-quality.test.cjs` løser 64 000 oppgaver fra oppgaveteksten med en fast tilfeldig sekvens. Den dekker alle 16 ferdigheter på alle 64 vanskelighetstrinn, kontrollerer forklaringer og svaralternativer, og undersøker HTML/SVG-visningen av figurene. Testene bruker isolert lagring og endrer ikke spillerens fremgang. Dette er automatiske kontroller; de erstatter ikke utprøving med barnet eller på en fysisk enhet.
+Kvalitetskontrollen i `question-quality.test.cjs` løser 69 000 oppgaver fra oppgaveteksten med en fast tilfeldig sekvens. Den dekker alle 17 ferdigheter på alle 69 vanskelighetstrinn, kontrollerer forklaringer og svaralternativer, og undersøker HTML/SVG-visningen av figurene. Testene bruker isolert lagring og endrer ikke spillerens fremgang. Dette er automatiske kontroller; de erstatter ikke utprøving med barnet eller på en fysisk enhet.

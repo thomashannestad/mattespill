@@ -20,6 +20,22 @@ function checkQuestion(q) {
     const [a, b] = q.prompt.match(/\d+/g).map(Number);
     assert.equal(q.answer, q.type === 'plus' ? a + b : a - b);
     assert.ok(q.answer >= 0);
+  } else if (q.kind === 'placeValue') {
+    const { form, number, position, tens, units } = q.model;
+    const digit = Math.floor(number / 10 ** position) % 10;
+    const expected = { build: number, blocks: number, money: number, count: String(number).length,
+      digit, value: digit * 10 ** position, missing: digit * 10 ** position,
+      exchange: number / 10 ** (position - 1), regroup: tens * 10 + units };
+    if (form === 'expanded') {
+      const sum = value => value.split(' + ').reduce((total, part) => total + Number(part), 0);
+      assert.equal(sum(q.answer), number);
+      assert.equal(q.options.filter(o => sum(o.value) === number).length, 1);
+    } else if (form === 'swap') {
+      const ds = String(number).split(''); [ds[0], ds[ds.length - 1]] = [ds.at(-1), ds[0]];
+      assert.equal(q.answer, Number(ds.join(''))); assert.notEqual(q.answer, number);
+    } else assert.equal(q.answer, expected[form]);
+    assert.equal(q.options.length, 4);
+    assert.doesNotMatch(q.prompt, /\b1 (hundrere|tiere|enere|tusenere)\b/);
   } else if (q.kind === 'place') {
     let answer = 0;
     for (const match of q.prompt.matchAll(/(\d+) (hundrer[e]?|tier[e]?|ener[e]?)/g)) answer += Number(match[1]) * (match[2].startsWith('hundrer') ? 100 : match[2].startsWith('tier') ? 10 : 1);
@@ -430,4 +446,38 @@ test('utfordringer krever mestring og repetisjon er ett trinn under', t => {
   let q=G.nextQuestion(s);assert.equal(q.meta.role,'challenge');assert.equal(q.meta.level,4);
   random.mock.mockImplementation(()=>.1);
   q=G.nextQuestion(s);assert.equal(q.meta.role,'review');assert.equal(q.meta.level,2);
+});
+
+test('plassverdi har eget tema, fire trinn og lagring for alle nye oppgaveformer', () => {
+  const forms = new Set();
+  for (let level = 1; level <= 4; level++) for (let sample = 0; sample < 400; sample++) {
+    const q = G.generate('place', level); forms.add(q.model.form);
+    assert.equal(q.type, 'place'); checkQuestion(q);
+    const state = G.fresh(); state.topic = 'place'; state.current = q;
+    let restored = G.restore(JSON.parse(JSON.stringify(state)));
+    assert.deepEqual(restored.current, q); assert.equal(restored.topic, 'place');
+    assert.deepEqual(G.answer(restored, q.answer), { correct: true, points: 3 });
+    restored = G.restore(JSON.parse(JSON.stringify(restored)));
+    assert.equal(restored.current.selected, q.answer);
+    assert.equal(G.answer(restored, q.answer), null);
+    if (!['exchange','regroup'].includes(q.model.form)) {
+      assert.equal(String(q.model.number).length, level === 1 ? 2 : level === 4 ? 4 : 3);
+      if (level >= 3) assert.ok(String(q.model.number).includes('0'), 'null som plassholder');
+    }
+  }
+  assert.equal(forms.size, 11);
+  for (let i = 0; i < 30; i++) assert.equal(G.question('numbers').kind, 'sequence');
+});
+
+test('eldre plassverdioppgave og mestring beholdes når ferdigheten får eget tema', () => {
+  const state = G.fresh(); state.mastery.place.level = 3; state.mastery.place.seen = 15;
+  state.current = { type: 'numbers', kind: 'place', title: 'Hvilket tall er dette?', prompt: '2 hundrere, 3 tiere og 4 enere', answer: 234,
+    options: [224,234,244,254].map(value => G.option(value)), explanation: 'Tallet blir 234.', hint: 'Tell plassverdiene.',
+    meta: { skill: 'place', level: 3, role: 'current', adaptive: true } };
+  const restored = G.restore(JSON.parse(JSON.stringify(state)));
+  assert.equal(restored.mastery.place.level, 3); assert.equal(restored.mastery.place.seen, 15);
+  assert.equal(restored.current.type, 'place'); assert.equal(restored.current.meta.skill, 'place');
+  assert.equal(G.answer(restored, 234).correct, true);
+  const broken = { ...state, current: { ...G.generate('place', 4), model: null } };
+  assert.equal(G.restore(broken).current, null);
 });

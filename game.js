@@ -1,9 +1,9 @@
 /* Ren spillogikk, delt av nettleseren og testene. Ingen nettverk eller avhengigheter. */
 (function (root) {
   'use strict';
-  const TOPICS = { mixed: 'Litt av alt', ten: 'Tiervenner', nextTen: 'Fylle neste tier', plus: 'Pluss', minus: 'Minus', numbers: 'Tallvenner', doubleHalf: 'Dobling og halvering', equation: 'Åpne regnestykker', balance: 'Likevekt', multiply: 'Multiplikasjon', divide: 'Deling', compare: 'Sammenligne', area: 'Areal', measure: 'Måling', coordinate: 'Koordinater', chart: 'Diagrammer' };
+  const TOPICS = { mixed: 'Litt av alt', ten: 'Tiervenner', nextTen: 'Fylle neste tier', plus: 'Pluss', minus: 'Minus', numbers: 'Tallvenner', place: 'Plassverdi', doubleHalf: 'Dobling og halvering', equation: 'Åpne regnestykker', balance: 'Likevekt', multiply: 'Multiplikasjon', divide: 'Deling', compare: 'Sammenligne', area: 'Areal', measure: 'Måling', coordinate: 'Koordinater', chart: 'Diagrammer' };
   // Nivåene er faglige trinn innen én ferdighet, ikke enhjørningens belønningsnivå.
-  const SKILLS = { ten: { topic: 'ten', max: 3 }, nextTen: { topic: 'nextTen', max: 4 }, plus: { topic: 'plus', max: 5 }, minus: { topic: 'minus', max: 5 }, sequence: { topic: 'numbers', max: 4 }, place: { topic: 'numbers', max: 4 }, doubleHalf: { topic: 'doubleHalf', max: 4 }, equation: { topic: 'equation', max: 4 }, balance: { topic: 'balance', max: 4 }, multiply: { topic: 'multiply', max: 4 }, divide: { topic: 'divide', max: 4 }, compare: { topic: 'compare', max: 4 }, area: { topic: 'area', max: 4 }, measure: { topic: 'measure', max: 5 }, coordinate: { topic: 'coordinate', max: 3 }, gridMove: { topic: 'coordinate', max: 3 }, chart: { topic: 'chart', max: 5 } };
+  const SKILLS = { ten: { topic: 'ten', max: 3 }, nextTen: { topic: 'nextTen', max: 4 }, plus: { topic: 'plus', max: 5 }, minus: { topic: 'minus', max: 5 }, sequence: { topic: 'numbers', max: 4 }, place: { topic: 'place', max: 4 }, doubleHalf: { topic: 'doubleHalf', max: 4 }, equation: { topic: 'equation', max: 4 }, balance: { topic: 'balance', max: 4 }, multiply: { topic: 'multiply', max: 4 }, divide: { topic: 'divide', max: 4 }, compare: { topic: 'compare', max: 4 }, area: { topic: 'area', max: 4 }, measure: { topic: 'measure', max: 5 }, coordinate: { topic: 'coordinate', max: 3 }, gridMove: { topic: 'coordinate', max: 3 }, chart: { topic: 'chart', max: 5 } };
   const profiles = () => Object.fromEntries(Object.keys(SKILLS).map(key => [key, { level: 1, recent: [], history: [], seen: 0, support: false }]));
   const ITEMS = [
     { id: 'bow', slot: 'head', name: 'Sløyfefin', description: 'En rosa sløyfe i manen', price: 9, icon: '🎀' },
@@ -55,6 +55,85 @@
     const values = new Set([answer]);
     for (const delta of shuffle([-3, -2, -1, 1, 2, 3])) { if (answer + delta * step >= min && answer + delta * step <= max) values.add(answer + delta * step); if (values.size === 4) break; }
     return shuffle([...values]).map(value => option(value));
+  }
+  const PLACE_NAMES = ['ener', 'tier', 'hundrer', 'tusener'];
+  const PLACE_FORMS = ['build', 'digit', 'value', 'count', 'expanded', 'missing', 'blocks', 'money', 'swap', 'exchange', 'regroup'];
+  const expanded = number => String(number).split('').map((digit, i, digits) => Number(digit) * 10 ** (digits.length - i - 1)).filter(Boolean).join(' + ') || '0';
+  function placeTask(n) {
+    const forms = n === 1 ? PLACE_FORMS.filter(form => !['swap', 'regroup'].includes(form)) : PLACE_FORMS;
+    const form = forms[rand(0, forms.length - 1)], size = n === 1 ? 2 : n === 4 ? 4 : 3;
+    const concrete = ['blocks', 'money'].includes(form);
+    const digits = Array.from({ length: size }, () => rand(1, concrete ? 4 : 9));
+    if (n >= 3) digits[rand(1, size - 1)] = 0;
+    // Bytt to ulike siffer uten å lage et tall som starter med null.
+    if (form === 'swap' && (!digits.at(-1) || digits[0] === digits.at(-1))) digits[size - 1] = digits[0] % 9 + 1;
+    if (form === 'swap' && n >= 3) digits[1] = 0;
+    let number = Number(digits.join(''));
+    const position = rand(0, size - 1), weight = 10 ** position, digit = Math.floor(number / weight) % 10;
+    const parts = digits.map((d, i) => `${d} ${PLACE_NAMES[size - i - 1]}${d === 1 ? '' : 'e'}`).join(', ');
+    const q = { kind: 'placeValue', model: { form, number, position }, title: 'Utforsk plassverdiene',
+      hint: 'Les fra høyre: enere, tiere, hundrere og tusenere. Hver plass er verdt ti ganger så mye som plassen til høyre.',
+      showSupport: n === 1 && !['count', 'exchange'].includes(form) };
+    if (form === 'build') {
+      q.title = 'Bygg tallet'; q.prompt = `${parts}. Hvilket tall blir det?`; q.answer = number;
+      q.explanation = `${parts} blir ${number}. ${number} = ${expanded(number)}.`;
+    } else if (form === 'digit' || form === 'value') {
+      q.title = form === 'digit' ? 'Finn sifferet' : 'Hva er sifferet verdt?';
+      q.prompt = form === 'digit' ? `Hvilket siffer står på ${PLACE_NAMES[position]}plassen i ${number}?` : `Hva er verdien av sifferet på ${PLACE_NAMES[position]}plassen i ${number}?`;
+      q.answer = form === 'digit' ? digit : digit * weight;
+      q.explanation = `Sifferet ${digit} står på ${PLACE_NAMES[position]}plassen. Verdien er ${digit} × ${weight} = ${digit * weight}.`;
+    } else if (form === 'count') {
+      q.title = 'Tall og siffer'; q.prompt = `Hvor mange siffer er tallet ${number} skrevet med?`; q.answer = size;
+      q.hint = 'Et tall kan skrives med ett eller flere siffer. Tell alle sifrene, også nullene.';
+      q.explanation = `${number} er ett tall, skrevet med ${size} siffer: ${digits.join(', ')}. Også 0 teller som et siffer.`;
+      q.options = shuffle([1, 2, 3, 4]).map(value => option(value));
+    } else if (form === 'expanded') {
+      q.title = 'Skriv på utvidet form'; q.prompt = `Hvilket regnestykke viser ${number} på utvidet form?`; q.answer = expanded(number);
+      const values = [number, number + 1, number - 1, number + (number < 9900 ? 10 : -10)];
+      q.options = shuffle(values.map(value => option(expanded(value))));
+      q.explanation = `${number} = ${q.answer}. Hvert ledd viser verdien av et siffer. Plasser med 0 kan utelates fra regnestykket.`;
+    } else if (form === 'missing') {
+      q.title = 'Finn plassverdien som mangler';
+      q.prompt = `${number} = ${digits.map((d, i) => size - i - 1 === position ? '□' : d * 10 ** (size - i - 1)).join(' + ')}`;
+      q.answer = digit * weight; q.explanation = `${q.prompt.replace('□', q.answer)}. Den tomme ruten er verdien på ${PLACE_NAMES[position]}plassen.`;
+    } else if (concrete) {
+      q.title = form === 'blocks' ? 'Tell klossene' : 'Tell lekepengene';
+      q.prompt = form === 'blocks' ? 'Hvilket tall viser klossene?' : 'Hvor mange kroner er det til sammen?'; q.answer = number;
+      q.hint = 'Tell hver type for seg. Finn verdien av hver gruppe, og legg verdiene sammen.';
+      q.explanation = `${number} = ${expanded(number)}.${form === 'money' ? ` Det er ${number} kroner til sammen.` : ''}`;
+    } else if (form === 'swap') {
+      q.title = 'Bytt plass på sifrene';
+      q.prompt = `Bytt sifferet på ${PLACE_NAMES[size - 1]}plassen med sifferet på enerplassen i ${number}. Hvilket tall får du?`;
+      const swapped = [...digits]; [swapped[0], swapped[size - 1]] = [swapped[size - 1], swapped[0]];
+      q.answer = Number(swapped.join(''));
+      q.hint = 'Bytt det første og det siste sifferet. La sifrene mellom dem stå i ro.';
+      q.explanation = `${number} blir ${q.answer}. Sifrene er de samme, men de to som bytter plass, får ny verdi.`;
+    } else if (form === 'exchange') {
+      const from = rand(1, size - 1), count = rand(1, 9), to = from - 1;
+      number = count * 10 ** from; q.model.number = number; q.model.position = from;
+      q.title = 'Veksle'; q.prompt = `Hvor mange ${PLACE_NAMES[to]}e er like mye som ${count} ${PLACE_NAMES[from]}${count === 1 ? '' : 'e'}?`;
+      q.answer = count * 10;
+      q.hint = `1 ${PLACE_NAMES[from]} er like mye som 10 ${PLACE_NAMES[to]}e.`;
+      q.explanation = `${count} × 10 = ${q.answer}. ${count} ${PLACE_NAMES[from]}${count === 1 ? '' : 'e'} er like mye som ${q.answer} ${PLACE_NAMES[to]}e.`;
+    } else {
+      const tens = rand(1, n === 4 ? 30 : 8), units = rand(11, 19);
+      q.model.number = tens * 10 + units; q.model.tens = tens; q.model.units = units;
+      q.title = 'Bygg på en annen måte'; q.prompt = `${tens} ${tens === 1 ? 'tier' : 'tiere'} og ${units} enere. Hvilket tall blir det?`;
+      q.answer = q.model.number;
+      q.hint = 'Veksle 10 av enerne til en tier. Legg den sammen med tierne du har fra før.';
+      q.explanation = `${tens * 10} + ${units} = ${q.answer}. ${tens} ${tens === 1 ? 'tier' : 'tiere'} og ${units} enere kan veksles til ${tens + 1} tiere og ${units - 10} enere.`;
+    }
+    if (!q.options) {
+      const values = new Set([q.answer]);
+      const candidates = ['digit', 'value', 'missing'].includes(form) ? [digit, digit * 10, digit * 100, number, 0, q.answer + weight, q.answer - weight] : [number, q.answer + 10, q.answer - 10, q.answer + 1, q.answer - 1];
+      const max = form === 'digit' ? 9 : 9999;
+      for (const value of [...candidates, ...Array.from({ length: 10 }, (_, i) => i)]) {
+        if (values.size === 4) break;
+        if (Number.isInteger(value) && value >= 0 && value <= max) values.add(value);
+      }
+      q.options = shuffle([...values]).map(value => option(value));
+    }
+    return q;
   }
   function generate(skill, difficulty) {
     const n = Math.max(1, Math.min(SKILLS[skill].max, difficulty));
@@ -108,12 +187,8 @@
       q.hint = 'Se hvor mye tallet øker fra det første til det neste.';
       q.meta.features = [`step-${step}`];
     } else if (skill === 'place') {
-      const h = n <= 2 ? 0 : rand(1, 9), t = n === 1 ? 1 : n === 4 ? 0 : rand(1, 9), u = rand(1, 9);
-      q.answer = h * 100 + t * 10 + u; q.title = 'Hvilket tall er dette?'; q.kind = 'place';
-      q.prompt = `${h ? `${h} ${h === 1 ? 'hundrer' : 'hundrere'}, ` : ''}${t} ${t === 1 ? 'tier' : 'tiere'} og ${u} ${u === 1 ? 'ener' : 'enere'}`;
-      q.explanation = `${q.prompt} blir ${q.answer}.`;
-      q.hint = 'En hundrer er 100, en tier er 10 og en ener er 1.';
-      q.meta.features = [n === 4 ? 'zero-tens' : h ? 'hundreds' : 'tens'];
+      Object.assign(q, placeTask(n));
+      q.meta.features = [`place-${q.model.form}`, n === 1 ? 'two-digit' : n === 4 ? 'four-digit' : n === 3 ? 'zero-placeholder' : 'three-digit'];
     } else if (skill === 'doubleHalf') {
       const half = n >= 3 && rand(0, n === 3 ? 1 : 2) === 0;
       const number = half ? rand(2, n === 1 ? 10 : n === 2 ? 20 : n === 3 ? 30 : 50) * 2 : rand(1, n === 1 ? 5 : n === 2 ? 10 : n === 3 ? 20 : 50);
@@ -343,7 +418,7 @@
     }
     let q;
     const previous = state.current ? signature(state.current) : null;
-    for (let i = 0; i < 12; i++) { q = generate(skill, target); const sig = signature(q); if (sig !== previous && !p.history.slice(-3).some(h => h.prompt === sig)) break; }
+    for (let i = 0; i < 12; i++) { q = generate(skill, target); const sig = signature(q); if (!(skill === 'place' && state.current?.model?.form === q.model.form) && sig !== previous && !p.history.slice(-3).some(h => h.prompt === sig)) break; }
     q.meta.adaptive = adaptive; q.meta.role = role;
     if (adaptive && p.support) { q.showSupport = true; q.extraSupport = true; q.hintOpen = true; }
     return q;
@@ -380,7 +455,7 @@
   }
   const integer = (value, min, max) => Number.isInteger(value) && value >= min && value <= max;
   const shortText = (value, max) => typeof value === 'string' && value.length >= 1 && value.length <= max;
-  const validValue = value => integer(value, 0, 1100) || shortText(value, 24);
+  const validValue = value => integer(value, 0, 9999) || shortText(value, 24);
   const validOption = o => o && typeof o === 'object' && validValue(o.value) && shortText(o.label, 24) && (o.spoken === undefined || shortText(o.spoken, 40));
   function validQuestion(q) {
     if (!q || q.type === 'mixed' || !Object.hasOwn(TOPICS, q.type) || !['title', 'prompt', 'explanation', 'hint'].every(k => typeof q[k] === 'string') || !validValue(q.answer)) return false;
@@ -388,6 +463,7 @@
     if (q.kind === 'compare' && (!q.model || !['<', '=', '>'].includes(q.answer) || ![q.model.left, q.model.right].every(x => x && integer(x.value, 0, 1000)))) return false;
     // Visningen leser disse modellene direkte, så en ødelagt lagring må ikke slippe gjennom.
     const m = q.model, point = at => at && integer(at.x, 1, m.limit) && integer(at.y, 1, m.limit);
+    if (q.kind === 'placeValue' && !(m && PLACE_FORMS.includes(m.form) && integer(m.number, 10, 9999) && integer(m.position, 0, 3) && (m.form !== 'regroup' || (integer(m.tens, 1, 30) && integer(m.units, 11, 19) && m.number === m.tens * 10 + m.units)))) return false;
     if (q.kind === 'groups' && !(m && integer(m.groups, 1, 12) && integer(m.each, 1, 12) && m.total === m.groups * m.each)) return false;
     if (q.kind === 'area' && !(m && integer(m.width, 1, 12) && integer(m.height, 1, 12))) return false;
     if (q.kind === 'measure' && !(m && ['squares', 'rug', 'ruler', 'offset', 'compare'].includes(m.form) && integer(m.length, 1, 15) && (m.form !== 'rug' || integer(m.width, 1, 15)) && (m.form === 'rug' || (m.thing && typeof m.thing.color === 'string' && typeof m.thing.def === 'string')) && (m.form !== 'compare' || (m.other && integer(m.otherLength, 1, 15))) && (!['ruler', 'offset', 'compare'].includes(m.form) || integer(m.start, 0, 10)))) return false;
@@ -426,6 +502,8 @@
     const current = raw.current && Array.isArray(raw.current.options) && raw.current.options.every(Number.isInteger) ? { ...raw.current, options: raw.current.options.map(value => option(value)) } : raw.current;
     if (validQuestion(current)) {
       state.current = { ...current, options: current.options.map(o => option(o.value, o.label, o.spoken)) };
+      // Eldre plassverdioppgaver lå under Tallvenner. Behold oppgave og mestring.
+      if (state.current.kind === 'place' && state.current.meta?.skill === 'place') state.current.type = 'place';
       const m = state.current.meta;
       if (raw.version === 1 || !m || !Object.hasOwn(SKILLS, m.skill) || SKILLS[m.skill].topic !== state.current.type || !integer(m.level, 1, SKILLS[m.skill].max) || !['current','review','challenge'].includes(m.role)) delete state.current.meta;
     }

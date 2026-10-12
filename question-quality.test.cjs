@@ -37,8 +37,38 @@ function solve(q) {
       return c + (b - a);
     }
     case 'place': {
-      const weights = { hundrer: 100, hundrere: 100, tier: 10, tiere: 10, ener: 1, enere: 1 };
-      return [...text.matchAll(/(\d+) (hundrere?|tiere?|enere?)/g)].reduce((sum, m) => sum + Number(m[1]) * weights[m[2]], 0);
+      const weights = { ener: 1, enere: 1, tier: 10, tiere: 10, hundrer: 100, hundrere: 100, tusener: 1000, tusenere: 1000 };
+      if (q.kind === 'place') return [...text.matchAll(/(\d+) (hundrere?|tiere?|enere?)/g)].reduce((sum, m) => sum + Number(m[1]) * weights[m[2]], 0);
+      switch (q.model.form) {
+        case 'build': case 'regroup': return [...text.matchAll(/(\d+) (tusenere?|hundrere?|tiere?|enere?)/g)].reduce((sum, m) => sum + Number(m[1]) * weights[m[2]], 0);
+        case 'digit': case 'value': {
+          const [, place, number] = text.match(/(ener|tier|hundrer|tusener)plassen i (\d+)/);
+          const value = Math.floor(Number(number) / weights[place]) % 10;
+          return q.model.form === 'digit' ? value : value * weights[place];
+        }
+        case 'count': return text.match(/tallet (\d+)/)[1].length;
+        case 'expanded': {
+          const number = Number(text.match(/viser (\d+)/)[1]);
+          const matches = q.options.filter(o => calculate(o.label) === number);
+          assert.equal(matches.length, 1, 'nøyaktig ett regnestykke med riktig sum');
+          return matches[0].value;
+        }
+        case 'missing': {
+          const [left, right] = text.split(' = ');
+          return Number(left) - right.split(' + ').filter(x => x !== '□').reduce((sum, x) => sum + Number(x), 0);
+        }
+        case 'swap': {
+          const ds = text.match(/i (\d+)/)[1].split('');
+          [ds[0], ds[ds.length - 1]] = [ds.at(-1), ds[0]];
+          return Number(ds.join(''));
+        }
+        case 'exchange': {
+          const [, target, count, source] = text.match(/mange (\w+) er like mye som (\d+) (\w+)/);
+          return Number(count) * weights[source] / weights[target];
+        }
+        case 'blocks': case 'money': return q.model.number; // Figurens enkeltbiter kontrolleres i visningstesten.
+        default: assert.fail(`Ukjent plassverdiform: ${q.model.form}`);
+      }
     }
     case 'doubleHalf': {
       const number = Number(text.match(/av (\d+)\?/)[1]);
@@ -109,7 +139,7 @@ function solve(q) {
   }
 }
 
-test('64 000 oppgaver: fasit følger oppgaveteksten, alle likninger i forklaringen er sanne', t => {
+test('Alle ferdigheter og trinn: fasit følger oppgaveteksten, alle likninger i forklaringen er sanne', t => {
   t.mock.method(Math, 'random', seeded(0x24_09_2026));
   const variants = new Set();
   let count = 0;
@@ -127,6 +157,7 @@ test('64 000 oppgaver: fasit følger oppgaveteksten, alle likninger i forklaring
           assert.equal(q.steps.at(-1).value, expected);
           for (let i = 1; i < q.steps.length; i++) assert.equal(q.steps[i - 1].value + q.steps[i].jump, q.steps[i].value);
         }
+        if (skill === 'place') variants.add(`place:${q.model.form}`);
         if (skill === 'compare') variants.add(`compare:${q.answer}`);
         if (skill === 'chart') variants.add(`chart:${q.form}`);
         if (skill === 'equation') variants.add(`equation:${q.model.op}:${q.model.missing}`);
@@ -143,7 +174,7 @@ test('64 000 oppgaver: fasit følger oppgaveteksten, alle likninger i forklaring
       } catch (error) { error.message = `${skill}, trinn ${level}, eksempel ${sample}: ${JSON.stringify(q)}\n${error.message}`; throw error; }
     }
   }
-  for (const expected of ['compare:<','compare:=','compare:>','chart:read','chart:most','chart:fewest','chart:difference','chart:sum','equation:+:left','equation:+:right','equation:−:left','equation:−:right','balance:heavier:null','balance:missing:left','balance:missing:right','doubleHalf:double','doubleHalf:half']) assert.ok(variants.has(expected), `Mangler dekning: ${expected}`);
+  for (const expected of ['place:build','place:digit','place:value','place:count','place:expanded','place:missing','place:blocks','place:money','place:swap','place:exchange','place:regroup','compare:<','compare:=','compare:>','chart:read','chart:most','chart:fewest','chart:difference','chart:sum','equation:+:left','equation:+:right','equation:−:left','equation:−:right','balance:heavier:null','balance:missing:left','balance:missing:right','doubleHalf:double','doubleHalf:half']) assert.ok(variants.has(expected), `Mangler dekning: ${expected}`);
   t.diagnostic(`${count} oppgaver kontrollert på alle ${Object.keys(G.SKILLS).length} ferdigheter.`);
 });
 
@@ -183,6 +214,20 @@ test('figurer viser riktig antall, riktige punkter og skålvekt som heller mot t
           assert.equal((html.match(/class="ten-cell /g) || []).length, 10);
           assert.equal((html.match(/class="ten-cell existing/g) || []).length, q.model.a - (q.model.target - 10));
           assert.equal((html.match(/class="ten-cell added/g) || []).length, solved ? q.answer : 0);
+        } else if (q.kind === 'placeValue') {
+          const { form, number } = q.model;
+          const concrete = ['blocks', 'money'].includes(form);
+          if (concrete) {
+            let total = 0;
+            if (form === 'blocks') for (const m of html.matchAll(/class="place-block block-(\d)"/g)) total += 10 ** Number(m[1]);
+            else for (const m of html.matchAll(/class="place-money (?:coin|note)"[^>]*>(\d+)/g)) total += Number(m[1]);
+            assert.equal(total, q.answer, 'de tegnede bitene må gi riktig sum');
+            if (!solved) assert.doesNotMatch(html, /class="place-table"|class="place-expanded"/, 'totalsummen skal ikke stå i modellen før svaret');
+          }
+          if (solved || !concrete && (q.showSupport || q.hintOpen)) {
+            const cells = [...html.matchAll(/<td(?: class="place-focus")?>(\d)<\/td>/g)].map(m => m[1]).join('');
+            assert.equal(Number(cells), solved && form === 'swap' ? q.answer : number);
+          }
         } else if (q.kind === 'area') {
           const cells = html.match(/class="area-grid"[^>]*>(.*?)<\/div>/s)[1];
           assert.equal((cells.match(/<i /g) || []).length, solve(q));

@@ -206,7 +206,28 @@
     const spoken = q.options.find(o => o.value === q.answer)?.spoken || q.answer, relation = q.answer === '=' ? 'er lik' : `er ${spoken}`;
     return `<div class="compare-model" role="img" aria-label="${escape(expr(left))} ${escape(relation)} ${escape(expr(right))}"><span>${escape(expr(left))}${left.op?` = ${left.value}`:''}</span><b class="compare-sign" aria-hidden="true">${escape(q.answer)}</b><span>${escape(expr(right))}${right.op?` = ${right.value}`:''}</span></div>`;
   }
+  function placeVisual(q, solved = false) {
+    const { form, number, position } = q.model;
+    const shownNumber = solved && form === 'swap' ? q.answer : number;
+    const digits = String(shownNumber).split('').map(Number), labels = ['Enere', 'Tiere', 'Hundrere', 'Tusenere'];
+    const concrete = ['blocks', 'money'].includes(form);
+    const table = `<table class="place-table"><caption>Plassverditabell${solved && form === 'swap' ? ' etter byttet' : ''}</caption><thead><tr>${digits.map((_, i) => `<th scope="col">${labels[digits.length - 1 - i]}</th>`).join('')}</tr></thead><tbody><tr>${digits.map((d, i) => `<td${['digit','value','missing'].includes(form) && digits.length - 1 - i === position ? ' class="place-focus"' : ''}>${d}</td>`).join('')}</tr></tbody></table>`;
+    let models = '';
+    if (concrete) {
+      models = `<div class="place-concretes">${digits.map((count, i) => {
+        const power = digits.length - 1 - i, value = 10 ** power;
+        const pieces = Array.from({ length: count }, () => form === 'money'
+          ? `<span class="place-money ${power >= 2 ? 'note' : 'coin'}" aria-hidden="true">${value}<small>kr</small></span>`
+          : `<span class="place-block block-${power}" aria-hidden="true">${power === 3 ? '1000' : ''}</span>`).join('');
+        return `<div class="place-pile" role="img" aria-label="${count} ${form === 'money' ? `lekepenger med verdi ${value} kroner hver` : `klosser med verdi ${value} hver`}"><span class="place-unit">${form === 'money' ? `${value} kr` : `${labels[power]} · ${value}`}</span><div class="place-pieces">${pieces || '<span class="place-empty" aria-hidden="true">Ingen</span>'}</div></div>`;
+      }).join('')}</div>`;
+    }
+    // Selve klossene/pengene er oppgaven. Ikke skriv totalsummen før barnet har svart.
+    // Andre oppgaver får tabellen på lett nivå eller når barnet ber om et hint.
+    return `<div class="place-model">${models}${!concrete || solved ? table : ''}${solved && !['count','exchange','swap'].includes(form) ? `<p class="place-expanded">${shownNumber} = ${digits.map((d, i) => d * 10 ** (digits.length - i - 1)).filter(Boolean).join(' + ')}</p>` : ''}</div>`;
+  }
   function learningVisual(q, solved = false) {
+    if (q.kind === 'placeValue') return placeVisual(q,solved);
     if (q.kind === 'tenFrame') return tenFrame(q,solved);
     if (q.kind === 'groups') return groupsVisual(q,solved);
     if (q.kind === 'area') return areaVisual(q);
@@ -218,12 +239,12 @@
   }
   function questionCard() {
     const q = state.current, answered = q.selected !== undefined, correct = q.selected === q.answer;
-    const showModel = !answered && ((q.showSupport || q.hintOpen) && (q.kind === 'tenFrame' || q.steps) || ['groups','area','measure','coordinate','gridMove','balance'].includes(q.kind));
-    return `<section class="question-card ${q.type === 'chart' ? 'chart-card' : ''} ${q.kind==='tenFrame'?'ten-card':''}" aria-label="Matteoppgave">
+    const showModel = !answered && ((q.showSupport || q.hintOpen) && (q.kind === 'tenFrame' || q.kind === 'placeValue' || q.steps) || q.kind === 'placeValue' && ['blocks','money'].includes(q.model.form) || ['groups','area','measure','coordinate','gridMove','balance'].includes(q.kind));
+    return `<section class="question-card ${q.type === 'chart' ? 'chart-card' : ''} ${q.kind==='tenFrame'?'ten-card':''} ${q.kind==='placeValue'?'place-card':''}" aria-label="Matteoppgave">
       ${cardTopic()}<div class="round-header"><span>Oppgave ${Math.min(state.round.done+(answered?0:1),8)} av 8</span>${state.topic==='mixed'&&G.TOPICS[q.type]?`<span class="task-topic"><span aria-hidden="true">${topicIcon(q.type)}</span> ${G.TOPICS[q.type]}</span>`:''}</div>
       <div class="round-dots" aria-hidden="true">${Array.from({length:8},(_,i)=>`<span class="${i<state.round.done?'done':i===state.round.done?'current':''}"></span>`).join('')}</div>
       <div class="question-content"><h2 id="question-title" tabindex="-1">${escape(q.title)}</h2>
-      ${q.kind==='chart'?chart(q)+`<p class="chart-question">${escape(q.prompt)}</p>`:['groups','doubleHalf','area','measure','coordinate','gridMove','balance'].includes(q.kind)?`<p class="question-text">${escape(q.prompt)}</p>`:`<p class="equation ${q.kind==='place'?'place':['tenFrame','equation','compare'].includes(q.kind)?'missing-number':q.kind==='sequence'?'sequence':''}">${escape(q.prompt)}${q.type==='plus'||q.type==='minus'?' = ?':''}</p>`}
+      ${q.kind==='chart'?chart(q)+`<p class="chart-question">${escape(q.prompt)}</p>`:['placeValue','groups','doubleHalf','area','measure','coordinate','gridMove','balance'].includes(q.kind)?`<p class="question-text">${escape(q.prompt)}</p>`:`<p class="equation ${q.kind==='place'?'place':['tenFrame','equation','compare'].includes(q.kind)?'missing-number':q.kind==='sequence'?'sequence':''}">${escape(q.prompt)}${q.type==='plus'||q.type==='minus'?' = ?':''}</p>`}
       ${showModel?learningVisual(q):''}</div>
       <p class="answer-instruction">${answered?'Riktig svar er markert med ✓':'Trykk på svaret du tror er riktig'}</p>
       <div class="answers ${q.options.length===3?'count-3':''}">${q.options.map((o,i)=>`<button class="answer ${answered?o.value===q.answer?'correct':o.value===q.selected?'incorrect':'muted':''} ${/^\d+$/.test(o.label)?'':o.label.length<=2?'symbol':'text'}" data-option="${i}" ${answered?'disabled':''} aria-label="${escape(o.spoken||o.label)}${answered&&o.value===q.answer?', riktig svar':''}"><span class="answer-key" aria-hidden="true">${i+1}</span>${escape(o.label)}${answered&&o.value===q.answer?'<span class="mark" aria-hidden="true">✓</span>':''}</button>`).join('')}</div>
@@ -272,7 +293,7 @@
   }
   // Ikon og kort beskrivelse for hvert tema i temaoversikten.
   const TOPIC_INFO = { mixed: ['🎲', 'Litt av hvert tema, blandet'], ten: ['🖐️', 'Hvilke tall blir 10 sammen?'], nextTen: ['🔟', 'Hvor mange mangler til neste hele tier?'],
-    plus: ['➕', 'Legg sammen, også over tieren'], minus: ['➖', 'Trekk fra, også over tieren'], numbers: ['🔢', 'Tallrekker, tiere og enere'],
+    plus: ['➕', 'Legg sammen, også over tieren'], minus: ['➖', 'Trekk fra, også over tieren'], numbers: ['🔢', 'Finn mønsteret i tallrekken'], place: ['🧱', 'Siffer, plassverdier, klosser og penger'],
     doubleHalf: ['✌️', 'Doble tall og dele i to'], equation: ['❓', 'Finn tallet som mangler'], balance: ['⚖️', 'Få skålvekten til å balansere'],
     multiply: ['✖️', 'Like store grupper'], divide: ['🧺', 'Del bær likt i kurvene'], compare: ['🐊', 'Større enn, mindre enn eller lik'],
     area: ['🟪', 'Tell rutene i teppet'], measure: ['📏', 'Mål med ruter og linjal'], coordinate: ['🗺️', 'Finn og flytt enhjørningen i rutenettet'], chart: ['📊', 'Les av søylediagrammer'] };

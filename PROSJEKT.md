@@ -14,6 +14,8 @@ Oppgavene bygger på to typer kilder, som har ulike roller:
 
 2. **Udirs læreplan i matematikk MAT01-06, kompetansemål etter 3. trinn.** Den omtaler blant annet strategier for addisjon og subtraksjon, sammenhengen mellom regneartene, multiplikasjon ved telling og gruppering, dobling og halvering, praktisk multiplikasjon og divisjon, relasjonelle likhets- og ulikhetstegn, likevekt, areal og koordinatsystem. [Se kompetansemålene hos Udir](https://www.udir.no/lk20/mat01-06/kompetansemaal-og-vurdering/kv1022?lang=nob).
 
+3. **Ukefokus delt 12. oktober 2026.** Arbeid med forskjellen mellom tall og siffer, plassverdier og utvidet form. Den egne kategorien Plassverdi bruker også klosser og lekepenger. Den går fra tosifrede til tresifrede tall, null som plassholder og firesifrede tall på høyeste trinn.
+
 Læreplanen brukes som faglig retning, ikke som påstand om at spillet dekker alle målene eller erstatter undervisning. Oppgavene er korte flervalgsøvelser; flere kompetansemål krever også praktisk arbeid, samtale, utforsking og at eleven forklarer egne strategier.
 
 ## Oppgaver i spillet
@@ -24,7 +26,8 @@ Hver oppgave har en ferdighet og et skjult vanskelighetstrinn. Spillet kan velge
 |---|---|
 | Tiervenner og fylle neste tier | Finne det manglende tallet, med tierbrett som visuell støtte på de første trinnene |
 | Pluss og minus | Regneoppgaver med hopp og tieroverganger |
-| Tallrekker og plassverdi | Finne neste tall eller sette sammen hundrere, tiere og enere |
+| Tallrekker | Finne neste tall i en tallrekke |
+| Plassverdi | Siffer og sifferverdi, antall siffer, utvidet form, bygge tall, manglende plassverdi, klosser, lekepenger, bytte siffer og veksle |
 | Dobling og halvering | Doble et tall eller dele et partall i to like deler |
 | Åpne regnestykker | Finne det ukjente tallet i addisjon eller subtraksjon |
 | Likevekt | Avgjøre hvilken side av skålvekten som er tyngst, eller finne loddet som mangler for balanse |
