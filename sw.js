@@ -1,7 +1,7 @@
 /* Service worker: nett først, cache som reserve. Spillet virker uten nett etter første besøk.
    Når filer endres: bump ?v= i index.html og CACHE/SHELL her i samme commit. */
-const CACHE = 'enhjorningsdalen-v21';
-const SHELL = ['./', './index.html', './styles.css?v=21', './game.js?v=21', './duel.js?v=21', './duel-ui.js?v=21', './app.js?v=21', './manifest.webmanifest',
+const CACHE = 'enhjorningsdalen-v22';
+const SHELL = ['./', './index.html', './styles.css?v=22', './game.js?v=22', './duel.js?v=22', './duel-ui.js?v=22', './app.js?v=22', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/favicon-32.png'];
 
 self.addEventListener('install', event => {

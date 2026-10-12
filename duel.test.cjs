@@ -91,6 +91,16 @@ test('huskespill: unike par, riktig par gir ny tur, bom gir turen videre', () =>
   assert.equal(m.winner, 1); assert.equal(m.turns, 7);
 });
 
+test('et ferdig spill gir tre stjerner, og alle tre spillene ender med en vinner eller uavgjort', () => {
+  assert.equal(D.GAME_STARS, 3);
+  const rk = D.regnekrig({ target: 5 });
+  for (let i = 0; i < 5; i++) { D.rkTap(rk, 0, rk.task.answer, i * 10); D.rkNext(rk); }
+  assert.equal(rk.winner, 0);
+  const mem = D.huskespill({ kind: 'double', pairs: 6 });
+  for (let p = 0; p < 6; p++) { const [x, y] = mem.cards.map((c, i) => c.pair === p ? i : -1).filter(i => i >= 0); D.memoryFlip(mem, x); D.memoryFlip(mem, y); }
+  assert.equal(mem.winner, 0);
+});
+
 test('aktivitetsstjerner fra duellen øker saldo og opptjente stjerner, men ikke mestring', () => {
   const s = G.fresh(), before = JSON.stringify(s.mastery);
   assert.equal(G.reward(s, 1), true); assert.equal(G.reward(s, 1), true);

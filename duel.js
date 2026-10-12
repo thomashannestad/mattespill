@@ -6,6 +6,8 @@
   const shuffle = values => { const a = [...values]; for (let i = a.length - 1; i > 0; i--) { const j = rand(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   // Spillerne heter etter fargen sin, så ingen trenger å skrive navn.
   const PLAYERS = ['Lilla', 'Grønn'];
+  // Et ferdig spill gir like mange stjerner uansett hvor mange oppgaver det tok, og uansett hvem som vant.
+  const GAME_STARS = 3;
 
   // ===== Regnekrig: to kort trekkes, og den som først trykker riktig svar på sin side, tar kortene. =====
   const RK_OPS = { plus: '+', minus: '−', times: '·', mixed: null };
@@ -157,7 +159,7 @@
     return true;
   }
 
-  const api = { PLAYERS, RK_OPS, RK_TARGETS, RK_OPTIONS, LOCK_MS, RAD_SIZE, RAD_LINE, MEMORY_KINDS, rkTask, regnekrig, rkTap, rkNext,
+  const api = { PLAYERS, GAME_STARS, RK_OPS, RK_TARGETS, RK_OPTIONS, LOCK_MS, RAD_SIZE, RAD_LINE, MEMORY_KINDS, rkTask, regnekrig, rkTap, rkNext,
     radResults, radBoard, fireIRad, radRoll, radLine, radPick, radPass, memoryPairs, huskespill, memoryFlip, memoryHide };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Duel = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

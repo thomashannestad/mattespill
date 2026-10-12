@@ -96,7 +96,7 @@ Fast nivå bruker trinn 1 for «En rolig start», trinn 3 (eller ferdighetens h�
 
 ## Duell for to
 
-Fanen **Duell** har tre spill for to spillere på samme skjerm. Spillerne heter Lilla og Grønn, så ingen trenger å skrive navn. Hver oppgave dere gjør i en duell gir 1 ★ til enhjørningen, uansett hvem som svarer eller vinner. Duellene endrer ikke trinn, statistikk eller foreldreoversikten.
+Fanen **Duell** har tre spill for to spillere på samme skjerm. Spillerne heter Lilla og Grønn, så ingen trenger å skrive navn. Hvert ferdige spill gir 3 ★ til enhjørningen, uansett hvem som vinner og hvor mange oppgaver spillet tok. Et spill som avsluttes underveis, gir ingen stjerner. Duellene endrer ikke trinn, statistikk eller foreldreoversikten.
 
 - **Regnekrig:** iPaden ligger flatt mellom spillerne. Grønn sin halvdel er snudd, så begge leser riktig vei. To kort trekkes, og hver spiller har seks svarkort på sin side. Den som først trykker riktig, tar kortene. Feil svar stenger bare egne knapper i ett sekund, uten minuspoeng. Velg pluss, minus, gange eller blandet, og først til 5, 10 eller 15.
 - **Fire på rad:** Spillerne bytter på. Kast to terninger, regn pluss eller minus, eventuelt også gange, og ta en ledig rute med svaret på et brett med 5 × 5 ruter. Et tall som ikke passer, gir turen videre. Fire på rad vannrett, loddrett eller på skrå vinner.

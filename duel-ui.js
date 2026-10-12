@@ -15,20 +15,20 @@
   ];
   const MEMORY_GOAL = { ten: 'Finn to tall som blir 10 sammen.', plus: 'Finn regnestykket og svaret som hører sammen.', times: 'Finn gangestykket og svaret som hører sammen.', double: 'Finn tallet og det dobbelte.' };
   const PIPS = { 1: [[50, 50]], 2: [[28, 28], [72, 72]], 3: [[28, 28], [50, 50], [72, 72]], 4: [[28, 28], [72, 28], [28, 72], [72, 72]], 5: [[28, 28], [72, 28], [50, 50], [28, 72], [72, 72]], 6: [[28, 26], [72, 26], [28, 50], [72, 50], [28, 74], [72, 74]] };
-  let ctx = null, main = null, stage = null, match = null, timers = [], earned = 0, confirm = false, note = '';
+  let ctx = null, main = null, stage = null, match = null, timers = [], rewarded = false, confirm = false, note = '';
 
   const esc = value => ctx.escape(value);
   const later = (fn, ms) => { timers.push(setTimeout(fn, ms)); };
   const die = n => `<svg class="die" viewBox="0 0 100 100" role="img" aria-label="Terning som viser ${n}"><rect x="4" y="4" width="92" height="92" rx="18" fill="#fffefa" stroke="#8d7cae" stroke-width="4"/>${PIPS[n].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9" fill="#4b4356"/>`).join('')}</svg>`;
-  const starsLine = () => `<span class="duel-stars" aria-live="polite">+${earned} ★ til ${esc(ctx.name())}</span>`;
+  const starsLine = () => `<span class="duel-stars" aria-live="polite">${rewarded ? `+${D.GAME_STARS} ★ til ${esc(ctx.name())}` : `${D.GAME_STARS} ★ til ${esc(ctx.name())} når spillet er ferdig`}</span>`;
   const exitButton = () => `<button class="duel-exit" data-act="exit">✕ Avslutt</button>`;
   const endButtons = () => `<div class="duel-end"><button class="primary-button" data-act="again">Spill igjen</button><button class="secondary-button" data-act="menu">Til duellmenyen</button></div>`;
-  const confirmBox = () => confirm ? `<div class="duel-confirm" role="alertdialog" aria-label="Avslutte duellen?"><p>Avslutte duellen?</p><p class="small">Stjernene dere har tjent, beholder dere.</p><button class="primary-button" data-act="exit-no">Nei, spill videre</button><button class="secondary-button" data-act="exit-yes">Ja, avslutt</button></div>` : '';
+  const confirmBox = () => confirm ? `<div class="duel-confirm" role="alertdialog" aria-label="Avslutte duellen?"><p>Avslutte duellen?</p><p class="small">De ${D.GAME_STARS} stjernene kommer når et spill er spilt ferdig.</p><button class="primary-button" data-act="exit-no">Nei, spill videre</button><button class="secondary-button" data-act="exit-yes">Ja, avslutt</button></div>` : '';
 
   // ----- Menyen i fanen «Duell» -----
   function mount(target, context) {
     ctx = context; main = target;
-    main.innerHTML = ctx.warning + `<h1 class="sr-only">Duell</h1><div class="duel-intro"><h2>Duell for to</h2><p>Spill sammen på samme skjerm. Hver oppgave dere gjør, gir 1 ★ til ${esc(ctx.name())}, uansett hvem som svarer.</p></div>
+    main.innerHTML = ctx.warning + `<h1 class="sr-only">Duell</h1><div class="duel-intro"><h2>Duell for to</h2><p>Spill sammen på samme skjerm. Hvert ferdige spill gir ${D.GAME_STARS} ★ til ${esc(ctx.name())}, uansett hvem som vinner.</p></div>
       <div class="duel-games">${GAMES.map(g => `<article class="duel-card"><div class="duel-card-head"><span class="duel-icon" aria-hidden="true">${g.icon}</span><div><h3>${g.title}</h3><span class="duel-tag">${g.tag}</span></div></div><p>${g.desc}</p>
         ${g.options.map(([key, label, choices]) => { const fixed = g.id === 'huske' && key === 'pairs' && settings.huske.kind === 'ten';
           return `<div class="duel-option" role="group" aria-label="${label}"><span>${label}</span>${choices.map(([value, text]) => `<button class="chip" data-duel-setting="${g.id}:${key}:${value}" aria-pressed="${fixed ? value === 6 : String(settings[g.id][key]) === String(value)}" ${fixed ? 'disabled' : ''}>${text}</button>`).join('')}</div>`; }).join('')}
@@ -43,7 +43,7 @@
 
   // ----- Scenen som dekker skjermen under en kamp -----
   function start(game) {
-    clear(); earned = 0; confirm = false; note = '';
+    clear(); rewarded = false; confirm = false; note = '';
     if (!stage) {
       stage = document.createElement('div');
       stage.setAttribute('role', 'dialog'); stage.setAttribute('aria-modal', 'true');
@@ -63,7 +63,8 @@
     document.documentElement.classList.remove('duel-open');
     ctx.done();
   }
-  function reward() { earned++; ctx.award(1); }
+  // Stjernene gis én gang, når spillet er avgjort. Et spill som avsluttes underveis, gir ingen stjerner.
+  function finish() { if (rewarded || !match || match.winner === null) return; rewarded = true; ctx.award(D.GAME_STARS); }
   function draw() {
     if (!stage || !match) return;
     stage.innerHTML = (match.game === 'regnekrig' ? drawRegnekrig() : match.game === 'rad' ? drawRad() : drawHuske()) + confirmBox();
@@ -81,8 +82,8 @@
     if (confirm) return;
     if (kind === 'pick') pickRegnekrig(Number(t.dataset.player), Number(t.dataset.value));
     else if (kind === 'roll') { D.radRoll(match); note = ''; draw(); }
-    else if (kind === 'cell') { if (D.radPick(match, Number(t.dataset.index))) { reward(); draw(); if (match.winner !== null && match.winner !== 'draw') ctx.celebrate(); } }
-    else if (kind === 'pass') { if (D.radPass(match)) { reward(); draw(); } }
+    else if (kind === 'cell') { if (D.radPick(match, Number(t.dataset.index))) { finish(); draw(); if (match.winner !== null && match.winner !== 'draw') ctx.celebrate(); } }
+    else if (kind === 'pass') { if (D.radPass(match)) draw(); }
     else if (kind === 'card') flipCard(Number(t.dataset.index));
   }
 
@@ -91,7 +92,7 @@
     const result = D.rkTap(match, player, value, Date.now());
     if (result === 'wrong') { draw(); later(draw, D.LOCK_MS + 30); }
     else if (result === 'win') {
-      reward(); draw();
+      finish(); draw();
       if (match.winner !== null) ctx.celebrate();
       else later(() => { D.rkNext(match); draw(); }, 1500);
     }
@@ -138,7 +139,7 @@
     const result = D.memoryFlip(match, index);
     if (!result) return;
     if (result.flipped !== undefined) { note = ''; draw(); return; }
-    reward();
+    finish();
     if (result.match) { note = match.winner !== null ? '' : `${N[result.player]} fant et par og får en tur til.`; draw(); if (match.winner !== null && match.winner !== 'draw') ctx.celebrate(); }
     else { note = `Ikke et par. Nå er det ${N[1 - result.player]} sin tur.`; draw(); later(() => { D.memoryHide(match); draw(); }, 1400); }
   }
